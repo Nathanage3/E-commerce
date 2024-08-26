@@ -41,6 +41,7 @@ class Course(models.Model):
     is_active = models.BooleanField(default=True)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='courses')
     promotions = models.ManyToManyField(Promotion, blank=True)
+    last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title

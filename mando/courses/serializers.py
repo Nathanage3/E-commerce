@@ -39,11 +39,14 @@ class CourseProgressSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     course = serializers.StringRelatedField()
-    user = serializers.StringRelatedField()
 
     class Meta:
         model = Review
-        fields = ['id', 'course', 'rating', 'comment', 'user', 'created_at']
+        fields = ['id', 'course', 'rating', 'comment', 'created_at']
+
+    def create(self, validated_data):
+        course_id = self.context['course_id']
+        return Review.objects.create(course_id=course_id, **validated_data)
 
 
 class CustomerSerializer(serializers.ModelSerializer):

@@ -2,7 +2,7 @@ from django.db import models
 from courses.models import Course
 from uuid import uuid4
 
-# cart model
+
 class Cart(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
   created_at = models.DateTimeField(auto_now_add=True)
