@@ -1,12 +1,11 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework import permissions
 
-
-class IsAdminOrReadOnly(BasePermission):
+class IsAdminOrReadOnly(permissions.BasePermission):
   """
     Custom permission to only allow admins to edit or delete, while others can only read.
   """
   def has_permission(self, request, view):
-    if request.method in SAFE_METHODS:
+    if request.method in permissions.SAFE_METHODS:
       return True
     return bool(request.user and request.user.is_staff)
     

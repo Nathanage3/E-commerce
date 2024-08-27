@@ -1,10 +1,13 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminOrReadOnly
-from .models import Course, Collection, Promotion, CourseImage, Review, CourseProgress, Order
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer,\
-    CourseImageSerializer, ReviewSerializer, CourseProgressSerializer
-from .permissions import IsAdminOrReadOnly
+    CourseImageSerializer, ReviewSerializer, CourseProgressSerializer, CustomerSerializer
+from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from orders.models import OrderItem
+from .pagination import DefaultPagination
+
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
@@ -52,7 +55,6 @@ class CourseImageViewSet(viewsets.ModelViewSet):
         CourseImage.objects.filter(course_id=self.kwargs['course_pk'])
 
 
-
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     def get_serializer_context(self):
@@ -66,3 +68,26 @@ class CourseProgressViewSet(viewsets.ModelViewSet):
     queryset = CourseProgress.objects.select_related('course').all()
     serializer_class = CourseProgressSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+    permission_classes = [IsAdminUser]
+    
+    @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
+    def history(self, request, pk):
+        return Response('Ok')
+
+    @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        (customer, created) = Customer.objects.get_or_create(user_id=request.user.id)
+        if request.method == 'GET':
+            serializer = CustomerSerializer(customer)
+            return Response(serializer.data)
+
+        elif request.method == 'PUT':
+            serializer = CustomerSerializer(customer, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
