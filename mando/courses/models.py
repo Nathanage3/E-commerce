@@ -1,6 +1,7 @@
 from django.contrib import admin
 from decimal import Decimal
-from django.core.validators import MinValueValidator, FileExtensionValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator, \
+    MaxValueValidator
 from django.db import models
 from django.conf import settings
 
@@ -31,10 +32,12 @@ class Promotion(models.Model):
 
 class Course(models.Model):
     title = models.CharField(max_length=255)
+    slug = models.SlugField()
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2,
     validators=[MinValueValidator(Decimal('0.01'))])
-    rating = models.FloatField(default=0.0)
+    rating = models.FloatField(default=1.0, validators=[MinValueValidator(Decimal('1.0')), 
+                               MaxValueValidator(Decimal('5.0'))])
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
@@ -116,7 +119,7 @@ class InstructorEarnings(models.Model):
 
 class CourseImage(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='images')
-    #image = models.ImageField(upload_to='course/images', validators=[validate_file_size])
+    image = models.ImageField(upload_to='course/images')
     video = models.FileField(upload_to='course/videos', blank=True, null=True)
 
     def __str__(self):
