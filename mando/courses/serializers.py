@@ -6,13 +6,13 @@ from .models import Collection, Promotion, Course, CourseProgress, \
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = ['id', 'title', 'featured_course']
+        fields = ['id', 'title']
 
 
-class PromotionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Promotion
-        fields = ['id', 'description', 'discount']
+# class PromotionSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Promotion
+#         fields = ['id', 'description', 'discount']
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -54,7 +54,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ['id', 'user_id', 'role', 'bio', 'profile_picture', 'website']
+        fields = ['id', 'user_id', 'role', 'bio', 'website']
 
 
 class InstructorEarningsSerializer(serializers.ModelSerializer):

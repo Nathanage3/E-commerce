@@ -1,4 +1,7 @@
-Pipfile
-/__pycache__
-node_modules
+/bin
+/__pycache__/
 *.pyc
+Pipfile
+Pipfile.lock
+*.venv
+.vscode

@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress
-from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer,\
+from .serializers import CourseSerializer, CollectionSerializer,\
     CourseImageSerializer, ReviewSerializer, CourseProgressSerializer, CustomerSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from orders.models import OrderItem
@@ -39,10 +39,10 @@ class CollectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
-class PromotionViewSet(viewsets.ModelViewSet):
-    queryset = Promotion.objects.all()
-    serializer_class = PromotionSerializer
-    permission_classes = [IsAdminOrReadOnly]
+# class PromotionViewSet(viewsets.ModelViewSet):
+#     queryset = Promotion.objects.all()
+#     serializer_class = PromotionSerializer
+#     permission_classes = [IsAdminOrReadOnly]
 
 
 class CourseImageViewSet(viewsets.ModelViewSet):
