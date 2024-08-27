@@ -17,14 +17,13 @@ class PromotionSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     collection = CollectionSerializer(read_only=True)
-    promotions = PromotionSerializer(many=True, read_only=True)
     instructor = serializers.StringRelatedField()
 
     class Meta:
         model = Course
         fields = ['id', 'title', 'description', 'price', 'rating',
-        'instructor', 'syllabus', 'prerequisites', 'is_active',
-        'collection', 'promotions']
+        'instructor', 'syllabus', 'prerequisites',
+        'collection']
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):

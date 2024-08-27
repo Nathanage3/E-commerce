@@ -80,7 +80,7 @@ class Customer(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                 related_name='customer_profile')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=STUDENT)
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     website = models.URLField(blank=True, null=True)
@@ -116,7 +116,7 @@ class InstructorEarnings(models.Model):
 
 class CourseImage(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='images')
-    #image = models.ImageField(upload_to='course/images', validators=[validate_file_size])
+    image = models.ImageField(upload_to='course/images', blank=True, null=True)
     video = models.FileField(upload_to='course/videos', blank=True, null=True)
 
     def __str__(self):
