@@ -1,6 +1,9 @@
 import { Route, Routes } from 'react-router-dom';
-import Home from './screens/Home';
+import Home from './screens/Home/Home';
 import CourseList from './screens/CourseList';
+import Cart from './screens/Cart';
+import Login from './screens/AuthPages/Login';
+import Signup from './screens/AuthPages/Signup';
 
 function App() {
   return (
