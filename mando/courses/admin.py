@@ -22,7 +22,7 @@ class CourseAdmin(admin.ModelAdmin):
     prepopulated_fields = {
         'slug': ['title']
     }
-    list_display = ['title', 'price', 'collection_title']
+    list_display = ['title', 'price', 'collection_title', 'rating']
     inlines = [CourseImageInLine]
     list_editable = ['price']
     list_filter = ['collection', 'last_update', 'rating']

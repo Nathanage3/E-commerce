@@ -2,18 +2,17 @@ from rest_framework import serializers
 from .models import Collection, Promotion, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, CourseImage
 
+class PromotionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Promotion
+        fields = ['id', 'description', 'discount']
+
 
 class CollectionSerializer(serializers.ModelSerializer):
+    courses_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = Collection
-        fields = ['id', 'title']
-
-
-# class PromotionSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Promotion
-#         fields = ['id', 'description', 'discount']
-
+        fields = ['id', 'title', 'courses_count']
 
 class CourseSerializer(serializers.ModelSerializer):
     collection = CollectionSerializer(read_only=True)
@@ -72,3 +71,9 @@ class CourseImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseImage
         fields = ['id', 'course', 'video']
+
+
+class InstructorEarningsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstructorEarnings
+        fields = ['id', 'instructor', 'total_earnings', 'last_payout']
