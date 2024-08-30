@@ -1,0 +1,26 @@
+.cart_page {
+  width: 85%;
+  margin: auto;
+  padding: 10px ;
+  background-color: aliceblue;
+  min-height: calc(100vh - 60px);
+}
+.cart_page_header {
+  margin-bottom: 3rem;
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #000;
+}
+.cp_counter{
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #333;
+    padding: 5px;
+    border-bottom: 2px solid #000;
+}
+.cart_page_content {
+  width: 40%;
+  padding: 10px;
+}

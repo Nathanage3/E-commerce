@@ -38,6 +38,13 @@
   font-size: 1.1rem;
   width: 90%;
 }
-.sider_container {
-  margin: 2rem 0;
+.home_courses{
+  margin: 2rem auto;
+}
+.home_c_header{
+  font-size: 2rem;
+  margin-left: 2rem;
+  margin-bottom: 0.5rem;
+  color: black;
+  letter-spacing: 2px;
 }

@@ -23,19 +23,12 @@ const AppContextProvider = ({ children }) => {
     setShowCart(false);
   }
 
-  const addToCart = (product, quantity = 1) => {
-    const existsInCart = cartItems.find((item) => item._id === product._id);
+  const addToCart = (product) => {
+    const existsInCart = cartItems.find((item) => item.id === product.id);
     if (existsInCart) {
-      const updatedCart = cartItems.map((item) =>
-        item._id === product._id
-          ? { ...item, quantity: item.quantity + quantity }
-          : item
-      );
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-      setCartItems(updatedCart);
+      return;
     } else {
-      const updatedCart = [...cartItems, { ...product, quantity: quantity }];
+      const updatedCart = [...cartItems, { ...product}];
       localStorage.setItem('cart', JSON.stringify(updatedCart));
 
       setCartItems(updatedCart);
@@ -43,7 +36,7 @@ const AppContextProvider = ({ children }) => {
   };
 
   const removeFromCart = (itemId) => {
-    const updatedCart = cartItems.filter((item) => item._id !== itemId);
+    const updatedCart = cartItems.filter((item) => item.id !== itemId);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
 
     setCartItems(updatedCart);

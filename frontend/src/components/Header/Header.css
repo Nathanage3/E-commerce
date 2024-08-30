@@ -122,17 +122,47 @@
   color: #4b0088;
 }
 /* NAV RIGHT */
+
 .nav_right {
   width: 40%;
   gap: 1rem;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
-.nav_right_most {
-  width: 60%;
+.always_on{
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 2rem;
+}
+.nav_link {
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  font-weight: 600;
+  /* margin: 0 1rem; */
+  color: #333;
+}
+.nav_link:hover {
+  color: #444;
+  text-decoration: underline;
+}
+.cart_nav{
+  position: relative;
+  /* margin: 0 1rem; */
+}
+.cart_counter {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  color: #ffffff;
+  font-weight: 800;
+  min-width: 20px;
+  padding: 1px 3px 1px;
+  background-color: #ff8c00;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
 }
 .nav_auth_links {
   display: flex;
@@ -174,25 +204,37 @@
   color: #ffffff;
   background-color: #ed9121;
 }
-.nav_link {
+.bell_icon_wrapper {
+  position: relative;
   cursor: pointer;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-  font-weight: 600;
-  margin: 0 0.5rem;
-  color: #333;
-}
-.nav_link:hover {
-  color: #444;
-  text-decoration: underline;
 }
 .icon_cart,
 .icon_heart,
 .icon_bell {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   color: #000000;
 }
 .icon_heart {
-  color: red;
+  color: #4b0088;
 }
+.notification_counter {
+  position: absolute;
+  top: -10px;
+  right: -7px;
+  color: #ffffff;
+  font-weight: 800;
+  min-width: 15px;
+  min-height: 15px;
+  width: 20px;
+  height: 20px;
+  padding: 5px;
+  background-color: #ff0000e8;
+  border-radius: 50%;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1;
+  transition: transform 0.3s ease;
+  z-index: 4;
+}
+

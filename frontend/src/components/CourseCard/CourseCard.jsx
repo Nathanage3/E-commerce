@@ -1,6 +1,13 @@
 /* eslint-disable react/prop-types */
+import { Link } from 'react-router-dom';
 import './CourseCard.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { useContext, useState } from 'react';
+import { AppContext } from '../../contexts/AppContext';
 const CourseCard = ({ course }) => {
+  const { addToCart } = useContext(AppContext);
+
   let totalRating = (
     (1 * course.stars?.a +
       2 * course.stars?.b +
@@ -22,35 +29,83 @@ const CourseCard = ({ course }) => {
     hours?.toString().padStart(2, '0') +
     '.' +
     minutes?.toString().padStart(1, '0');
+  const [loading, setLoading] = useState(false);
+
+  const handleAddToCart = (course) => {
+    setLoading(true);
+   addToCart(course)
+    setTimeout(() => {
+      // Your add to cart logic here
+      console.log(`${course.title} added to cart`);
+      setLoading(false);
+    }, 2000);
+  };
   return (
-    <article className='course_card'>
-      <div className="">
-        <img src={course.img} alt="course thumbnail" className="" />
+    <article className="course_card">
+      <div className="cc_inner_div">
+        <div className="course_img">
+          <img src={course.img} alt="course thumbnail" className="" />
+        </div>
+        <div className="course_card_body">
+          <div className="cc_ttl">{course.title}</div>
+          <div className="cc_sub_ttl">{course.subTitle}</div>
+          <div className="cc_stats">
+            <div className="cc_rating">{totalRating}</div>
+            <div className="cc_rating2">{totalRating}</div>
+            <div className="cc_rate_count">({course.ratingCount})</div>
+          </div>
+          <div className="cc_pricing">
+            <span className="cc_price">
+              {new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+              }).format(course.price)}
+            </span>
+            <span className="cc_old_price">
+              {new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+              }).format(course.oldPrice)}
+            </span>
+          </div>
+          <div className="cc_tag">BEST SELLER</div>
+        </div>
       </div>
-      <div className="">
-        <div className="">{course.title}</div>
-        <div className="">{course.info}</div>
-        <div className="">
-          <div className="">{totalRating}</div>
-          <div className="">{totalRating}</div>
-          <div className="">({course.ratingCount})</div>
+      <div className="cc_hov_card">
+        <div className="cc_hov_card_inner">
+          <div className="cc_ttl">{course.title}</div>
+          <div className="flex_base">
+            <div className="cc_tag">BEST SELLER</div>
+            <div className="cc_update">
+              Updated <b>{course.updatedDate}</b>
+            </div>
+          </div>
+          <div className="cc_details">
+            <div>{durationInHrs} total hours</div>
+            <div className="cc_dur">{course.level}</div>
+            <div>
+              <strong>Subtitles</strong>
+            </div>
+          </div>
+          <div className="cc_sub_text">{course.detail}</div>
+          <Link className="view_cc_link" to={`/courses/${course.id}`}>
+            View Course
+          </Link>
+
+          <div className="add_btns">
+            <button
+              disabled={loading}
+              onClick={() => handleAddToCart(course)}
+              className="add_to_cart_btn center"
+            >
+              {' '}
+              {loading ? <span className="spinner"></span> : 'Add To Cart'}
+            </button>
+            <div className="add_to_wish center">
+              <FontAwesomeIcon className="icon_heart" icon={faHeart} />
+            </div>
+          </div>
         </div>
-        <div className="">
-          <span className="">
-            {new Intl.NumberFormat('en-IN', {
-              style: 'currency',
-              currency: 'INR',
-            }).format(course.price)}
-          </span>
-          <span className="">
-            {new Intl.NumberFormat('en-IN', {
-              style: 'currency',
-              currency: 'INR',
-            }).format(course.oldPrice)}
-          </span>
-        </div>
-        <div className="">{durationInHrs} total hours</div>
-        <div>BEST SELLER</div>
       </div>
     </article>
   );

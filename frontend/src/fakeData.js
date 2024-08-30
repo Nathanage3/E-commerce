@@ -42,7 +42,6 @@ export const categoriesData = [
   {
     id: 3,
     title: 'Finance & Accounting',
-
     sub: [
       { id: 1, title: 'Finance & Accounting' },
       { id: 2, title: 'Mobile Development' },
@@ -56,7 +55,6 @@ export const categoriesData = [
   {
     id: 4,
     title: 'IT & Software',
-
     sub: [
       { id: 1, title: 'Web Development' },
       { id: 2, title: 'Mobile Development' },
@@ -69,7 +67,6 @@ export const categoriesData = [
   {
     id: 5,
     title: 'Office Productivity',
-
     sub: [
       { id: 1, title: 'Web Development' },
       { id: 2, title: 'Mobile Development' },
@@ -82,7 +79,6 @@ export const categoriesData = [
   {
     id: 6,
     title: 'Personal Development',
-
     sub: [
       { id: 1, title: 'Personal Development' },
       { id: 2, title: 'Mobile Development' },
@@ -108,7 +104,6 @@ export const categoriesData = [
   {
     id: 8,
     title: 'Data Science',
-
     sub: [
       { id: 1, title: 'Personal Development' },
       { id: 2, title: 'Mobile Development' },
@@ -121,7 +116,6 @@ export const categoriesData = [
   {
     id: 9,
     title: 'Software Development Tools',
-
     sub: [
       { id: 1, title: 'Personal Development' },
       { id: 2, title: 'Mobile Development' },
@@ -134,7 +128,6 @@ export const categoriesData = [
   {
     id: 10,
     title: 'No-code Development',
-
     sub: [
       { id: 1, title: 'Personal Development' },
       { id: 2, title: 'Mobile Development' },
@@ -146,9 +139,10 @@ export const categoriesData = [
   },
 ];
 const singleCourseData = {
+  id: 1,
   img: cardImg,
   title: 'Learn Python: The Complete Python Programming Course',
-  info: 'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+  subTitle: 'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
   price: 600,
   oldPrice: 3299,
   stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
