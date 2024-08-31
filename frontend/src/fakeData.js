@@ -138,32 +138,206 @@ export const categoriesData = [
     ],
   },
 ];
-const singleCourseData = {
-  id: 1,
-  img: cardImg,
-  title: 'Learn Python: The Complete Python Programming Course',
-  subTitle: 'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
-  price: 600,
-  oldPrice: 3299,
-  stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
-  ratingCount: 5,
-  updatedDate: new Intl.DateTimeFormat('en-IN', {
-    dateStyle: 'long',
-  }).format(new Date()),
-  courseDuration: 1000000,
-  level: 'Beginner Level',
-  detail:
-    'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
-};
+
 export const courseData = [
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
-  singleCourseData,
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 1,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 2,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 3,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 4,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 5,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 6,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 7,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 8,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 9,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
+  {
+    category: ['business', 'management', 'iso 800'],
+    createdBy: 'Jack Black',
+    id: 10,
+    img: cardImg,
+    title: 'Learn Python: The Complete Python Programming Course',
+    subTitle:
+      'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
+    price: 600,
+    oldPrice: 3299,
+    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    ratingCount: 5,
+    updatedDate: new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'long',
+    }).format(new Date()),
+    courseDuration: 1000000,
+    level: 'Beginner Level',
+    detail:
+      'Python For Beginners : This course is meant for absolute beginners in programming or in python.',
+  },
 ];

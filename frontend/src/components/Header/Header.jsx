@@ -30,7 +30,7 @@ const Header = () => {
       <SearchBar />
       <div className="nav_right">
         <div className="always_on">
-          <div className='center'>
+          <div className="center">
             <Link className="nav_link" to={'/sell-course'}>
               Sell Courses
             </Link>
@@ -44,8 +44,8 @@ const Header = () => {
               <FontAwesomeIcon className="icon_cart" icon={faCartShopping} />
             </Link>
             {cartItems && (
-                <span className="cart_counter">{cartItems.length}</span>
-              )}
+              <span className="cart_counter center">{cartItems.length}</span>
+            )}
             {isCartOpen && <Cart />}
           </div>
           <div className="center">
@@ -53,6 +53,11 @@ const Header = () => {
               <FontAwesomeIcon className="icon_heart" icon={faHeart} />
             </Link>
           </div>
+        </div>
+        <div className="center">
+          <Link to={'/my-courses'} className="nav_link" title="My Courses">
+            My Courses
+          </Link>
         </div>
         <div className="always_on">
           <div className="center">
@@ -63,7 +68,7 @@ const Header = () => {
             >
               <FontAwesomeIcon className="icon_bell" icon={faBell} />
 
-              <span className='notification_counter center'>0</span>
+              <span className="notification_counter center">0</span>
             </Link>
           </div>
           <div>

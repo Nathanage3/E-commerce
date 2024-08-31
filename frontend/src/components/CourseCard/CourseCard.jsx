@@ -7,6 +7,7 @@ import { useContext, useState } from 'react';
 import { AppContext } from '../../contexts/AppContext';
 const CourseCard = ({ course }) => {
   const { addToCart } = useContext(AppContext);
+  const [loading, setLoading] = useState(false);
 
   let totalRating = (
     (1 * course.stars?.a +
@@ -29,11 +30,10 @@ const CourseCard = ({ course }) => {
     hours?.toString().padStart(2, '0') +
     '.' +
     minutes?.toString().padStart(1, '0');
-  const [loading, setLoading] = useState(false);
 
   const handleAddToCart = (course) => {
     setLoading(true);
-   addToCart(course)
+    addToCart(course);
     setTimeout(() => {
       // Your add to cart logic here
       console.log(`${course.title} added to cart`);
@@ -70,10 +70,7 @@ const CourseCard = ({ course }) => {
           </div>
           <div className="cc_tag">BEST SELLER</div>
         </div>
-      </div>
-      <div className="cc_hov_card">
-        <div className="cc_hov_card_inner">
-          <div className="cc_ttl">{course.title}</div>
+        <div className="cc_hov_card">
           <div className="flex_base">
             <div className="cc_tag">BEST SELLER</div>
             <div className="cc_update">
@@ -81,15 +78,14 @@ const CourseCard = ({ course }) => {
             </div>
           </div>
           <div className="cc_details">
-            <div>{durationInHrs} total hours</div>
+            <div>{durationInHrs} hrs</div>
             <div className="cc_dur">{course.level}</div>
             <div>
               <strong>Subtitles</strong>
             </div>
           </div>
-          <div className="cc_sub_text">{course.detail}</div>
           <Link className="view_cc_link" to={`/courses/${course.id}`}>
-            View Course
+            View Course Details
           </Link>
 
           <div className="add_btns">

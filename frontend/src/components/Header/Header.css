@@ -156,13 +156,15 @@
   top: -10px;
   left: 15px;
   color: #ffffff;
-  font-weight: 800;
-  min-width: 20px;
-  padding: 1px 3px 1px;
+  font-weight: 700;
+  min-width: 16px;
+  min-height: 16px;
+  /* padding: 1px 3px 1px; */
   background-color: #ff8c00;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 5px;
+  font-size: 10px;
   text-align: center;
+  border: 1px solid #ff8c00;
 }
 .nav_auth_links {
   display: flex;
@@ -211,8 +213,8 @@
 .icon_cart,
 .icon_heart,
 .icon_bell {
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
   color: #000000;
 }
 .icon_heart {
@@ -224,8 +226,6 @@
   right: -7px;
   color: #ffffff;
   font-weight: 800;
-  min-width: 15px;
-  min-height: 15px;
   width: 20px;
   height: 20px;
   padding: 5px;
