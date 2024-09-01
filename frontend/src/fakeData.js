@@ -1,4 +1,5 @@
-import cardImg from './assets/card.jpg';
+import cardImg from './assets/banner1.jpg';
+// import cardImg from './assets/card.jpg';
 export const categoriesData = [
   {
     id: 1,
@@ -150,7 +151,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -170,7 +171,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -190,7 +191,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -210,7 +211,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -230,7 +231,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -250,7 +251,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -270,7 +271,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -290,7 +291,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -310,7 +311,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',
@@ -330,7 +331,7 @@ export const courseData = [
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
     price: 600,
     oldPrice: 3299,
-    stars: { a: 2, b: 3, c: 5, d: 8, e: 9 },
+    stars: 3.5,
     ratingCount: 5,
     updatedDate: new Intl.DateTimeFormat('en-IN', {
       dateStyle: 'long',

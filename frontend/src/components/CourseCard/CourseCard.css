@@ -4,6 +4,9 @@
   margin: 0 auto;
   position: relative;
 }
+.course_card:hover {
+  scale: 1.0001;
+}
 .cc_inner_div {
   width: 100%;
   height: 100%;
@@ -160,6 +163,7 @@
   margin: 5px 0;
   width: 100%;
   height: 40px;
+  position: relative;
 }
 .view_cc_link {
   color: rgb(0, 0, 53);
@@ -184,7 +188,7 @@
   border: 1px solid transparent;
   outline: none;
   transition: 0.3s ease-in-out;
-  position: relative;
+  z-index: 99;
 }
 
 .add_to_wish {
@@ -192,6 +196,7 @@
   height: 40px;
   border: 1px solid #ed9121;
   border-radius: 50%;
+  z-index: 99;
 }
 .add_to_wish .icon_heart {
   width: 20px;

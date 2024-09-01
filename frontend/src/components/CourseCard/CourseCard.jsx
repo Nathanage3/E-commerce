@@ -5,22 +5,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { useContext, useState } from 'react';
 import { AppContext } from '../../contexts/AppContext';
+import StarRating from '../StarRating/StarRating';
 const CourseCard = ({ course }) => {
-  const { addToCart } = useContext(AppContext);
-  const [loading, setLoading] = useState(false);
+  const { addToCart, addToWish } = useContext(AppContext);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [wishLoading, setWishLoading] = useState(false);
 
-  let totalRating = (
-    (1 * course.stars?.a +
-      2 * course.stars?.b +
-      3 * course.stars?.c +
-      4 * course.stars?.d +
-      5 * course.stars?.e) /
-      course.stars?.a +
-    course.stars?.b +
-    course.stars?.c +
-    course.stars?.d +
-    course.stars?.e
-  ).toFixed(2);
 
   let duration = new Date(course.courseDuration * 1000);
   let hours = duration.getUTCHours();
@@ -32,17 +22,26 @@ const CourseCard = ({ course }) => {
     minutes?.toString().padStart(1, '0');
 
   const handleAddToCart = (course) => {
-    setLoading(true);
+    setCartLoading(true);
     addToCart(course);
     setTimeout(() => {
       // Your add to cart logic here
       console.log(`${course.title} added to cart`);
-      setLoading(false);
+      setCartLoading(false);
     }, 2000);
+  };
+  const handleAddToWish = (course) => {
+    setWishLoading(true);
+    addToWish(course);
+    setTimeout(() => {
+      // Your add to cart logic here
+      console.log(`${course.title} added to wishlist`);
+      setWishLoading(false);
+    }, 1000);
   };
   return (
     <article className="course_card">
-      <div className="cc_inner_div">
+      <Link to={`/courses/${course.id}`} className="cc_inner_div">
         <div className="course_img">
           <img src={course.img} alt="course thumbnail" className="" />
         </div>
@@ -50,8 +49,7 @@ const CourseCard = ({ course }) => {
           <div className="cc_ttl">{course.title}</div>
           <div className="cc_sub_ttl">{course.subTitle}</div>
           <div className="cc_stats">
-            <div className="cc_rating">{totalRating}</div>
-            <div className="cc_rating2">{totalRating}</div>
+            <StarRating rating={course.stars} />
             <div className="cc_rate_count">({course.ratingCount})</div>
           </div>
           <div className="cc_pricing">
@@ -84,25 +82,29 @@ const CourseCard = ({ course }) => {
               <strong>Subtitles</strong>
             </div>
           </div>
-          <Link className="view_cc_link" to={`/courses/${course.id}`}>
-            View Course Details
-          </Link>
+          <div className="view_cc_link">View Course Details</div>
 
           <div className="add_btns">
             <button
-              disabled={loading}
+              disabled={cartLoading}
               onClick={() => handleAddToCart(course)}
               className="add_to_cart_btn center"
             >
-              {' '}
-              {loading ? <span className="spinner"></span> : 'Add To Cart'}
+              {cartLoading ? <span className="spinner"></span> : 'Add To Cart'}
             </button>
-            <div className="add_to_wish center">
-              <FontAwesomeIcon className="icon_heart" icon={faHeart} />
+            <div
+              className="add_to_wish center"
+              onClick={() => handleAddToWish(course)}
+            >
+              {wishLoading ? (
+                <span className="spinner"></span>
+              ) : (
+                <FontAwesomeIcon className="icon_heart" icon={faHeart} />
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </Link>
     </article>
   );
 };

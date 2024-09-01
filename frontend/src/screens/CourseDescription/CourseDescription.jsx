@@ -7,7 +7,13 @@ import { AppContext } from '../../contexts/AppContext';
 import { courseData } from '../../fakeData';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import Slider from 'react-slick';
+import CourseCard from '../../components/CourseCard/CourseCard';
+import SliderArrow from '../../components/SliderArrow';
 // import { FaHeart } from 'react-icons/fa'
+import LeftArrow from '../../assets/left-arrow.svg';
+import RightArrow from '../../assets/right-arrow.svg';
+import StarRating from '../../components/StarRating/StarRating';
 const CourseDescription = () => {
   const { id } = useParams();
   const { addToCart } = useContext(AppContext);
@@ -32,18 +38,6 @@ const CourseDescription = () => {
     }, 2000);
   };
 
-  let totalRating = (
-    (1 * displayedCourse.stars?.a +
-      2 * displayedCourse.stars?.b +
-      3 * displayedCourse.stars?.c +
-      4 * displayedCourse.stars?.d +
-      5 * displayedCourse.stars?.e) /
-      displayedCourse.stars?.a +
-    displayedCourse.stars?.b +
-    displayedCourse.stars?.c +
-    displayedCourse.stars?.d +
-    displayedCourse.stars?.e
-  ).toFixed(2);
 
   let duration = new Date(displayedCourse.courseDuration * 1000);
   let hours = duration.getUTCHours();
@@ -53,43 +47,19 @@ const CourseDescription = () => {
     hours?.toString().padStart(2, '0') +
     '.' +
     minutes?.toString().padStart(1, '0');
-
+  const settings = {
+    dots: true,
+    infinite: true,
+    slidesToShow: 4,
+    slidesToScroll: 4,
+    nextArrow: <SliderArrow icon={RightArrow} />,
+    prevArrow: <SliderArrow icon={LeftArrow} />,
+  };
   return (
     <Layout>
       <div className="course_desc_page">
         <div className="desc_content">
           <div className="desc_page_header">
-            <div>
-              <div className="desc_cc_ttl">{displayedCourse.title}</div>
-              <div className="cc_stats">
-                <div className="cc_rating">{totalRating}</div>
-                <div className="cc_rating2">{totalRating}</div>
-                <div className="cc_rate_count">
-                  ({displayedCourse.ratingCount})
-                </div>
-              </div>
-              <div className="creator">
-                Created By: {displayedCourse.createdBy}
-              </div>
-              <div className="small_width">
-                <div className="cc_details">
-                  <div>{durationInHrs} total hours</div>
-                  <div className="cc_dur">{displayedCourse.level}</div>
-                  <div>
-                    <strong>Subtitles</strong>
-                  </div>
-                </div>
-                <div className="desc_cc_sub_text">{displayedCourse.detail}</div>
-                <div className="small_width">
-                  <div className="flex_base">
-                    <div className="desc_cc_tag">BEST SELLER</div>
-                    <div className="desc_cc_update">
-                      Updated <b>{displayedCourse.updatedDate}</b>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <div className="desc_course_img">
               <img
                 src={displayedCourse.img}
@@ -97,46 +67,92 @@ const CourseDescription = () => {
                 className=""
               />
             </div>
+            <div className="desc_header_main">
+              <div className="desc_cc_ttl">{displayedCourse.title}</div>
+              <div className="creator">
+                Created By:{' '}
+                <span className="creator_name">
+                  {displayedCourse.createdBy}
+                </span>
+              </div>
+              <div className="desc_cc_stats">
+                <StarRating rating={displayedCourse.stars} />
+                <div className="desc_cc_rate_count">
+                  ({displayedCourse.ratingCount})
+                </div>
+              </div>
+              <div className="small_width">
+                <div className="desc_cc_details">
+                  <div>{durationInHrs} total hours</div>
+                  <div className="desc_cc_dur">{displayedCourse.level}</div>
+                  <div>
+                    <strong>Subtitles</strong>
+                  </div>
+                </div>
+                <div className="desc_cc_sub_text">{displayedCourse.detail}</div>
+                <div className="small_width">
+                  <div className="desc_flex_base">
+                    <div className="desc_cc_tag">BEST SELLER</div>
+                    <div className="desc_cc_update">
+                      Updated:
+                      <b className="green">{displayedCourse.updatedDate}</b>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="desc_add_btns">
+            <Link to={'/checkout'} className="buy_now_link center">
+              BUY NOW
+            </Link>
             <button
               disabled={loading}
               onClick={() => handleAddToCart(selectedCourse)}
-              className="add_to_cart_btn center"
+              className="desc_add_to_cart_btn center"
             >
               {' '}
               {loading ? <span className="spinner"></span> : 'Add To Cart'}
             </button>
-            <div className="add_to_wish center">
+            <div className="desc_add_to_wish center">
               <FontAwesomeIcon className="icon_heart" icon={faHeart} />
             </div>
-            <Link
-              to={'/checkout'}
-              className="add_to_cart_btn center"
-            >
-              BUY NOW
-            </Link>
+          </div>
+          <div className="desc_page_list">
+            <h4 className="desc_list_header">What you&apos;ll learn</h4>
+            <ul className="cc_list">
+              <li className="cc_li">
+                <span className="tick"></span>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque
+                dolore reiciendis ea maiores eos eligendi architecto illo.
+                Cupiditate iure, vero, laboriosam laudantium perferendis odio
+                expedita quisquam culpa quae earum provident.
+              </li>
+              <li className="cc_li">
+                <span className="tick"></span>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                Tempora ullam autem impedit porro veniam, laboriosam debitis
+                eveniet reprehenderit numquam atque inventore recusandae hic
+                veritatis similique officia? Rerum, nesciunt! Repudiandae, sint.
+              </li>
+              <li className="cc_li">
+                <span className="tick"></span>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                Tempora ullam autem impedit porro veniam, laboriosam debitis
+                eveniet reprehenderit numquam atque inventore recusandae hic
+                veritatis similique officia? Rerum, nesciunt! Repudiandae, sint.
+              </li>
+            </ul>
           </div>
         </div>
-        <div className="desc_page_list">
-          <h4>What you&apos;ll learn</h4>
-          <ul className="cc_list">
-            <li className="cc_li">
-              <span className="tick"></span>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque
-              dolore reiciendis ea maiores eos eligendi architecto illo.
-              Cupiditate iure, vero, laboriosam laudantium perferendis odio
-              expedita quisquam culpa quae earum provident.
-            </li>
-            <li className="cc_li">
-              <span className="tick"></span>
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempora
-              ullam autem impedit porro veniam, laboriosam debitis eveniet
-              reprehenderit numquam atque inventore recusandae hic veritatis
-              similique officia? Rerum, nesciunt! Repudiandae, sint.
-            </li>
-          </ul>
+        <div className="desc_page_courses">
+          <h2 className="desc_c_header">Similar Courses</h2>
+          <Slider {...settings}>
+            {courseData.map((course, index) => (
+              <CourseCard key={index} course={course} />
+            ))}
+          </Slider>
         </div>
       </div>
     </Layout>

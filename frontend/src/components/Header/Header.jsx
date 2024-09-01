@@ -49,7 +49,7 @@ const Header = () => {
             {isCartOpen && <Cart />}
           </div>
           <div className="center">
-            <Link to={'/wishlist'} className="center">
+            <Link to={'/my-courses/wishlist'} className="center">
               <FontAwesomeIcon className="icon_heart" icon={faHeart} />
             </Link>
           </div>

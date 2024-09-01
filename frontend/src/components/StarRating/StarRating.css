@@ -1,0 +1,12 @@
+/* StarRating.css */
+.star-rating {
+  display: inline-block;
+  font-size: 14px;
+  color: #ffd700;
+}
+
+.icon {
+  display: inline-block;
+  font-size: 14px;
+  color: #ffd700;
+}
