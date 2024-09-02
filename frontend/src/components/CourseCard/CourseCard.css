@@ -15,7 +15,7 @@
 }
 .course_img {
   width: 100%;
-  height: 50%;
+  height: 46%;
 }
 .course_img img {
   width: 100%;
@@ -26,7 +26,7 @@
   border: 1px solid #ddd;
   border-top: none;
   width: 100%;
-  height: 50%;
+  height: 54%;
   padding: 0.5rem;
   display: block;
 }
@@ -102,7 +102,7 @@
   border: 1px solid #c4c4c4;
   border-top: none;
   width: 100%;
-  height: 50%;
+  height: 54%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -164,6 +164,7 @@
   width: 100%;
   height: 40px;
   position: relative;
+  z-index: 2;
 }
 .view_cc_link {
   color: rgb(0, 0, 53);
@@ -188,7 +189,7 @@
   border: 1px solid transparent;
   outline: none;
   transition: 0.3s ease-in-out;
-  z-index: 99;
+  z-index: 2;
 }
 
 .add_to_wish {
@@ -196,13 +197,16 @@
   height: 40px;
   border: 1px solid #ed9121;
   border-radius: 50%;
-  z-index: 99;
+  z-index: 2;
 }
-.add_to_wish .icon_heart {
+.cc_icon_heart {
   width: 20px;
   height: 20px;
+  color: #333;
 }
-
+.cc_icon_heart:hover{
+  color: red;
+}
 .spinner {
   border: 3px solid rgb(255, 255, 255);
   border-radius: 50%;

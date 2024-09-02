@@ -1,44 +1,12 @@
 import Slider from 'react-slick';
-import Layout from '../components/Layout';
 import CourseCard from '../components/CourseCard/CourseCard';
 import { courseData } from '../fakeData';
-
+import { settings } from '../utils/sliderSetting';
 const CourseList = () => {
-  const settings = {
-    dots: true,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 4,
-    slidesToScroll: 6,
-    initialSlide: 0,
-    lazyLoad: true,
-    responsive: [
-      {
-        breakpoint: 1200,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 3,
-        },
-      },
-      {
-        breakpoint: 800,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2,
-          initialSlide: 2,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
+ 
   return (
-    <Layout>
+    <section className="course_list_content">
+      <h2>Browse Courses</h2>
       <div className="sider_container">
         <Slider {...settings}>
           {courseData.map((course, index) => (
@@ -46,7 +14,8 @@ const CourseList = () => {
           ))}
         </Slider>
       </div>
-    </Layout>
+      
+    </section>
   );
 };
 

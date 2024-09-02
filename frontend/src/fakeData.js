@@ -1,5 +1,6 @@
 import cardImg from './assets/banner1.jpg';
-// import cardImg from './assets/card.jpg';
+import cardImg1 from './assets/card.jpg';
+import cardImg2 from './assets/banner3.jpg';
 export const categoriesData = [
   {
     id: 1,
@@ -145,7 +146,7 @@ export const courseData = [
     category: ['business', 'management', 'iso 800'],
     createdBy: 'Jack Black',
     id: 1,
-    img: cardImg,
+    img: cardImg1,
     title: 'Learn Python: The Complete Python Programming Course',
     subTitle:
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
@@ -185,7 +186,7 @@ export const courseData = [
     category: ['business', 'management', 'iso 800'],
     createdBy: 'Jack Black',
     id: 3,
-    img: cardImg,
+    img: cardImg2,
     title: 'Learn Python: The Complete Python Programming Course',
     subTitle:
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
@@ -225,7 +226,7 @@ export const courseData = [
     category: ['business', 'management', 'iso 800'],
     createdBy: 'Jack Black',
     id: 5,
-    img: cardImg,
+    img: cardImg1,
     title: 'Learn Python: The Complete Python Programming Course',
     subTitle:
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
@@ -265,7 +266,7 @@ export const courseData = [
     category: ['business', 'management', 'iso 800'],
     createdBy: 'Jack Black',
     id: 7,
-    img: cardImg,
+    img: cardImg2,
     title: 'Learn Python: The Complete Python Programming Course',
     subTitle:
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',
@@ -305,7 +306,7 @@ export const courseData = [
     category: ['business', 'management', 'iso 800'],
     createdBy: 'Jack Black',
     id: 9,
-    img: cardImg,
+    img: cardImg2,
     title: 'Learn Python: The Complete Python Programming Course',
     subTitle:
       'Learn A-Z everything about Python, from the basics, to advanced topics like Python GUI, Python Data Analysis, and more',

@@ -1,7 +1,8 @@
 .home_page {
   width: 100%;
   min-height: calc(100vh - 60px);
-  padding: 10px 0;
+  padding:0 0 10px;
+  position: relative;
 }
 .banner_hero {
   position: relative;
@@ -11,7 +12,7 @@
 }
 .banner_hero img {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
 }
 .banner_float {

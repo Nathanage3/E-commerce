@@ -9,11 +9,11 @@ const StarRating = ({ rating }) => {
     return (
       <span key={index}>
         {rating >= number ? (
-          <FaStar className="icon" />
+          <FaStar className="icon_star" />
         ) : rating >= number - 0.5 ? (
-          <FaStarHalfAlt className="icon" />
+          <FaStarHalfAlt className="icon_star" />
         ) : (
-          <AiOutlineStar className="icon" />
+          <AiOutlineStar className="icon_star" />
         )}
       </span>
     );

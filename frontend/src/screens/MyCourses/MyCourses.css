@@ -70,3 +70,7 @@
   background-color: #000000;
   color: #fff;
 }
+/* WISHLIST COMP */
+.wish_listing {
+  display: flex;
+}

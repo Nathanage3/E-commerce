@@ -1,12 +1,16 @@
 /* StarRating.css */
 .star-rating {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 1px;
   font-size: 14px;
   color: #ffd700;
 }
 
-.icon {
+.icon_star {
   display: inline-block;
-  font-size: 14px;
+  width: 15px;
+  height: 15px;
   color: #ffd700;
 }
+

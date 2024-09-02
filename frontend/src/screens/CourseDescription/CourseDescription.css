@@ -138,7 +138,6 @@
 }
 .desc_add_to_cart_btn:hover {
   background-color: #000000;
-  color: #ddd;
 }
 .buy_now_link {
   width: 50%;
@@ -159,20 +158,24 @@
   box-shadow: 3px 3px 5px #000000;
 }
 .buy_now_link:hover {
-  border: 1px solid #4b0088;
+  border: 1px solid #000000;
   box-shadow: none;
 }
 .desc_add_to_wish {
   width: 50px;
   height: 40px;
-  border: 1px solid #4b0088;
+  border: 1px solid #000000;
   cursor: pointer;
 }
-.desc_add_to_wish .icon_heart {
+.desc_add_to_wish:hover .desc_icon_heart {
+  color: red;
+}
+.desc_icon_heart {
   width: 20px;
   height: 20px;
-  color: #4b0088;
+  color: #000000;
 }
+
 .desc_page_list {
   width: 50%;
   margin: 3rem auto;
@@ -203,12 +206,12 @@
   height: 25px;
   width: 25px;
 }
-.desc_page_courses{
+.desc_page_courses {
   width: 80%;
   margin: 2rem auto;
 }
 
-.desc_c_header{
+.desc_c_header {
   font-size: 1.4rem;
   margin-left: 1rem;
   color: black;

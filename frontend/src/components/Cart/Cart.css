@@ -3,7 +3,6 @@
   top: 100%;
   right: -100%;
   padding: 5px 0;
-  z-index: 4;
   min-width: 300px;
   border-radius: 5px;
   border-top: 1px solid #ddd;
@@ -11,7 +10,7 @@
   border-top-left-radius: 10%;
   box-shadow: 4px 4px 6px 0px #30004d5d;
   transition: all 0.2s ease-out;
-  z-index: 9;
+  z-index: 3;
   background-color: #ffffff;
   min-height: 300px;
 }

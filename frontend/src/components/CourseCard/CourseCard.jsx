@@ -3,14 +3,11 @@ import { Link } from 'react-router-dom';
 import './CourseCard.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
-import { useContext, useState } from 'react';
-import { AppContext } from '../../contexts/AppContext';
+import { useState } from 'react';
 import StarRating from '../StarRating/StarRating';
-const CourseCard = ({ course }) => {
-  const { addToCart, addToWish } = useContext(AppContext);
+const CourseCard = ({ course, addToCart, addToWish }) => {
   const [cartLoading, setCartLoading] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
-
 
   let duration = new Date(course.courseDuration * 1000);
   let hours = duration.getUTCHours();
@@ -25,26 +22,23 @@ const CourseCard = ({ course }) => {
     setCartLoading(true);
     addToCart(course);
     setTimeout(() => {
-      // Your add to cart logic here
-      console.log(`${course.title} added to cart`);
       setCartLoading(false);
-    }, 2000);
+    }, 500);
   };
   const handleAddToWish = (course) => {
     setWishLoading(true);
     addToWish(course);
     setTimeout(() => {
-      // Your add to cart logic here
-      console.log(`${course.title} added to wishlist`);
       setWishLoading(false);
-    }, 1000);
+    }, 500);
   };
   return (
     <article className="course_card">
-      <Link to={`/courses/${course.id}`} className="cc_inner_div">
+      <Link to={`/course/${course.id}`} className="cc_inner_div">
         <div className="course_img">
           <img src={course.img} alt="course thumbnail" className="" />
         </div>
+        </Link>
         <div className="course_card_body">
           <div className="cc_ttl">{course.title}</div>
           <div className="cc_sub_ttl">{course.subTitle}</div>
@@ -68,43 +62,45 @@ const CourseCard = ({ course }) => {
           </div>
           <div className="cc_tag">BEST SELLER</div>
         </div>
-        <div className="cc_hov_card">
-          <div className="flex_base">
-            <div className="cc_tag">BEST SELLER</div>
-            <div className="cc_update">
-              Updated <b>{course.updatedDate}</b>
-            </div>
-          </div>
-          <div className="cc_details">
-            <div>{durationInHrs} hrs</div>
-            <div className="cc_dur">{course.level}</div>
-            <div>
-              <strong>Subtitles</strong>
-            </div>
-          </div>
-          <div className="view_cc_link">View Course Details</div>
-
-          <div className="add_btns">
-            <button
-              disabled={cartLoading}
-              onClick={() => handleAddToCart(course)}
-              className="add_to_cart_btn center"
-            >
-              {cartLoading ? <span className="spinner"></span> : 'Add To Cart'}
-            </button>
-            <div
-              className="add_to_wish center"
-              onClick={() => handleAddToWish(course)}
-            >
-              {wishLoading ? (
-                <span className="spinner"></span>
-              ) : (
-                <FontAwesomeIcon className="icon_heart" icon={faHeart} />
-              )}
-            </div>
+      
+      <div className="cc_hov_card">
+        <div className="flex_base">
+          <div className="cc_tag">BEST SELLER</div>
+          <div className="cc_update">
+            Updated <b>{course.updatedDate}</b>
           </div>
         </div>
-      </Link>
+        <div className="cc_details">
+          <div>{durationInHrs} hrs</div>
+          <div className="cc_dur">{course.level}</div>
+          <div>
+            <strong>Subtitles</strong>
+          </div>
+        </div>
+        <Link to={`/course/${course.id}`} className="view_cc_link">
+          View Course Details
+        </Link>
+
+        <div className="add_btns">
+          <button
+            disabled={cartLoading}
+            onClick={() => handleAddToCart(course)}
+            className="add_to_cart_btn center"
+          >
+            {cartLoading ? <span className="spinner"></span> : 'Add To Cart'}
+          </button>
+          <div
+            className="add_to_wish center"
+            onClick={() => handleAddToWish(course)}
+          >
+            {wishLoading ? (
+              <span className="spinner"></span>
+            ) : (
+              <FontAwesomeIcon className="cc_icon_heart" icon={faHeart} />
+            )}
+          </div>
+        </div>
+      </div>
     </article>
   );
 };

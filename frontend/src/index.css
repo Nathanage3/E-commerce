@@ -78,6 +78,7 @@ a {
   font-family: 'Kumbh Sans', sans-serif;
   background-color: rgb(255, 255, 255);
   font-size: 0.9rem;
+  position: relative;
 }
 .main_content {
   width: 100%;
@@ -88,26 +89,4 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-/* FOOTER */
-.footer {
-  width: 100%;
-  height: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--gray);
-  color: var(--white);
-  border-top: 1px solid var(--light-gray3);
-}
-.footer_links {
-  display: flex;
-  margin: 3rem 0;
-}
-.link_group {
-  flex: 1;
-  width: 300px;
-}
-.link_group ul li a {
-  color: var(--white);
 }

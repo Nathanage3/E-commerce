@@ -9,10 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import Slider from 'react-slick';
 import CourseCard from '../../components/CourseCard/CourseCard';
-import SliderArrow from '../../components/SliderArrow';
-// import { FaHeart } from 'react-icons/fa'
-import LeftArrow from '../../assets/left-arrow.svg';
-import RightArrow from '../../assets/right-arrow.svg';
+import { settings } from '../../utils/sliderSetting.jsx';
 import StarRating from '../../components/StarRating/StarRating';
 const CourseDescription = () => {
   const { id } = useParams();
@@ -47,14 +44,7 @@ const CourseDescription = () => {
     hours?.toString().padStart(2, '0') +
     '.' +
     minutes?.toString().padStart(1, '0');
-  const settings = {
-    dots: true,
-    infinite: true,
-    slidesToShow: 4,
-    slidesToScroll: 4,
-    nextArrow: <SliderArrow icon={RightArrow} />,
-    prevArrow: <SliderArrow icon={LeftArrow} />,
-  };
+
   return (
     <Layout>
       <div className="course_desc_page">
@@ -116,7 +106,7 @@ const CourseDescription = () => {
               {loading ? <span className="spinner"></span> : 'Add To Cart'}
             </button>
             <div className="desc_add_to_wish center">
-              <FontAwesomeIcon className="icon_heart" icon={faHeart} />
+              <FontAwesomeIcon className="desc_icon_heart" icon={faHeart} />
             </div>
           </div>
           <div className="desc_page_list">

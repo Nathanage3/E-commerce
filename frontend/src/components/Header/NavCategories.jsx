@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { categoriesData } from '../../fakeData';
+import { Link } from 'react-router-dom';
 
 const NavCategories = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -13,7 +14,7 @@ const NavCategories = () => {
   };
   return (
     <div
-      className="categories_nav center"
+      className="categories_nav"
       onMouseEnter={() => setIsDropdownOpen(true)}
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
@@ -27,11 +28,26 @@ const NavCategories = () => {
               onMouseEnter={() => toggleSubDropdown(id)}
               onMouseLeave={() => toggleSubDropdown(id)}
             >
-              {item.title}
+              <Link
+                className="cat_nav_link"
+                to={`/courses/${item.title}`}
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                {item.title}
+              </Link>
               {subDropdownOpen[id] && (
                 <ul className="sub_dropdown">
                   {item.sub.map((subItem, id) => (
-                    <li key={id}>{subItem.title}</li>
+                    <li key={id} className="child_category">
+                      <Link
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="sub_cat_nav_link"
+                        to={`/courses/${item.title}/${subItem.title}`}
+                      >
+                        {' '}
+                        {subItem.title}
+                      </Link>
+                    </li>
                   ))}
                 </ul>
               )}

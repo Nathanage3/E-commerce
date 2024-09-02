@@ -9,6 +9,7 @@ const AppContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [wishItems, setWishItems] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [showNav, setShowNav] = useState(false);
 
   useEffect(() => {
     const storedCart = localStorage.getItem('ecomCart');
@@ -24,8 +25,11 @@ const AppContextProvider = ({ children }) => {
   function toggleCart() {
     setShowCart(!showCart);
   }
-  function handleCloseCart() {
-    setShowCart(false);
+  function handleOpenNavbar() {
+    setShowNav(true);
+  }
+  function handleCloseNavbar() {
+    setShowNav(false);
   }
 
   const addToCart = (product) => {
@@ -74,7 +78,9 @@ const AppContextProvider = ({ children }) => {
         handleClearCart,
         showCart,
         toggleCart,
-        handleCloseCart,
+        handleCloseNavbar,
+        handleOpenNavbar,
+        showNav,
         cartItems,
         addToCart,
         removeFromCart,
