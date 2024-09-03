@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLogin } from '../../hooks/useLogin';
-import Layout from '../../components/Layout';
+// import Layout from '../../components/Layout';
 import './Auth.css';
 const Login = () => {
   const [loginForm, setLoginForm] = useState({
@@ -24,7 +24,7 @@ const Login = () => {
   };
 
   return (
-    <Layout>
+    // <Layout>
       <section className="login_page">
         <div className="login_content">
           <h2 className="form_header">Log in to your account</h2>
@@ -66,7 +66,7 @@ const Login = () => {
           </form>
         </div>
       </section>
-    </Layout>
+    // {/* </Layout> */}
   );
 };
 

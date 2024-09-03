@@ -7,22 +7,24 @@ const Footer = () => {
         <div className="link_group">
           <ul>
             <li>
-              <Link className='foot_link' to="/">Learn</Link>
+              <Link className='foot_link' to="/">Browse Courses</Link>
             </li>
             <li>
-              <Link className='foot_link' to="/sell-course">Teach</Link>
-            </li>
-
-            <li>
-              <Link className='foot_link' to="/">About us</Link>
+              <Link className='foot_link' to="/sell-course">Sell Course</Link>
             </li>
             <li>
-              <Link className='foot_link' to="/">Contact us</Link>
+              <Link className='foot_link' to="/">My courses</Link>
+            </li>
+            <li>
+              <Link className='foot_link' to="/">Wishlist</Link>
             </li>
           </ul>
         </div>
         <div className="link_group">
           <ul>
+            <li>
+              <Link className='foot_link' to="/">About us</Link>
+            </li>
             <li>
               <Link className='foot_link' to="/">Help and Support</Link>
             </li>

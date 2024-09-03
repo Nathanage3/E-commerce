@@ -1,6 +1,7 @@
-import Layout from '../../components/Layout';
+// import Layout from '../../components/Layout';
 import Banner from '../../assets/banner3.jpg';
-// import BannerSmall from '../../assets/banner3-small.jpg';
+import BannerSmall from '../../assets/banner3-small.jpg';
+import BannerMid from '../../assets/banner-medium.jpg';
 import './Home.css';
 import { courseData } from '../../fakeData';
 import CourseCard from '../../components/CourseCard/CourseCard';
@@ -39,10 +40,14 @@ const Home = () => {
     }
   }, [addedCourse]);
   return (
-    <Layout>
+    // <Layout>
       <section className="home_page">
         <div className="banner_hero">
-          <img src={Banner} alt="Start Learning" />
+          <picture>
+            <source media="(max-width: 770px)" srcSet={BannerSmall} />
+            <source media="(max-width: 1000px)" srcSet={BannerMid} />
+            <img src={Banner} alt="Learn" />
+          </picture>
           <div className="banner_float">
             <div className="home_banner_header">Start Learning Today!</div>
             <p>
@@ -122,7 +127,7 @@ const Home = () => {
           <Popup course={addedCourse} addType={addType} />
         )}
       </section>
-    </Layout>
+    // </Layout>
   );
 };
 

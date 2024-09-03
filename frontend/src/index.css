@@ -80,6 +80,10 @@ a {
   font-size: 0.9rem;
   position: relative;
 }
+.App.modal_open{
+  overflow: hidden;
+  height: 100vh;
+}
 .main_content {
   width: 100%;
   background-color: rgb(255, 255, 255);

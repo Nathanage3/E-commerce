@@ -1,11 +1,11 @@
-import Layout from '../../components/Layout';
+// import Layout from '../../components/Layout';
 import './SellCourse.css';
 
 const SellCourse = () => {
   return (
-    <Layout>
+    // <Layout>
       <div>SellCourse</div>
-    </Layout>
+    // {/* </Layout> */}
   );
 };
 

@@ -7,19 +7,22 @@ import {
   faCartShopping,
   faHeart,
   faMagnifyingGlass,
+  faRightToBracket,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
-// import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { FaBars } from 'react-icons/fa';
 import Cart from '../Cart/Cart';
 import SearchBar from './SearchBar/SearchBar';
 import NavCategories from './NavCategories';
 import { AppContext } from '../../contexts/AppContext';
 import SmallNotification from './SmallNotification';
+import WishlistDropdown from './WishlistDropdown';
 const Header = () => {
-  // const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { cartItems, handleOpenNavbar } = useContext(AppContext);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishOpen, setIsWishOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
@@ -46,7 +49,7 @@ const Header = () => {
             onMouseEnter={() => setIsCartOpen(true)}
             onMouseLeave={() => setIsCartOpen(false)}
           >
-            <Link to={'/cart'} className="center">
+            <Link to={'/cart'} className="center" title="Cart">
               <FontAwesomeIcon className="icon_cart" icon={faCartShopping} />
             </Link>
             {cartItems && (
@@ -54,48 +57,63 @@ const Header = () => {
             )}
             {isCartOpen && <Cart />}
           </div>
-          <div className="center">
-            <Link to={'/my-courses/wishlist'} className="center">
-              <FontAwesomeIcon className="icon_heart" icon={faHeart} />
-            </Link>
-          </div>
-        </div>
-        <div className="center">
-          <Link to={'/my-courses'} className="nav_link" title="My Courses">
-            My Courses
-          </Link>
-        </div>
-        <div className="always_on">
-          <div
-            className="bell_icon_wrapper center"
-            onMouseEnter={() => setIsNotificationOpen(true)}
-            onMouseLeave={() => setIsNotificationOpen(false)}
+          {isAuthenticated && <div
+            className="wishlist_nav center"
+            onMouseEnter={() => setIsWishOpen(true)}
+            onMouseLeave={() => setIsWishOpen(false)}
           >
             <Link
-              to={'/notifications'}
+              to={'/my-courses/wishlist'}
               className="center"
-              title="Notifications"
+              title="WishList"
             >
-              <FontAwesomeIcon className="icon_bell" icon={faBell} />
+              <FontAwesomeIcon className="icon_heart" icon={faHeart} />
             </Link>
-            <span className="notification_counter center">0</span>
-            {isNotificationOpen && <SmallNotification />}
-          </div>
-          <div>
-            <Link to={'/user'} className="nav_btn register">
-              <FontAwesomeIcon icon={faUser} />
-            </Link>
-          </div>
+            {isWishOpen && <WishlistDropdown />}
+          </div>}
         </div>
-        {/* <div className="nav_auth_links">
-          <Link to={'/login'} className="nav_btn login">
-            <FontAwesomeIcon className="login_icon" icon={faRightToBracket} />
-            Sign In
-          </Link>
-          <Link to={'/signup'} className="nav_btn register">
-            Register
-          </Link>
-        </div> */}
+        {isAuthenticated && (
+          <div className="center">
+            <Link to={'/my-courses'} className="nav_link" title="My Courses">
+              My Courses
+            </Link>
+          </div>
+        )}
+        {isAuthenticated && (
+          <div className="always_on">
+            <div
+              className="bell_icon_wrapper center"
+              onMouseEnter={() => setIsNotificationOpen(true)}
+              onMouseLeave={() => setIsNotificationOpen(false)}
+            >
+              <Link
+                to={'/notifications'}
+                className="center"
+                title="Notifications"
+              >
+                <FontAwesomeIcon className="icon_bell" icon={faBell} />
+              </Link>
+              <span className="notification_counter center">0</span>
+              {isNotificationOpen && <SmallNotification />}
+            </div>
+            <div>
+              <Link to={'/user'} className="nav_btn register">
+                <FontAwesomeIcon icon={faUser} />
+              </Link>
+            </div>
+          </div>
+        )}
+        {!isAuthenticated && (
+          <div className="nav_auth_links">
+            <Link to={'/login'} className="nav_btn login">
+              <FontAwesomeIcon className="login_icon" icon={faRightToBracket} />
+              Sign In
+            </Link>
+            <Link to={'/signup'} className="nav_btn register">
+              Register
+            </Link>
+          </div>
+        )}
       </div>
       <div className="on_small_screen">
         <div className="search_nav center">

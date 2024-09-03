@@ -13,7 +13,7 @@ import { settings } from '../../utils/sliderSetting.jsx';
 import StarRating from '../../components/StarRating/StarRating';
 const CourseDescription = () => {
   const { id } = useParams();
-  const { addToCart } = useContext(AppContext);
+  const { addToCart, addToWish } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [displayedCourse, setDisplayedCourse] = useState([]);
 
@@ -35,6 +35,9 @@ const CourseDescription = () => {
     }, 2000);
   };
 
+  const handleAddToWish = (course) => {
+    addToWish(course);
+  };
 
   let duration = new Date(displayedCourse.courseDuration * 1000);
   let hours = duration.getUTCHours();
@@ -140,7 +143,8 @@ const CourseDescription = () => {
           <h2 className="desc_c_header">Similar Courses</h2>
           <Slider {...settings}>
             {courseData.map((course, index) => (
-              <CourseCard key={index} course={course} />
+              <CourseCard key={index} course={course} addToCart={handleAddToCart}
+              addToWish={handleAddToWish} />
             ))}
           </Slider>
         </div>

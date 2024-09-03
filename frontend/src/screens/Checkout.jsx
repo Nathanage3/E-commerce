@@ -1,13 +1,13 @@
-import Layout from '../components/Layout';
+// import Layout from '../components/Layout';
 
 const Checkout = () => {
   return (
-    <Layout>
+    // <Layout>
       <div>
         {' '}
         <h1>Checkout page</h1>
       </div>
-    </Layout>
+    // {/* </Layout> */}
   );
 };
 
