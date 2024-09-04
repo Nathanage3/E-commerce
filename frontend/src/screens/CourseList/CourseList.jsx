@@ -1,10 +1,11 @@
 import Slider from 'react-slick';
-import CourseCard from '../components/CourseCard/CourseCard';
-import { courseData } from '../fakeData';
-import { settings } from '../utils/sliderSetting';
+import CourseCard from '../../components/CourseCard/CourseCard';
+import { courseData } from '../../fakeData';
+import { settings } from '../../utils/sliderSetting';
 import { useContext } from 'react';
-import { AppContext } from '../contexts/AppContext';
+import { AppContext } from '../../contexts/AppContext';
 import { Outlet } from 'react-router-dom';
+import './CourseList.css';
 const CourseList = () => {
   const { addToCart, addToWish } = useContext(AppContext);
   const handleAddToCart = (course) => {

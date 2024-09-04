@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import './Cart.css';
 import { AppContext } from '../../contexts/AppContext';
 import { Link } from 'react-router-dom';
-import CartItems from './CartItems';
+import Items from './Items';
 
 const Cart = () => {
   const { cartItems } = useContext(AppContext);
@@ -16,7 +16,7 @@ const Cart = () => {
           (cartItems.length < 1 && (
             <span className="empty_cart_txt">Your cart is empty</span>
           ))}
-        {cartItems && cartItems.length > 0 && <CartItems items={cartItems} itemType='cart'  />}
+        {cartItems && cartItems.length > 0 && <Items items={cartItems} itemType='cart'  />}
        
       </div>
 

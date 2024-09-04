@@ -1,10 +1,10 @@
-/* eslint-disable react/prop-types */
 import './StarRating.css';
+import PropTypes from 'prop-types';
 import { FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import { AiOutlineStar } from 'react-icons/ai';
 const StarRating = ({ rating }) => {
   const ratingStar = Array.from({ length: 5 }, (_, index) => {
-    const number = index + 1; 
+    const number = index + 1;
 
     return (
       <span key={index}>
@@ -21,5 +21,7 @@ const StarRating = ({ rating }) => {
 
   return <div className="star-rating">{ratingStar}</div>;
 };
-
+StarRating.propTypes = {
+  rating: PropTypes.number,
+};
 export default StarRating;

@@ -5,7 +5,7 @@ import { categoriesData } from '../../fakeData';
 import { useContext } from 'react';
 import { AppContext } from '../../contexts/AppContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+import { faRightToBracket, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../hooks/useAuth';
 
 const SideNav = () => {
@@ -36,6 +36,20 @@ const SideNav = () => {
             </Link>
           </div>
         )}
+        <Link
+          to={'/user'}
+          className="side_nav_user_p"
+          onClick={handleCloseNavbar}
+        >
+          <div className="side_nav_user_btn center">
+            <div className="center">
+              <FontAwesomeIcon icon={faUser} className="icon_avatar" />
+            </div>
+          </div>
+          <div className="">
+            <div className="user_name">User name</div>
+          </div>
+        </Link>
         <div className="side_nav_header">Popular categoires</div>
         <ul className="side_nav_cats">
           {categoriesData.map((item, id) => (
@@ -68,21 +82,25 @@ const SideNav = () => {
             Sell Courses
           </Link>
 
-          <Link
-            onClick={handleCloseNavbar}
-            to={'/my-courses'}
-            className="side_nav_link"
-            title="My Courses"
-          >
-            My Courses
-          </Link>
-          <Link
-            onClick={handleCloseNavbar}
-            to={'/my-courses/wishlist'}
-            className="side_nav_link"
-          >
-            Wishlist
-          </Link>
+          {isAuthenticated && (
+            <>
+              <Link
+                onClick={handleCloseNavbar}
+                to={'/my-courses'}
+                className="side_nav_link"
+                title="My Courses"
+              >
+                My Courses
+              </Link>
+              <Link
+                onClick={handleCloseNavbar}
+                to={'/my-courses/wishlist'}
+                className="side_nav_link"
+              >
+                Wishlist
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

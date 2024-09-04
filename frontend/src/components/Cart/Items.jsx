@@ -1,16 +1,21 @@
-/* eslint-disable react/prop-types */
 import { useContext } from 'react';
 import { AppContext } from '../../contexts/AppContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
 
-const CartItems = ({ items, itemType }) => {
-  const { cartItems, removeFromCart, removeFromWish } = useContext(AppContext);
+const Items = ({ items, itemType }) => {
+  const { cartItems, removeFromCart, removeFromWish, addToCart } =
+    useContext(AppContext);
   const handleRemoveFromCart = (id) => {
     removeFromCart(id);
   };
   const handleRemoveFromWish = (id) => {
     removeFromWish(id);
+  };
+  const handleFromWishToCart = (item) => {
+    handleRemoveFromWish(item.id);
+    addToCart(item);
   };
   const calculateTotal = () => {
     let total = 0;
@@ -46,7 +51,14 @@ const CartItems = ({ items, itemType }) => {
                 <FontAwesomeIcon className="icon_trash" icon={faXmark} />
               </button>
             </li>
-            {itemType === 'wish' && <button className='wl_dd_atc_btn'>Add to cart</button>}
+            {itemType === 'wish' && (
+              <button
+                onClick={() => handleFromWishToCart(item)}
+                className="wl_dd_atc_btn"
+              >
+                Add to cart
+              </button>
+            )}
           </div>
         ))}
       </ul>
@@ -58,5 +70,8 @@ const CartItems = ({ items, itemType }) => {
     </>
   );
 };
-
-export default CartItems;
+Items.propTypes = {
+  items: PropTypes.array,
+  itemType: PropTypes.string,
+};
+export default Items;

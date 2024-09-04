@@ -3,23 +3,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import './SearchBar.css';
 import { useNavigate } from 'react-router-dom';
-const SearchBar = () => {
+import PropTypes from 'prop-types';
+const SearchBar = ({ show }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleSearch(searchTerm);
+    if (e.target.value !== '') {
+      handleSearch(searchTerm);
+    }
   };
   const handleSearch = (searchTerm) => {
-    // Redirect to the search results page with query parameters
     navigate(`/courses/search?q=${encodeURIComponent(searchTerm)}`);
   };
   return (
-    <div className="search_bar">
+    <div className={`${show ? 'sm_scrn_search' : 'search_bar'}`}>
       <form className="search_form" onSubmit={handleSubmit}>
-        <button type="submit" className="search_icon center">
-          <FontAwesomeIcon className="icon" icon={faMagnifyingGlass} />
-        </button>
         <input
           type="text"
           placeholder="Search for Anything . . ."
@@ -28,9 +27,14 @@ const SearchBar = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           value={searchTerm}
         />
+        <button type="submit" className="search_icon center">
+          <FontAwesomeIcon className="icon" icon={faMagnifyingGlass} />
+        </button>
       </form>
     </div>
   );
 };
-
+SearchBar.propTypes = {
+  show: PropTypes.bool,
+};
 export default SearchBar;

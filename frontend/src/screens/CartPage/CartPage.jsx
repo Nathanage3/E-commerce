@@ -1,6 +1,5 @@
 import { useContext } from 'react';
-import CartItems from '../../components/Cart/CartItems';
-// import Layout from '../../components/Layout';
+import Items from '../../components/Cart/Items';
 import { AppContext } from '../../contexts/AppContext';
 import './CartPage.css';
 import { Link } from 'react-router-dom';
@@ -13,7 +12,6 @@ const CartPage = () => {
   const { addToCart, addToWish } = useContext(AppContext);
 
   return (
-    // <Layout>
       <div className="cart_page">
         <h1 className="cart_page_header">Shopping Cart</h1>
 
@@ -23,7 +21,7 @@ const CartPage = () => {
               {cartItems.length}
               {cartItems.length > 1 ? ' Courses' : ' Course'} in cart
             </div>
-            <CartItems items={cartItems} itemType='cart' />
+            <Items items={cartItems} itemType='cart' />
             {cartItems.length > 0 ? (
               <Link to={'/checkout'} className="checkout_link">
                 Checkout
@@ -45,7 +43,6 @@ const CartPage = () => {
           </div>
         </div>
       </div>
-    //</Layout>
   );
 };
 

@@ -8,7 +8,10 @@ const SearchResult = () => {
 
   return (
     <div className="sr_page">
+      <div className="sr_page_content">
       <h1>Search Results for: {searchTerm}</h1>
+
+      </div>
     </div>
   );
 };

@@ -1,11 +1,14 @@
-/* eslint-disable react/prop-types */
 import { Link } from 'react-router-dom';
 import './CourseCard.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import StarRating from '../StarRating/StarRating';
-const CourseCard = ({ course, addToCart, addToWish }) => {
+import { AppContext } from '../../contexts/AppContext';
+import PropTypes from 'prop-types';
+const CourseCard = ({ course }) => {
+  const { addToCart, addToWish } = useContext(AppContext);
+
   const [cartLoading, setCartLoading] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
 
@@ -38,31 +41,31 @@ const CourseCard = ({ course, addToCart, addToWish }) => {
         <div className="course_img">
           <img src={course.img} alt="course thumbnail" className="" />
         </div>
-        </Link>
-        <div className="course_card_body">
-          <div className="cc_ttl">{course.title}</div>
-          <div className="cc_sub_ttl">{course.subTitle}</div>
-          <div className="cc_stats">
-            <StarRating rating={course.stars} />
-            <div className="cc_rate_count">({course.ratingCount})</div>
-          </div>
-          <div className="cc_pricing">
-            <span className="cc_price">
-              {new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-              }).format(course.price)}
-            </span>
-            <span className="cc_old_price">
-              {new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-              }).format(course.oldPrice)}
-            </span>
-          </div>
-          <div className="cc_tag">BEST SELLER</div>
+      </Link>
+      <div className="course_card_body">
+        <div className="cc_ttl">{course.title}</div>
+        <div className="cc_sub_ttl">{course.subTitle}</div>
+        <div className="cc_stats">
+          <StarRating rating={course.stars} />
+          <div className="cc_rate_count">({course.ratingCount})</div>
         </div>
-      
+        <div className="cc_pricing">
+          <span className="cc_price">
+            {new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+            }).format(course.price)}
+          </span>
+          <span className="cc_old_price">
+            {new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+            }).format(course.oldPrice)}
+          </span>
+        </div>
+        <div className="cc_tag">BEST SELLER</div>
+      </div>
+
       <div className="cc_hov_card">
         <div className="flex_base">
           <div className="cc_tag">BEST SELLER</div>
@@ -104,5 +107,7 @@ const CourseCard = ({ course, addToCart, addToWish }) => {
     </article>
   );
 };
-
+CourseCard.propTypes = {
+  course: PropTypes.object.isRequired,
+};
 export default CourseCard;

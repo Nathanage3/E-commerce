@@ -53,6 +53,7 @@
 }
 .cc_wl_item{
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -70,11 +71,10 @@
   border: 1px solid transparent;
   outline: none;
   transition: 0.3s ease-in-out;
-  z-index: 2;
 }
 .cart_item {
   width: 100%;
-  height: 60px;
+  height: auto;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -98,7 +98,7 @@
 } */
 .item_image {
   width: 20%;
-  height: 100%;
+  height: 80px;
   padding: 5px;
 }
 .item_image img {

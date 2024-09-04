@@ -1,9 +1,9 @@
-/* eslint-disable react/prop-types */
 import { createContext, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export const AuthContextProvider = ({ children }) => {
+const AuthContextProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const [user, setUser] = useState(null);
@@ -45,3 +45,7 @@ export const AuthContextProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+AuthContextProvider.propTypes = {
+  children: PropTypes.node,
+};
+export { AuthContextProvider, AuthContext };

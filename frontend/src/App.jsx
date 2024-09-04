@@ -1,49 +1,24 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import Home from './screens/Home/Home';
-import CourseList from './screens/CourseList';
-import Login from './screens/AuthPages/Login';
-import Signup from './screens/AuthPages/Signup';
-import CourseDescription from './screens/CourseDescription/CourseDescription';
-import CartPage from './screens/CartPage/CartPage';
-import Checkout from './screens/Checkout';
-import Notifications from './screens/Notifications/Notifications';
-import MyCourses from './screens/MyCourses/MyCourses';
-import AllCourses from './screens/MyCourses/AllCourses';
-import Wishlist from './screens/MyCourses/Wishlist';
-import CourseCategory from './screens/CourseCategory/CourseCategory';
+import { Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
-import CourseSubCategory from './screens/CourseCategory/CourseSubCategory';
-import SellCourse from './screens/SellCourse/SellCourse';
-import SearchResult from './screens/SearchResult/SearchResult';
-import UserProfile from './screens/UserProfile/UserProfile';
+import routes from './routes.jsx';
+import ScrollToTop from './utils/scrollToTop.js';
 
 function App() {
   return (
     <Layout>
+      <ScrollToTop /> 
       <Routes>
-        <Route exact path="/" element={<Home />} />
-        <Route path="/courses" element={<CourseList />}>
-          <Route path=":category" element={<CourseCategory />} />
-          <Route
-            path=":category/:subCategory"
-            element={<CourseSubCategory />}
-          />
-          <Route path="search" element={<SearchResult />} />
-        </Route>
-        <Route path="/course/:id" element={<CourseDescription />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/sell-course" element={<SellCourse />} />
-
-        <Route path="/my-courses" element={<MyCourses />}>
-          <Route index element={<Navigate to="learning" replace />} />
-          <Route path="learning" element={<AllCourses />} />
-          <Route path="wishlist" element={<Wishlist />} />
-        </Route>
-        <Route path="/user" element={<UserProfile />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        {routes.map((route, index) =>
+          route.children ? (
+            <Route key={index} path={route.path} element={route.element}>
+              {route.children.map((child, childIndex) => (
+                <Route key={childIndex} {...child} />
+              ))}
+            </Route>
+          ) : (
+            <Route key={index} {...route} />
+          )
+        )}
       </Routes>
     </Layout>
   );

@@ -18,10 +18,12 @@ import NavCategories from './NavCategories';
 import { AppContext } from '../../contexts/AppContext';
 import SmallNotification from './SmallNotification';
 import WishlistDropdown from './WishlistDropdown';
+import { MdClose } from 'react-icons/md';
 const Header = () => {
   const { isAuthenticated } = useAuth();
   const { cartItems, handleOpenNavbar } = useContext(AppContext);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isWishOpen, setIsWishOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -57,20 +59,22 @@ const Header = () => {
             )}
             {isCartOpen && <Cart />}
           </div>
-          {isAuthenticated && <div
-            className="wishlist_nav center"
-            onMouseEnter={() => setIsWishOpen(true)}
-            onMouseLeave={() => setIsWishOpen(false)}
-          >
-            <Link
-              to={'/my-courses/wishlist'}
-              className="center"
-              title="WishList"
+          {isAuthenticated && (
+            <div
+              className="wishlist_nav center"
+              onMouseEnter={() => setIsWishOpen(true)}
+              onMouseLeave={() => setIsWishOpen(false)}
             >
-              <FontAwesomeIcon className="icon_heart" icon={faHeart} />
-            </Link>
-            {isWishOpen && <WishlistDropdown />}
-          </div>}
+              <Link
+                to={'/my-courses/wishlist'}
+                className="center"
+                title="WishList"
+              >
+                <FontAwesomeIcon className="icon_heart" icon={faHeart} />
+              </Link>
+              {isWishOpen && <WishlistDropdown />}
+            </div>
+          )}
         </div>
         {isAuthenticated && (
           <div className="center">
@@ -96,9 +100,9 @@ const Header = () => {
               <span className="notification_counter center">0</span>
               {isNotificationOpen && <SmallNotification />}
             </div>
-            <div>
-              <Link to={'/user'} className="nav_btn register">
-                <FontAwesomeIcon icon={faUser} />
+            <div className="nav_user_btn center">
+              <Link to={'/user'} className='center' >
+                <FontAwesomeIcon icon={faUser} className='icon_avatar' />
               </Link>
             </div>
           </div>
@@ -116,9 +120,21 @@ const Header = () => {
         )}
       </div>
       <div className="on_small_screen">
-        <div className="search_nav center">
-          <FontAwesomeIcon className="icon" icon={faMagnifyingGlass} />
-        </div>
+        {isSearchOpen ? (
+          <button
+            onClick={() => setIsSearchOpen(false)}
+            className="sm_scrn_close_srch_btn center"
+          >
+            <MdClose className="icon_close_srch" />
+          </button>
+        ) : (
+          <div
+            className="search_nav center"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <FontAwesomeIcon className="icon_search" icon={faMagnifyingGlass} />
+          </div>
+        )}
 
         <div className="cart_nav center">
           <Link to={'/cart'} className="center">
@@ -129,6 +145,7 @@ const Header = () => {
           )}
         </div>
       </div>
+      {isSearchOpen && <SearchBar show={true} />}
     </header>
   );
 };

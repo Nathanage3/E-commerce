@@ -1,6 +1,6 @@
-/* eslint-disable react/prop-types */
 import { Link } from 'react-router-dom';
 import './Popup.css';
+import PropTypes  from 'prop-types';
 
 const Popup = ({ course, addType }) => {
   const { img, title, price } = course;
@@ -31,5 +31,8 @@ const Popup = ({ course, addType }) => {
     </div>
   );
 };
-
+Popup.propTypes = {
+  course: PropTypes.object.isRequired,
+  addType: PropTypes.string.isRequired,
+};
 export default Popup;

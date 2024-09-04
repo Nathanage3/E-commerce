@@ -1,6 +1,6 @@
-/* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
+import PropTypes from 'prop-types';
 
 const AppContext = createContext();
 
@@ -10,7 +10,9 @@ const AppContextProvider = ({ children }) => {
   const [wishItems, setWishItems] = useState([]);
   const [showCart, setShowCart] = useState(false);
   const [showNav, setShowNav] = useState(false);
-
+  const [showPopup, setShowPopup] = useState(false);
+  const [addedCourse, setAddedCourse] = useState(null);
+  const [popupType, setPopupType] = useState('');
   useEffect(() => {
     const storedCart = localStorage.getItem('ecomCart');
     const storedWish = localStorage.getItem('ecomWish');
@@ -31,8 +33,27 @@ const AppContextProvider = ({ children }) => {
   function handleCloseNavbar() {
     setShowNav(false);
   }
+  function displayPopup(type, course) {
+    setPopupType(type);
+    setShowPopup(true);
+    setAddedCourse(course);
+  }
+
+  const POPUP_TIMEOUT = 2000;
+
+  useEffect(() => {
+    if (addedCourse) {
+      const timeout = setTimeout(() => {
+        setShowPopup(false);
+        setPopupType('');
+        setAddedCourse(null);
+      }, POPUP_TIMEOUT);
+      return () => clearTimeout(timeout);
+    }
+  }, [addedCourse]);
 
   const addToCart = (product) => {
+    displayPopup('cart', product);
     const existsInCart = cartItems.find((item) => item.id === product.id);
     if (existsInCart) {
       return;
@@ -44,6 +65,7 @@ const AppContextProvider = ({ children }) => {
     }
   };
   const addToWish = (product) => {
+    displayPopup('wish', product);
     const existsInWish = wishItems.find((item) => item.id === product.id);
     if (existsInWish) {
       return;
@@ -87,11 +109,17 @@ const AppContextProvider = ({ children }) => {
         addToWish,
         removeFromWish,
         wishItems,
+        popupType,
+        displayPopup,
+        showPopup,
+        addedCourse,
       }}
     >
       {children}
     </AppContext.Provider>
   );
 };
-
+AppContextProvider.propTypes = {
+  children: PropTypes.node,
+};
 export { AppContextProvider, AppContext };
