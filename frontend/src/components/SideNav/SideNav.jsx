@@ -50,6 +50,7 @@ const SideNav = () => {
             <div className="user_name">User name</div>
           </div>
         </Link>
+
         <div className="side_nav_header">Popular categoires</div>
         <ul className="side_nav_cats">
           {categoriesData.map((item, id) => (

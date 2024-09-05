@@ -13,6 +13,11 @@ const AppContextProvider = ({ children }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [addedCourse, setAddedCourse] = useState(null);
   const [popupType, setPopupType] = useState('');
+  const [isUserDropDownOpen, setIsUserDropDownOpen] = useState(false);
+
+  const toggleUserDropdown = () => {
+    setIsUserDropDownOpen(!isUserDropDownOpen);
+  };
   useEffect(() => {
     const storedCart = localStorage.getItem('ecomCart');
     const storedWish = localStorage.getItem('ecomWish');
@@ -113,6 +118,8 @@ const AppContextProvider = ({ children }) => {
         displayPopup,
         showPopup,
         addedCourse,
+        toggleUserDropdown,
+        isUserDropDownOpen,
       }}
     >
       {children}

@@ -36,7 +36,6 @@ const AuthContextProvider = ({ children }) => {
         logout,
         user,
         isAuthenticated,
-
         connect,
         isLoggedIn,
       }}

@@ -1,9 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
-// import Layout from '../../components/Layout';
 import './MyCourses.css';
 const MyCourses = () => {
   return (
-    // <Layout>
       <div className="my_courses_page">
         <div className="mcp_header">
           <h1 className="mcp_heading">My learning</h1>
@@ -28,7 +26,6 @@ const MyCourses = () => {
         </div>
         <Outlet />
       </div>
-    //</Layout>
   );
 };
 

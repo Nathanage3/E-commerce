@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useSignup } from '../../hooks/useSignup';
-// import Layout from '../../components/Layout';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -44,7 +43,6 @@ const Signup = () => {
   };
   
   return (
-    // <Layout>
       <section className="register_page">
         <div className="register_content">
           <h2 className="form_header">Sign Up</h2>
@@ -126,7 +124,6 @@ const Signup = () => {
           </form>
         </div>
       </section>
-    // {/* </Layout> */}
   );
 };
 

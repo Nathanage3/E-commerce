@@ -12,9 +12,9 @@ import SellCourse from './screens/SellCourse/SellCourse';
 import MyCourses from './screens/MyCourses/MyCourses';
 import AllCourses from './screens/MyCourses/AllCourses';
 import Wishlist from './screens/MyCourses/Wishlist';
-import UserProfile from './screens/UserProfile/UserProfile';
 import Login from './screens/AuthPages/Login';
 import Signup from './screens/AuthPages/Signup';
+import UserAccount from './screens/UserAccount/UserAccount';
 
 const routes = [
   { path: '/', element: <Home /> },
@@ -41,7 +41,7 @@ const routes = [
       { path: 'wishlist', element: <Wishlist /> },
     ],
   },
-  { path: '/user', element: <UserProfile /> },
+  { path: '/user', element: <UserAccount /> },
   { path: '/login', element: <Login /> },
   { path: '/signup', element: <Signup /> },
 ];
