@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Cart, CartItem
-from courses.models import Course
+from courses.models import Course, Collection
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
@@ -8,16 +8,13 @@ class SimpleCourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = ['id', 'title', 'price']
 
+
 class CartItemSerializer(serializers.ModelSerializer):
     course = SimpleCourseSerializer()
-    price = serializers.SerializerMethodField()
-
+   
     class Meta:
         model = CartItem
-        fields = ['id', 'course', 'price']
-    
-    def get_total_price(self, item: CartItem):
-        return item.course.price
+        fields = ['id', 'course']
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -30,7 +27,7 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ['id', 'created_at', 'items', 'total_price']
 
     def get_total_price(self, cart: Cart):
-        return [item.course.price for item in cart.items.all()]
+        return sum([item.course.price for item in cart.items.all()])
 
 class AddCartItemSerializer(serializers.ModelSerializer):
     class Meta:

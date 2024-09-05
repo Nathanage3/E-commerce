@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Collection, Promotion, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, CourseImage
 
+
 class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
@@ -14,25 +15,56 @@ class CollectionSerializer(serializers.ModelSerializer):
         model = Collection
         fields = ['id', 'title', 'courses_count']
 
+
+class CourseImageSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        course_id = self.context['course_id']
+        return CourseImage.objects.create(course_id=course_id, **validated_data)
+
+    class Meta:
+        model = CourseImage
+        fields = ['id', 'course', 'video', 'image']
+
+
 class CourseSerializer(serializers.ModelSerializer):
     collection = CollectionSerializer(read_only=True)
+    instructor = serializers.StringRelatedField()
+    images = CourseImageSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'description', 'price', 'rating',
+        'instructor', 'syllabus', 'prerequisites',
+        'collection', 'images'
+        ]
+
+
+class SimpleCourseSerializer(serializers.ModelSerializer):
     instructor = serializers.StringRelatedField()
 
     class Meta:
         model = Course
         fields = ['id', 'title', 'description', 'price', 'rating',
-        'instructor', 'syllabus', 'prerequisites',
-        'collection']
+        'instructor']
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
-    course = serializers.StringRelatedField()
-    student = serializers.StringRelatedField()
+    course_id = serializers.IntegerField(write_only=True)
+    student_id = serializers.IntegerField()
 
     class Meta:
         model = CourseProgress
-        fields = ['id', 'student', 'course', 'completed', 'progress',
-        'last_accessed']
+        fields = ['id', 'student_id', 'course_id', 'completed', 'progress', 'last_accessed']
+
+    def create(self, validated_data):
+        course_id = validated_data.pop('course_id')
+        student_id = validated_data.pop('student_id')
+        course_progress = CourseProgress.objects.create(
+            course_id=course_id, 
+            student_id=student_id,
+            **validated_data
+            )
+        return course_progress
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -40,7 +72,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'course', 'rating', 'comment', 'created_at']
+        fields = ['id', 'name', 'course', 'rating', 'comment', 'created_at']
 
     def create(self, validated_data):
         course_id = self.context['course_id']
@@ -48,7 +80,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    #user = serializers.StringRelatedField()
     user_id = serializers.IntegerField()
 
     class Meta:
@@ -57,23 +88,8 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class InstructorEarningsSerializer(serializers.ModelSerializer):
-    #instructor = serializers.StringRelatedField()
     instructor_id = serializers.IntegerField()
 
     class Meta:
         model = InstructorEarnings
         fields = ['id', 'instructor_id', 'total_earnings', 'last_payout']
-
-
-class CourseImageSerializer(serializers.ModelSerializer):
-    course = serializers.StringRelatedField()
-
-    class Meta:
-        model = CourseImage
-        fields = ['id', 'course', 'video']
-
-
-class InstructorEarningsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InstructorEarnings
-        fields = ['id', 'instructor', 'total_earnings', 'last_payout']

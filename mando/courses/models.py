@@ -2,6 +2,7 @@ from django.contrib import admin
 from decimal import Decimal
 from django.core.validators import MinValueValidator, FileExtensionValidator, \
     MaxValueValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 
@@ -54,18 +55,24 @@ class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='progress')
     completed = models.BooleanField(default=False)
-    progress = models.FloatField(default=0.0)  # percentage of course completed
+    progress = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # percentage of course completed
     last_accessed = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.student.username} - {self.course.title}'
+    
+    def save(self, *args, **kwargs):
+        # If progress is 100%, mark completed as True
+        if self.progress >= 100.0:
+            self.completed = True
+        super().save(*args, **kwargs)
 
 
 class Review(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='reviews')
     rating = models.IntegerField()
     comment = models.TextField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -120,7 +127,15 @@ class InstructorEarnings(models.Model):
 class CourseImage(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='course/images', blank=True, null=True)
-    video = models.FileField(upload_to='course/videos', blank=True, null=True)
+    video = models.FileField(upload_to='course/videos', blank=True, null=True,
+                             validators=[FileExtensionValidator(allowed_extensions=['mp4', 'pdf'])])
+    
+    class Meta:
+        unique_together = ['video']
+    
+    def clean(self):
+        if CourseImage.objects.filter(video=self.video).exists():
+            raise ValidationError("This video file already exists.")
 
     def __str__(self):
         return f'Video for {self.course.title}'

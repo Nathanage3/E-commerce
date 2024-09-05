@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'mando.urls'
 INTERNAL_IPS = ["127.0.0.1"]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Add your frontend URL here
+    "http://localhost:5173",  # Add your frontend URL here
 ]
 
 TEMPLATES = [

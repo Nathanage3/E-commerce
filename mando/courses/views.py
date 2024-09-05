@@ -1,7 +1,8 @@
 from django.db.models import OuterRef, Subquery
 from django.db.models.aggregates import Count
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress
@@ -42,7 +43,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
     search_fields = ['title']
-    ordering_fields = ['price', 'last_update', 'rating']
+    ordering_fields = ['price', 'last_update', 'rating', 'id']
 
     http_method_names = ['get', 'post', 'delete', 'put'] # CRUD
     def get_serializer_context(self):
@@ -75,12 +76,13 @@ class PromotionViewSet(viewsets.ModelViewSet):
 
 class CourseImageViewSet(viewsets.ModelViewSet):
     serializer_class = CourseImageSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         return {'course_id': self.kwargs['course_pk']}
 
     def get_queryset(self):
-        CourseImage.objects.filter(course_id=self.kwargs['course_pk'])
+        return CourseImage.objects.filter(course_id=self.kwargs['course_pk'])
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -91,11 +93,56 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Review.objects.filter(course_id=self.kwargs['course_pk'])
 
-    
+
 class CourseProgressViewSet(viewsets.ModelViewSet):
-    queryset = CourseProgress.objects.select_related('course').all()
+    """
+    A viewset for viewing and editing course progress instances.
+    """
+    queryset = CourseProgress.objects.prefetch_related('student').select_related('course').all()
     serializer_class = CourseProgressSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+    def perform_create(self, serializer):
+        """
+        Custom create method to handle additional logic when a new course progress is created.
+        """
+        serializer.save()
+
+    def update(self, request, *args, **kwargs):
+        """
+        Custom update method to handle progress updates.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # Calculate progress based on the number of videos watched
+        videos_watched = request.data.get('videos_watched')
+        if videos_watched is not None:
+            total_videos = CourseImage.objects.filter(course=instance.course).count()
+            progress = (videos_watched / total_videos) * 100
+            instance.progress = progress
+
+        # Save and automatically set 'completed' if progress is 100%
+        instance.save()
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        """
+        Custom perform_update method to handle additional logic during updates.
+        """
+        serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Custom destroy method to handle deletion of course progress.
+        """
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class InstructorEarningsViewSet(viewsets.ModelViewSet):

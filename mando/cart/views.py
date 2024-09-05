@@ -3,6 +3,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyM
 from .models import Cart, CartItem
 from .serializers import CartSerializer, AddCartItemSerializer, CartItemSerializer
 
+
 class CartViewSet(CreateModelMixin,
                   RetrieveModelMixin,
                   DestroyModelMixin,
