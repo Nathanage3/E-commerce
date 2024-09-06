@@ -18,5 +18,6 @@ Pipfile.lock
 media/course/images/*
 media/course/videos/*
 media/profile_pictures/*
-media/*.jpg
-media/*.png
+media/*jpg
+media/*png
+media/
