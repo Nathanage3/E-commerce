@@ -9,7 +9,7 @@ const UserAccount = () => {
         <nav className="usr_acc_nav">
           <NavLink
             className={({ isActive }) =>
-              isActive ? 'active_link usr_acc_link' : 'usr_acc_link'
+              isActive ? 'ua_active_link usr_acc_link' : 'usr_acc_link'
             }
             to="/user/profile"
           >
@@ -17,7 +17,7 @@ const UserAccount = () => {
           </NavLink>
           <NavLink
             className={({ isActive }) =>
-              isActive ? 'active_link usr_acc_link' : 'usr_acc_link'
+              isActive ? 'ua_active_link usr_acc_link' : 'usr_acc_link'
             }
             to="/user/photo"
           >

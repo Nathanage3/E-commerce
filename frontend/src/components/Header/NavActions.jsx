@@ -22,67 +22,67 @@ const NavActions = () => {
   const [isCartOpen, toggleCart] = useDropdown();
   const [isWishOpen, toggleWish] = useDropdown();
   const [isNotificationOpen, toggleNotification] = useDropdown();
-  
+
   return (
-      <div className="nav_right">
-        <div className="always_on">
-          <div className="sell_nav">
-            <Link className="nav_link" to={'/sell-course'}>
-              Sell Courses
-            </Link>
-          </div>
-          <DropDownWrapper
-            isOpen={isCartOpen}
-            toggleDropdown={toggleCart}
-            title="Cart"
-            icon={faCartShopping}
-            link="/cart"
-          >
-            {cartItems && (
-              <span className="cart_counter center">{cartItems.length}</span>
-            )}
-            {isCartOpen && <Cart />}
-          </DropDownWrapper>
-          {isAuthenticated && (
-            <DropDownWrapper
-              isOpen={isWishOpen}
-              toggleDropdown={toggleWish}
-              title="Wishlist"
-              icon={faHeart}
-              link="/my-courses/wishlist"
-            >
-              {isWishOpen && <WishlistDropdown />}
-            </DropDownWrapper>
-          )}
+    <div className="nav_right">
+      <div className="always_on">
+        <div className="sell_nav">
+          <Link className="nav_link" to={'/instructor'}>
+            Instructor
+          </Link>
         </div>
+        <DropDownWrapper
+          isOpen={isCartOpen}
+          toggleDropdown={toggleCart}
+          title="Cart"
+          icon={faCartShopping}
+          link="/cart"
+        >
+          {cartItems && (
+            <span className="cart_counter center">{cartItems.length}</span>
+          )}
+          {isCartOpen && <Cart />}
+        </DropDownWrapper>
         {isAuthenticated && (
-          <div className="center">
-            <Link to={'/my-courses'} className="nav_link" title="My Courses">
-              My Courses
-            </Link>
-          </div>
+          <DropDownWrapper
+            isOpen={isWishOpen}
+            toggleDropdown={toggleWish}
+            title="Wishlist"
+            icon={faHeart}
+            link="/my-courses/wishlist"
+          >
+            {isWishOpen && <WishlistDropdown />}
+          </DropDownWrapper>
         )}
-        {isAuthenticated && (
-          <div className="always_on">
-            <DropDownWrapper
-              isOpen={isNotificationOpen}
-              toggleDropdown={toggleNotification}
-              title="Notifications"
-              icon={faBell}
-              link="/notifications"
-            >
-              <span className="notification_counter center">0</span>
-              {isNotificationOpen && <SmallNotification />}
-            </DropDownWrapper>
-            <div onClick={toggleUserDropdown} className="nav_user_btn center">
-              <div className="center">
-                <FontAwesomeIcon icon={faUser} className="icon_avatar" />
-              </div>
+      </div>
+      {isAuthenticated && (
+        <div className="center">
+          <Link to={'/my-courses'} className="nav_link" title="My Courses">
+            My Courses
+          </Link>
+        </div>
+      )}
+      {isAuthenticated && (
+        <div className="always_on">
+          <DropDownWrapper
+            isOpen={isNotificationOpen}
+            toggleDropdown={toggleNotification}
+            title="Notifications"
+            icon={faBell}
+            link="/notifications"
+          >
+            <span className="notification_counter center">0</span>
+            {isNotificationOpen && <SmallNotification />}
+          </DropDownWrapper>
+          <div onClick={toggleUserDropdown} className="nav_user_btn center">
+            <div className="center">
+              <FontAwesomeIcon icon={faUser} className="icon_avatar" />
             </div>
           </div>
-        )}
-        {!isAuthenticated && <NavAuthLinks />}
-      </div>
+        </div>
+      )}
+      {!isAuthenticated && <NavAuthLinks />}
+    </div>
   );
 };
 

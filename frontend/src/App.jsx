@@ -10,7 +10,7 @@ import CourseDescription from './screens/CourseDescription/CourseDescription';
 import CartPage from './screens/CartPage/CartPage';
 import Checkout from './screens/Checkout';
 import Notifications from './screens/Notifications/Notifications';
-import SellCourse from './screens/SellCourse/SellCourse';
+import SellCourse from './screens/Instructor/SellCourse/SellCourse.jsx';
 import MyCourses from './screens/MyCourses/MyCourses';
 import AllCourses from './screens/MyCourses/AllCourses';
 import Wishlist from './screens/MyCourses/Wishlist';
@@ -20,13 +20,14 @@ import UserAccount from './screens/UserAccount/UserAccount';
 import ScrollToTop from './utils/scrollToTop.js';
 import UserInfo from './screens/UserAccount/UserInfo.jsx';
 import UserPhoto from './screens/UserAccount/UserPhoto.jsx';
+import Instructor from './screens/Instructor/Instructor.jsx';
+import UploadedCourses from './screens/Instructor/UploadedCourses/UploadedCourses.jsx';
 
 function App() {
   return (
     <Layout>
       <ScrollToTop />
       <Routes>
-      
         <Route exact path="/" element={<Home />} />
         <Route path="/courses" element={<CourseList />}>
           <Route path=":category" element={<CourseCategory />} />
@@ -40,11 +41,10 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/notifications" element={<Notifications />} />
-
-        <Route path="/sell-course" element={<SellCourse />}>
-          <Route index element={<Navigate to="step-1" replace />} />
-          <Route path="step-2" element={<AllCourses />} />
-          <Route path="step-3" element={<Wishlist />} />
+        <Route path="/instructor" element={<Instructor />}>
+          <Route index element={<Navigate to="uploaded-courses" replace />} />
+          <Route path="uploaded-courses" element={<UploadedCourses />} />
+          <Route path="create-new-course" element={<SellCourse />} />
         </Route>
         <Route path="/my-courses" element={<MyCourses />}>
           <Route index element={<Navigate to="learning" replace />} />
@@ -58,8 +58,6 @@ function App() {
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
-
       </Routes>
     </Layout>
   );

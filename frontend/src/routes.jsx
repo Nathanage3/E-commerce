@@ -31,7 +31,7 @@ const routes = [
   { path: '/cart', element: <CartPage /> },
   { path: '/checkout', element: <Checkout /> },
   { path: '/notifications', element: <Notifications /> },
-  { path: '/sell-course', element: <SellCourse /> },
+  { path: '/instructor', element: <SellCourse /> },
   {
     path: '/my-courses',
     element: <MyCourses />,

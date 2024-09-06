@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 text.txt
 betterContext.js
+.vite
+createcourse.js

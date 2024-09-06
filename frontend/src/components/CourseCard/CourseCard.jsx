@@ -8,7 +8,6 @@ import { AppContext } from '../../contexts/AppContext';
 import PropTypes from 'prop-types';
 const CourseCard = ({ course }) => {
   const { addToCart, addToWish } = useContext(AppContext);
-
   const [cartLoading, setCartLoading] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
 

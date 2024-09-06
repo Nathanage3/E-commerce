@@ -8,7 +8,7 @@ const MyCourses = () => {
           <nav className="mcp_nav">
             <NavLink
               className={({ isActive }) =>
-                isActive ? 'active_link mcp_link' : 'mcp_link'
+                isActive ? 'mc_active_link mcp_link' : 'mcp_link'
               }
               to="/my-courses/learning"
             >
@@ -16,7 +16,7 @@ const MyCourses = () => {
             </NavLink>
             <NavLink
               className={({ isActive }) =>
-                isActive ? 'active_link mcp_link' : 'mcp_link'
+                isActive ? 'mc_active_link mcp_link' : 'mcp_link'
               }
               to="/my-courses/wishlist"
             >

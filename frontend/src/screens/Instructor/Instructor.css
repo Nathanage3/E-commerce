@@ -1,0 +1,36 @@
+.instructor_page {
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  background-color: #fff;
+}
+
+.inst_header {
+  width: 100%;
+  background-color: black;
+  padding: 1rem 3rem 0;
+}
+.inst_heading {
+  font-size: 2rem;
+  color: #fff;
+}
+
+.inst_nav {
+  width: fit-content;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  color: #fff;
+}
+.ins_link {
+  padding-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #ebebeb;
+}
+.ins_active_link {
+  color: #fff;
+  font-weight: 800;
+  border-bottom: 5px solid #ffffff;
+}

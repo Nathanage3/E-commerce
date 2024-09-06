@@ -78,7 +78,7 @@ const SideNav = () => {
           <Link
             onClick={handleCloseNavbar}
             className="side_nav_link"
-            to={'/sell-course'}
+            to={'/instructor'}
           >
             Sell Courses
           </Link>

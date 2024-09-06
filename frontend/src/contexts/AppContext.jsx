@@ -14,7 +14,7 @@ const AppContextProvider = ({ children }) => {
   const [addedCourse, setAddedCourse] = useState(null);
   const [popupType, setPopupType] = useState('');
   const [isUserDropDownOpen, setIsUserDropDownOpen] = useState(false);
-
+ 
   const toggleUserDropdown = () => {
     setIsUserDropDownOpen(!isUserDropDownOpen);
   };

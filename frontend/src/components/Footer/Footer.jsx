@@ -10,7 +10,7 @@ const Footer = () => {
               <Link className='foot_link' to="/">Browse Courses</Link>
             </li>
             <li>
-              <Link className='foot_link' to="/sell-course">Sell Course</Link>
+              <Link className='foot_link' to="/instructor">Sell Course</Link>
             </li>
             <li>
               <Link className='foot_link' to="/">My courses</Link>
