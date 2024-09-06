@@ -126,7 +126,12 @@ class InstructorEarnings(models.Model):
 
 class CourseImage(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='course/images', blank=True, null=True)
+    image = models.ImageField(upload_to='course/images', blank=True, null=True,
+                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
+    
+
+class CourseVideo(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='videos')
     video = models.FileField(upload_to='course/videos', blank=True, null=True,
                              validators=[FileExtensionValidator(allowed_extensions=['mp4', 'pdf'])])
     
@@ -134,7 +139,7 @@ class CourseImage(models.Model):
         unique_together = ['video']
     
     def clean(self):
-        if CourseImage.objects.filter(video=self.video).exists():
+        if CourseVideo.objects.filter(video=self.video).exists():
             raise ValidationError("This video file already exists.")
 
     def __str__(self):
