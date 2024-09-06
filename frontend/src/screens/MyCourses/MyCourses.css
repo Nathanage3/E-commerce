@@ -1,0 +1,76 @@
+.my_courses_page {
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  background-color: #fff;
+}
+.mcp_header {
+  padding: 1rem 3rem 0;
+  background-color: #000000;
+  width: 100%;
+  color: #fff;
+}
+.mcp_heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+.mcp_nav {
+  width: fit-content;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  color: #fff;
+}
+.mcp_link {
+  padding-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #ebebeb;
+}
+.active_link {
+  color: #fff;
+  font-weight: 800;
+  border-bottom: 5px solid #ffffff;
+}
+/* ALL COURES COMP */
+.all_courses_content,
+.wishlist_content {
+  width: 85%;
+  margin: auto;
+  padding: 1rem;
+}
+.no_cc {
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+}
+.acc_p {
+  font-size: 0.9rem;
+  color: #c2c2c2;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+.browse_link {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border: 2px solid #333;
+  border-radius: 2px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1;
+  margin: 10px;
+  color: #000000;
+  transition: all 0.4s ease;
+}
+.browse_link:hover {
+  background-color: #000000;
+  color: #fff;
+}
+/* WISHLIST COMP */
+.wish_listing {
+  display: flex;
+}
