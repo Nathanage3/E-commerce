@@ -17,3 +17,6 @@ Pipfile.lock
 # Ignore media files (images and videos)
 media/course/images/*
 media/course/videos/*
+media/profile_pictures/*
+media/*.jpg
+media/*.png
