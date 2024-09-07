@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './CourseCard.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +10,8 @@ const CourseCard = ({ course }) => {
   const { addToCart, addToWish } = useContext(AppContext);
   const [cartLoading, setCartLoading] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
+  const location = useLocation();
+  const isInstructorRoute = location.pathname.startsWith('/instructor');
 
   let duration = new Date(course.courseDuration * 1000);
   let hours = duration.getUTCHours();
@@ -45,7 +47,7 @@ const CourseCard = ({ course }) => {
         <div className="cc_ttl">{course.title}</div>
         <div className="cc_sub_ttl">{course.subTitle}</div>
         <div className="cc_stats">
-          <StarRating rating={course.stars} />
+          <StarRating rating={course.rating} />
           <div className="cc_rate_count">({course.ratingCount})</div>
         </div>
         <div className="cc_pricing">
@@ -79,29 +81,38 @@ const CourseCard = ({ course }) => {
             <strong>Subtitles</strong>
           </div>
         </div>
-        <Link to={`/course/${course.id}`} className="view_cc_link">
+        <Link
+          to={
+            !isInstructorRoute
+              ? `/course/${course.id}`
+              : `/instructor/uploaded-courses/${course.id}`
+          }
+          className="view_cc_link"
+        >
           View Course Details
         </Link>
 
-        <div className="add_btns">
-          <button
-            disabled={cartLoading}
-            onClick={() => handleAddToCart(course)}
-            className="add_to_cart_btn center"
-          >
-            {cartLoading ? <span className="spinner"></span> : 'Add To Cart'}
-          </button>
-          <div
-            className="add_to_wish center"
-            onClick={() => handleAddToWish(course)}
-          >
-            {wishLoading ? (
-              <span className="spinner"></span>
-            ) : (
-              <FontAwesomeIcon className="cc_icon_heart" icon={faHeart} />
-            )}
+        {!isInstructorRoute && (
+          <div className="add_btns">
+            <button
+              disabled={cartLoading}
+              onClick={() => handleAddToCart(course)}
+              className="add_to_cart_btn center"
+            >
+              {cartLoading ? <span className="spinner"></span> : 'Add To Cart'}
+            </button>
+            <div
+              className="add_to_wish center"
+              onClick={() => handleAddToWish(course)}
+            >
+              {wishLoading ? (
+                <span className="spinner"></span>
+              ) : (
+                <FontAwesomeIcon className="cc_icon_heart" icon={faHeart} />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </article>
   );

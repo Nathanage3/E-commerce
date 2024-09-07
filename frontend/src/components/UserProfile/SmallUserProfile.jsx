@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './SmallUserProfile.css';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,6 +9,9 @@ import { useAuth } from '../../hooks/useAuth';
 const SmallUserProfile = () => {
   const { cartItems, toggleUserDropdown } = useContext(AppContext);
   const { logout } = useAuth();
+  const location = useLocation();
+  const isInstructorRoute = location.pathname.startsWith('/instructor');
+
   const handleLogout = () => {
     toggleUserDropdown();
     logout();
@@ -33,43 +36,62 @@ const SmallUserProfile = () => {
         </Link>
 
         <ul className="user_pr_dd_list">
-          <li>
-            <Link
-              onClick={toggleUserDropdown}
-              to={'/cart'}
-              title={`${cartItems.length} Items in cart`}
-              className="user_pr_dd_link cart_cnt"
-            >
-              My Cart{' '}
-              <span className="usr_dd_cart_counter center">
-                {cartItems.length}
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              onClick={toggleUserDropdown}
-              to={'/my-courses'}
-              className="user_pr_dd_link"
-            >
-              My Courses
-            </Link>
-          </li>
-          <li>
-            <Link
-              onClick={toggleUserDropdown}
-              to={'/my-courses/wishlist'}
-              className="user_pr_dd_link"
-            >
-              Wishlist
-            </Link>
-          </li>
+          {!isInstructorRoute ? (
+            <>
+              <li>
+                <Link
+                  onClick={toggleUserDropdown}
+                  to={'/cart'}
+                  title={`${cartItems.length} Items in cart`}
+                  className="user_pr_dd_link cart_cnt"
+                >
+                  My Cart{' '}
+                  <span className="usr_dd_cart_counter center">
+                    {cartItems.length}
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  onClick={toggleUserDropdown}
+                  to={'/my-courses'}
+                  className="user_pr_dd_link"
+                >
+                  My Courses
+                </Link>
+              </li>
+              <li>
+                <Link
+                  onClick={toggleUserDropdown}
+                  to={'/my-courses/wishlist'}
+                  className="user_pr_dd_link"
+                >
+                  Wishlist
+                </Link>
+              </li>
+            </>
+          ) : (
+            <li>
+              <Link
+                onClick={toggleUserDropdown}
+                to={'/'}
+                className="user_pr_dd_link"
+              >
+                Student Page
+              </Link>
+            </li>
+          )}
         </ul>
+
         <ul className="user_pr_dd_list">
           <li>
             <Link
               onClick={toggleUserDropdown}
-              to={'/notifications'}
+              to={
+                !isInstructorRoute
+                  ? '/notifications'
+                  : '/instructor/notifications'
+              }
               className="user_pr_dd_link"
             >
               Notifications

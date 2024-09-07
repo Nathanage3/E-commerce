@@ -12,6 +12,7 @@ const Header = () => {
 
   return (
     <header className="header">
+
       <button className="nav_menu_btn" onClick={handleOpenNavbar}>
         <FaBars className="icon_menu" />
       </button>

@@ -221,7 +221,6 @@
   cursor: pointer;
   height: 30px;
   border-radius: 50%;
-  color: #333;
   background-color: #333;
   color: #ffffff;
   border: 2px solid transparent;
@@ -244,45 +243,10 @@
   transition: transform 0.3s ease;
   z-index: 2;
 }
-.notifi_dropdown {
-  width: 200px;
-  min-height: 100px;
-  position: absolute;
-  top: 100%;
-  right: -100%;
-  border-radius: 5px;
-  border-top: 1px solid #ddd;
-  border-left: 1px solid #ddd;
-  box-shadow: 4px 4px 6px 0px #30004d5d;
-  transition: all 0.2s ease-out;
-  z-index: 3;
-  background-color: #ffffff;
-}
-.notfi_content {
-  padding: 10px;
-}
-.nf_dd_header {
-  display: flex;
-  align-items: center;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding-left: 15px;
-  height: 30px;
-  border-bottom: 1px solid #ed9121;
-}
 
 .dropdown_nav {
   position: relative;
   cursor: pointer;
-}
-.empty_notf {
-  font-size: 0.7rem;
-  display: block;
-  text-align: center;
-  margin-top: 10%;
-  color: #747474;
-  font-weight: 500;
 }
 
 .wl_drop_down {

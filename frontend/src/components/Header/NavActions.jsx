@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useContext } from 'react';
-import SmallNotification from './SmallNotification';
+import SmallNotification from './SmallNotification/SmallNotification';
 import {
   faBell,
   faCartShopping,

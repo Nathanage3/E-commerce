@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import './CourseDescription.css';
 import { useEffect, useState } from 'react';
 import { useContext } from 'react';
@@ -15,7 +15,8 @@ const CourseDescription = () => {
   const { addToCart, addToWish } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [displayedCourse, setDisplayedCourse] = useState([]);
-
+  const location = useLocation();
+  const isInstructorRoute = location.pathname.startsWith('/instructor');
   const selectedCourse = courseData.find(
     (course) => course.id.toString() === id
   );
@@ -90,7 +91,7 @@ const CourseDescription = () => {
           </div>
         </div>
 
-        <div className="desc_add_btns">
+        {!isInstructorRoute && <div className="desc_add_btns">
           <Link to={'/checkout'} className="buy_now_link center">
             BUY NOW
           </Link>
@@ -108,7 +109,7 @@ const CourseDescription = () => {
           >
             <FontAwesomeIcon className="desc_icon_heart" icon={faHeart} />
           </div>
-        </div>
+        </div>}
         <div className="desc_page_list">
           <h4 className="desc_list_header">What you&apos;ll learn</h4>
           <ul className="cc_list">

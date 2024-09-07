@@ -1,0 +1,58 @@
+.notifi_dropdown {
+  width: 200px;
+  min-height: 100px;
+  position: absolute;
+  top: 100%;
+  right: -100%;
+  border-radius: 5px;
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  box-shadow: 4px 4px 6px 0px #30004d5d;
+  transition: all 0.2s ease-out;
+  z-index: 3;
+  background-color: #ffffff;
+}
+
+.nf_dd_header {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding-left: 15px;
+  height: 30px;
+  border-bottom: 1px solid #ed9121;
+}
+.notfi_type_div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notfi_type_btn {
+  width: 50%;
+  padding: 5px 0 2px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  background-color: #ffffff;
+  border: none;
+  border-bottom: 1px solid #f1f1f1;
+  color: #636363;
+  transition: all 0.3s ease;
+}
+.active_type {
+  color: #000;
+  font-weight: 700;
+  border-bottom: 1px solid #b1b1b1;
+}
+.notfi_content {
+  padding: 10px;
+}
+.empty_notf {
+  font-size: 0.7rem;
+  display: block;
+  text-align: center;
+  margin-top: 10%;
+  color: #747474;
+  font-weight: 500;
+}

@@ -25,7 +25,7 @@
   justify-content: space-between;
 }
 .br_btm {
-  padding-bottom: 1rem;
+  padding-bottom: 2rem;
   border-bottom: 1px solid #ddd;
 }
 .half {
@@ -88,12 +88,11 @@
   cursor: pointer;
 }
 .sc_navigation {
-  width: 70%;
+  width: 100%;
   margin: auto;
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,4 +105,18 @@
   font-size: 1rem;
   border-radius: 4px;
   border: none;
+}
+.last_sc_step{
+  width: 100%;
+  /* padding: 2rem; */
+}
+.sc_submit_btn{
+  padding: 10px 15px;
+  text-align: center;
+  color: #ffffff;
+  background-color: teal;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: none;
+  margin: 1rem auto;
 }

@@ -4,15 +4,12 @@
   background-color: #fff;
 }
 
-.inst_header {
+.inst_page_header {
   width: 100%;
   background-color: black;
   padding: 1rem 3rem 0;
 }
-.inst_heading {
-  font-size: 2rem;
-  color: #fff;
-}
+
 
 .inst_nav {
   width: fit-content;

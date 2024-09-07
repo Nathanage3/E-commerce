@@ -22,6 +22,7 @@ import UserInfo from './screens/UserAccount/UserInfo.jsx';
 import UserPhoto from './screens/UserAccount/UserPhoto.jsx';
 import Instructor from './screens/Instructor/Instructor.jsx';
 import UploadedCourses from './screens/Instructor/UploadedCourses/UploadedCourses.jsx';
+import Earnings from './screens/Instructor/Earnings/Earnings.jsx';
 
 function App() {
   return (
@@ -44,8 +45,11 @@ function App() {
         <Route path="/instructor" element={<Instructor />}>
           <Route index element={<Navigate to="uploaded-courses" replace />} />
           <Route path="uploaded-courses" element={<UploadedCourses />} />
+          <Route path="uploaded-courses/:id" element={<CourseDescription />} />
           <Route path="create-new-course" element={<SellCourse />} />
+          <Route path="earnings" element={<Earnings />} />
         </Route>
+        <Route path="/instructor/notifications" element={<Notifications />} />
         <Route path="/my-courses" element={<MyCourses />}>
           <Route index element={<Navigate to="learning" replace />} />
           <Route path="learning" element={<AllCourses />} />

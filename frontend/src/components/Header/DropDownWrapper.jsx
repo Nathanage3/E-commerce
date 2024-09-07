@@ -10,7 +10,6 @@ const DropDownWrapper = ({ toggleDropdown, title, icon, link, children }) => {
     >
       <Link to={link} className="center" title={title}>
         <FontAwesomeIcon className={`icon_${title.toLowerCase()}`} icon={icon} />
-        {/* <FontAwesomeIcon className="icon_nav_action" icon={icon} /> */}
       </Link>
       {children}
     </div>
