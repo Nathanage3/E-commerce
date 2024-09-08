@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import { AppContext } from '../../contexts/AppContext';
 import { courseData } from '../../fakeData';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faHeart } from '@fortawesome/free-solid-svg-icons';
 import Slider from 'react-slick';
 import CourseCard from '../../components/CourseCard/CourseCard';
 import { settings } from '../../utils/sliderSetting.jsx';
@@ -47,9 +47,22 @@ const CourseDescription = () => {
     minutes?.toString().padStart(1, '0');
 
   return (
-    <div className="course_desc_page">
+    <div
+      className={`course_desc_page ${
+        isInstructorRoute ? 'inst_course_desc_page' : ''
+      }`}
+    >
       <div className="desc_content">
         <div className="desc_page_header">
+          {isInstructorRoute && (
+            <Link
+              to={'/instructor/uploaded-courses'}
+              className="back_to_inst_pge_btn"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              Back
+            </Link>
+          )}
           <div className="desc_course_img">
             <img
               src={displayedCourse.img}
@@ -91,49 +104,64 @@ const CourseDescription = () => {
           </div>
         </div>
 
-        {!isInstructorRoute && <div className="desc_add_btns">
-          <Link to={'/checkout'} className="buy_now_link center">
-            BUY NOW
-          </Link>
-          <button
-            disabled={loading}
-            onClick={() => handleAddToCart(selectedCourse)}
-            className="desc_add_to_cart_btn center"
-          >
-            {' '}
-            {loading ? <span className="spinner"></span> : 'Add To Cart'}
-          </button>
-          <div
-            className="desc_add_to_wish center"
-            onClick={() => handleAddToWish(selectedCourse)}
-          >
-            <FontAwesomeIcon className="desc_icon_heart" icon={faHeart} />
+        {!isInstructorRoute && (
+          <div className="desc_add_btns">
+            <Link to={'/checkout'} className="buy_now_link center">
+              BUY NOW
+            </Link>
+            <button
+              disabled={loading}
+              onClick={() => handleAddToCart(selectedCourse)}
+              className="desc_add_to_cart_btn center"
+            >
+              {' '}
+              {loading ? <span className="spinner"></span> : 'Add To Cart'}
+            </button>
+            <div
+              className="desc_add_to_wish center"
+              onClick={() => handleAddToWish(selectedCourse)}
+            >
+              <FontAwesomeIcon className="desc_icon_heart" icon={faHeart} />
+            </div>
           </div>
-        </div>}
+        )}
         <div className="desc_page_list">
           <h4 className="desc_list_header">What you&apos;ll learn</h4>
           <ul className="cc_list">
-            <li className="cc_li">
-              <span className="tick"></span>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque
-              dolore reiciendis ea maiores eos eligendi architecto illo.
-              Cupiditate iure, vero, laboriosam laudantium perferendis odio
-              expedita quisquam culpa quae earum provident.
-            </li>
-            <li className="cc_li">
-              <span className="tick"></span>
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempora
-              ullam autem impedit porro veniam, laboriosam debitis eveniet
-              reprehenderit numquam atque inventore recusandae hic veritatis
-              similique officia? Rerum, nesciunt! Repudiandae, sint.
-            </li>
-            <li className="cc_li">
-              <span className="tick"></span>
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempora
-              ullam autem impedit porro veniam, laboriosam debitis eveniet
-              reprehenderit numquam atque inventore recusandae hic veritatis
-              similique officia? Rerum, nesciunt! Repudiandae, sint.
-            </li>
+            {selectedCourse.objectives ? (
+              selectedCourse.objectives?.map((obj, index) => (
+                <li className="cc_li" key={index}>
+                  <span className="tick"></span>
+                  {obj}
+                </li>
+              ))
+            ) : (
+              <>
+                <li className="cc_li">
+                  <span className="tick"></span>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque
+                  dolore reiciendis ea maiores eos eligendi architecto illo.
+                  Cupiditate iure, vero, laboriosam laudantium perferendis odio
+                  expedita quisquam culpa quae earum provident.
+                </li>
+                <li className="cc_li">
+                  <span className="tick"></span>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                  Tempora ullam autem impedit porro veniam, laboriosam debitis
+                  eveniet reprehenderit numquam atque inventore recusandae hic
+                  veritatis similique officia? Rerum, nesciunt! Repudiandae,
+                  sint.
+                </li>
+                <li className="cc_li">
+                  <span className="tick"></span>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                  Tempora ullam autem impedit porro veniam, laboriosam debitis
+                  eveniet reprehenderit numquam atque inventore recusandae hic
+                  veritatis similique officia? Rerum, nesciunt! Repudiandae,
+                  sint.
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </div>

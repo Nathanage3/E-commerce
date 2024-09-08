@@ -4,6 +4,12 @@
   background-color: aliceblue;
   padding-bottom: 5rem;
 }
+.course_desc_page.inst_course_desc_page {
+  width: 80%;
+  min-height: calc(100vh - 60px);
+  background-color: aliceblue;
+  padding-bottom: 5rem;
+}
 .desc_page_header {
   padding: 2rem 3rem;
   background-color: #000000;
@@ -12,6 +18,22 @@
   align-items: center;
   justify-content: center;
   gap: 2rem;
+  position: relative;
+}
+.back_to_inst_pge_btn {
+  border: 1px solid teal;
+  background-color: #fff;
+  color: #000000;
+  font-size: 1rem;
+  font-weight: 600;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 4px;
 }
 .desc_header_main {
   padding: 0 1rem;

@@ -30,6 +30,7 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route exact path="/" element={<Home />} />
+
         <Route path="/courses" element={<CourseList />}>
           <Route path=":category" element={<CourseCategory />} />
           <Route
@@ -38,28 +39,38 @@ function App() {
           />
           <Route path="search" element={<SearchResult />} />
         </Route>
+
         <Route path="/course/:id" element={<CourseDescription />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/notifications" element={<Notifications />} />
+
         <Route path="/instructor" element={<Instructor />}>
           <Route index element={<Navigate to="uploaded-courses" replace />} />
           <Route path="uploaded-courses" element={<UploadedCourses />} />
           <Route path="uploaded-courses/:id" element={<CourseDescription />} />
           <Route path="create-new-course" element={<SellCourse />} />
           <Route path="earnings" element={<Earnings />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="profile" element={<UserAccount />}>
+            <Route index element={<Navigate to="info" replace />} />
+            <Route path="info" element={<UserInfo />} />
+            <Route path="photo" element={<UserPhoto />} />
+          </Route>
         </Route>
-        <Route path="/instructor/notifications" element={<Notifications />} />
+
         <Route path="/my-courses" element={<MyCourses />}>
           <Route index element={<Navigate to="learning" replace />} />
           <Route path="learning" element={<AllCourses />} />
           <Route path="wishlist" element={<Wishlist />} />
         </Route>
+
         <Route path="/user" element={<UserAccount />}>
           <Route index element={<Navigate to="profile" replace />} />
           <Route path="profile" element={<UserInfo />} />
           <Route path="photo" element={<UserPhoto />} />
         </Route>
+
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

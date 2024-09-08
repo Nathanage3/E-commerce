@@ -4,8 +4,6 @@ import { InstCourse } from '../../../fakeData';
 import CourseCard from '../../../components/CourseCard/CourseCard';
 
 const UploadedCourses = () => {
-  console.log(InstCourse);
-
   return (
     <div className="uploaded_crs_content">
       {!InstCourse && (
@@ -18,9 +16,16 @@ const UploadedCourses = () => {
           </Link>
         </div>
       )}
-      {InstCourse?.map((course) => (
-        <CourseCard course={course} key={course.id} />
-      ))}
+      <div className="uploaded_crs_listing">
+        <div className="inst_content_hdr">
+          Your have<span className="crs_count">{InstCourse.length}</span>Courses
+        </div>
+        <div className="uploaded_crs_list">
+          {InstCourse?.map((course) => (
+            <CourseCard course={course} key={course.id} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

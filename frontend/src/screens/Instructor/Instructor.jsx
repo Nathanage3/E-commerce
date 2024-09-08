@@ -3,7 +3,7 @@ import './Instructor.css';
 const Instructor = () => {
   return (
     <div className="instructor_page">
-      <div className="inst_page_header">
+      <aside className="inst_page_side_bar">
         <nav className="inst_nav">
           <NavLink
             className={({ isActive }) =>
@@ -29,8 +29,24 @@ const Instructor = () => {
           >
             Earnings
           </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              isActive ? 'ins_active_link ins_link' : 'ins_link'
+            }
+            to="/instructor/notifications"
+          >
+            Notifications
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              isActive ? 'ins_active_link ins_link' : 'ins_link'
+            }
+            to="/instructor/profile"
+          >
+            Profile
+          </NavLink>
         </nav>
-      </div>
+      </aside>
       <Outlet />
     </div>
   );

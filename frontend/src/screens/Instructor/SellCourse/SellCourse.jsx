@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { categoriesData } from '../../../fakeData';
 import './SellCourse.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 // import axios from 'axios';
 
 const SellCourse = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [courseCreated, setCourseCreated] = useState(false);
   const totalSteps = 9;
+  const progressPercentage = (currentStep / (totalSteps - 1)) * 100;
   const [formData, setFormData] = useState({
     category: '',
     title: '',
@@ -16,23 +19,32 @@ const SellCourse = () => {
     prerequisites: '',
     courseFor: '',
     level: '',
-    videoFile: null,
+    videoFile: [],
+    videoUrls: [],
     imageFile: null,
+    imageUrl: null,
     price: '',
     currency: '',
     sections: '',
     duration: '',
   });
+  console.log(currentStep);
 
+  const placeholders = [
+    'e.g. Define the roles and responsibilities of a Digital Marketer',
+    'e.g. Develop a comprehensive digital marketing strategy',
+    'e.g. Analyze and interpret key performance indicators (KPIs)',
+    'e.g. Understand the fundamentals of SEO and its impact on visibility',
+  ];
   const nextStep = () => {
     if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep((prev) => Math.max(prev - 1, 0));
     }
   };
 
@@ -46,20 +58,35 @@ const SellCourse = () => {
   };
 
   const handleVideoChange = (event) => {
-    const filevid = URL.createObjectURL(event.target.files[0]);
-    console.log(filevid);
-    setFormData((prevData) => ({
-      ...prevData,
-      videoFile: event.target.files[0],
+    const files = Array.from(event.target.files);
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setFormData((prevState) => ({
+      ...prevState,
+      videoFile: files,
+      videoUrls: urls,
     }));
+  };
+  const removeVideo = (index) => {
+    setFormData((prevState) => {
+      const updatedFiles = prevState.videoFile.filter((_, i) => i !== index);
+      const updatedUrls = prevState.videoUrls.filter((_, i) => i !== index);
+
+      return {
+        ...prevState,
+        videoFile: updatedFiles,
+        videoUrls: updatedUrls,
+      };
+    });
   };
 
   const handleImageChange = (event) => {
-    const fileimg = URL.createObjectURL(event.target.files[0]);
-    console.log(fileimg);
-    setFormData((prevData) => ({
-      ...prevData,
-      imageFile: event.target.files[0],
+    const file = event.target.files[0];
+    const url = file ? URL.createObjectURL(file) : null;
+
+    setFormData((prevState) => ({
+      ...prevState,
+      imageFile: file,
+      imageUrl: url,
     }));
   };
   const handleChange = (event) => {
@@ -107,6 +134,8 @@ const SellCourse = () => {
 
     return true;
   };
+  console.log(formData);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -153,6 +182,15 @@ const SellCourse = () => {
   };
   return (
     <div className="sell_crs_content">
+      <div className="inst_content_hdr">Create a new Courses.</div>
+      <div className="sell_crs_progress_bar">
+        <div
+          className="progresser"
+          style={{
+            width: `${progressPercentage}%`,
+          }}
+        />
+      </div>
       {!courseCreated && (
         <form className="create_crs_form" onSubmit={handleSubmit}>
           {currentStep === 0 && (
@@ -167,6 +205,7 @@ const SellCourse = () => {
                     value={formData.category}
                     onChange={handleChange}
                   >
+                    <option value="">Choose a category</option>
                     {categoriesData.map((item, id) => (
                       <option value={item.title} key={id}>
                         {item.title}
@@ -184,13 +223,14 @@ const SellCourse = () => {
                     id="title"
                     value={formData.title}
                     onChange={handleChange}
+                    placeholder="e.g. Learn Digital Marketing Basics"
                   />
                 </div>
               </div>
             </div>
           )}
           {currentStep === 1 && (
-            <div className="div">
+            <>
               <div className="sc_form_group">
                 <label htmlFor="subTitle">
                   Write a short sub-title for your course.
@@ -201,6 +241,7 @@ const SellCourse = () => {
                   id="subTitle"
                   value={formData.subTitle}
                   onChange={handleChange}
+                  placeholder="e.g. Fast & effective Landing Page course..."
                 />
               </div>
               <div className="sc_form_group br_btm">
@@ -213,39 +254,45 @@ const SellCourse = () => {
                   id="description"
                   value={formData.description}
                   onChange={handleChange}
+                  placeholder="e.g. Learn how to Design, Build & Publish high-converting landing pages..."
                 />
               </div>
-            </div>
+            </>
           )}
           {currentStep === 2 && (
             <div className="sc_form_group br_btm">
               <div className="sc_label">
                 What will students learn in your course?
               </div>
-              <div>
-                You must enter at least 4 learning objectives or outcomes that
-                learners can expect to achieve after completing your course.
+              <div className="sc_para">
+                You must enter objectives or outcomes that learners can expect
+                to achieve after completing your course.
               </div>
 
               <small className="src_sml_txt">
-                These descriptions will help learners decide if your course is
+                These objectives will help learners decide if your course is
                 right for them.
               </small>
-              <label htmlFor="objectives">Write atleast 4 Objectives</label>
-              <div className="sc_desc_inputs">
-                {formData.objectives.map((objective, index) => (
-                  <input
-                    id="objectives"
-                    type="text"
-                    key={index}
-                    value={objective}
-                    maxLength={150}
-                    onChange={(event) =>
-                      handleObjectiveChange(index, event.target.value)
-                    }
-                  />
-                ))}
-              </div>
+              <fieldset className="sc_objs_input_fieldset">
+                <legend className="sc_objs_input_legend">
+                  Write atleast 4 Objectives
+                </legend>
+                <div className="sc_desc_inputs">
+                  {formData.objectives.map((objective, index) => (
+                    <input
+                      id={`objective-${index}`}
+                      type="text"
+                      key={index}
+                      value={objective}
+                      maxLength={150}
+                      placeholder={placeholders[index]}
+                      onChange={(event) =>
+                        handleObjectiveChange(index, event.target.value)
+                      }
+                    />
+                  ))}
+                </div>
+              </fieldset>
             </div>
           )}
           {currentStep === 3 && (
@@ -254,18 +301,16 @@ const SellCourse = () => {
                 What are the requirements or prerequisites for taking your
                 course?
               </label>
-              <p>
+              <p className="sc_para">
                 List the required skills, experience, tools or equipment
-                learners should have prior to taking your course.
-              </p>
-              <p>
-                If there are no requirements, use this space as an opportunity
-                to lower the barrier for beginners.
+                learners should have prior to taking your course. <br />
+                If there are no requirements write &quot;none&quot;
               </p>
               <input
                 type="text"
                 name="prerequisites"
                 id="prerequisites"
+                placeholder="e.g You should have basic familiarity with social media"
                 value={formData.prerequisites}
                 onChange={handleChange}
               />
@@ -275,7 +320,7 @@ const SellCourse = () => {
             <div>
               <div className="sc_form_group">
                 <label htmlFor="courseFor">Who is this course for?</label>
-                <p>
+                <p className="sc_para">
                   Write a clear description of the intended learners for your
                   course who will find your course content valuable.
                 </p>
@@ -286,6 +331,7 @@ const SellCourse = () => {
                   type="text"
                   name="courseFor"
                   id="courseFor"
+                  placeholder="e.g. Beginner Python developers curious abour data science"
                   value={formData.courseFor}
                   onChange={handleChange}
                 />
@@ -299,6 +345,7 @@ const SellCourse = () => {
                   value={formData.level}
                   onChange={handleChange}
                 >
+                  <option>Select Level</option>
                   <option value="beginner">Beginner Level</option>
                   <option value="intermidiate">Intermidiate Level</option>
                   <option value="expert">Expert Level</option>
@@ -306,50 +353,82 @@ const SellCourse = () => {
                 </select>
               </div>
               <div className="sc_form_group">
-                <label htmlFor="sections">How many Sections are in your Course?</label>
+                <label htmlFor="sections">
+                  How many Sections are in your Course?
+                </label>
                 <input
-                type="number"
-                name="sections"
-                id="sections"
-                value={formData.sections}
-                onChange={handleChange}
-              />
+                  type="number"
+                  name="sections"
+                  id="sections"
+                  placeholder="Enter how many sections your course has"
+                  value={formData.sections}
+                  onChange={handleChange}
+                />
               </div>
               <div className="sc_form_group br_btm">
                 <label htmlFor="duration">How many hours is your course?</label>
                 <input
-                type="number"
-                name="duration"
-                id="duration"
-                value={formData.duration}
-                onChange={handleChange}
-              />
+                  type="number"
+                  name="duration"
+                  id="duration"
+                  placeholder="Enter the total duration of your course"
+                  value={formData.duration}
+                  onChange={handleChange}
+                />
               </div>
             </div>
           )}
           {currentStep === 5 && (
             <div className="sc_form_group br_btm">
-              <label htmlFor="videoFile">
-                <span className="upload_btn">Upload</span> Course Video
+              <div className="upload_media_hdr">Upload Course Videos</div>
+              <label className="upload_label" htmlFor="videoFile">
+                <span className="upload_btn">Click to Choose Videos</span>
               </label>
               <input
                 type="file"
                 id="videoFile"
                 name="videoFile"
                 accept="video/*"
+                multiple
                 onChange={handleVideoChange}
               />
-              {formData.videoFile ? (
-                <p>Video selected: {formData.videoFile.name}</p>
+              {formData.videoFile && formData.videoFile.length > 0 ? (
+                <div className="selected_vids_div">
+                  <div className="selected_vids_count">
+                    {formData.videoFile.length} Videos selected
+                  </div>
+                  <div className="selected_vids_preview">
+                    {formData.videoUrls.map((url, index) => (
+                      <div className="vid_box" key={index}>
+                        <video className="vid_box_vid" controls>
+                          <source src={url} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                        <p className="vid_name">
+                          {formData.videoFile[index].name}
+                        </p>
+                        <button
+                          type="button"
+                          className="remove_selected_vid_btn center"
+                          onClick={() => removeVideo(index)}
+                        >
+                          Remove
+                          <FontAwesomeIcon icon={faXmark} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : (
-                <p>No Video selected</p>
+                <p>No Videos selected</p>
               )}
             </div>
           )}
           {currentStep === 6 && (
             <div className="sc_form_group br_btm">
-              <label htmlFor="imageFile">
-                <span className="upload_btn">Upload </span>Course Image
+              <div className="upload_media_hdr">Upload Course Videos</div>
+              <label className="upload_label" htmlFor="imageFile">
+                <span className="upload_btn">Click to choose Image</span>
               </label>
               <input
                 type="file"
@@ -359,7 +438,23 @@ const SellCourse = () => {
                 onChange={handleImageChange}
               />
               {formData.imageFile ? (
-                <p>Image selected: {formData.imageFile.name}</p>
+                <div className="selected_image_div">
+                  <img src={formData.imageUrl} alt="Selected" />
+                  <p className="vid_name">{formData.imageFile.name}</p>
+                  <button
+                    type="button"
+                    className="remove_selected_vid_btn center"
+                    onClick={() =>
+                      setFormData((prevState) => ({
+                        ...prevState,
+                        imageFile: null,
+                        imageUrl: null,
+                      }))
+                    }
+                  >
+                    Remove <FontAwesomeIcon icon={faXmark} />
+                  </button>
+                </div>
               ) : (
                 <p>No Image selected</p>
               )}
@@ -367,7 +462,7 @@ const SellCourse = () => {
           )}
           {currentStep === 7 && (
             <div className="sc_form_group br_btm">
-              <p>Set a price for your course.</p>
+              <p className="upload_media_hdr">Set a price for your course.</p>
               <div className="splitter">
                 <div className="half">
                   <div className="sc_form_group">
@@ -379,6 +474,7 @@ const SellCourse = () => {
                       value={formData.currency}
                       onChange={handleChange}
                     >
+                      <option>Select Currency</option>
                       <option value="USD">USD</option>
                       <option value="ETB">ETB</option>
                     </select>
@@ -392,6 +488,7 @@ const SellCourse = () => {
                       name="price"
                       step={0.1}
                       id="price"
+                      placeholder="Enter price"
                       value={formData.price}
                       onChange={handleChange}
                     />
@@ -402,7 +499,9 @@ const SellCourse = () => {
           )}
           {currentStep === 8 && (
             <div className="sc_form_group br_btm center">
-              <p>Make sure all fileds are filled Before creating course.</p>
+              <p className="sc_para">
+                Make sure all fileds are filled Before creating course.
+              </p>
               <button
                 onClick={() => setCourseCreated(true)}
                 className="sc_submit_btn"
@@ -419,7 +518,11 @@ const SellCourse = () => {
               </button>
             )}
             {currentStep < totalSteps - 1 && (
-              <button type="button" onClick={nextStep}>
+              <button
+                className="sell_crs_next_btn"
+                type="button"
+                onClick={nextStep}
+              >
                 Next
               </button>
             )}

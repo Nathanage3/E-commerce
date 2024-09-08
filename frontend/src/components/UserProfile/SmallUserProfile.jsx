@@ -21,7 +21,7 @@ const SmallUserProfile = () => {
       <div className="user_pr_dd_content">
         <Link
           onClick={toggleUserDropdown}
-          to={'/user'}
+          to={`${isInstructorRoute ? '/instructor/profile' : '/user'}`}
           className="usr_pr_dd_user_link"
         >
           <div className="usr_pr_dd_icon center">
@@ -111,7 +111,7 @@ const SmallUserProfile = () => {
           <li>
             <Link
               onClick={toggleUserDropdown}
-              to={'/edit-profile'}
+              to={`${!isInstructorRoute ? '/user' : '/instructor/profile'}`}
               className="user_pr_dd_link"
             >
               Edit Profile

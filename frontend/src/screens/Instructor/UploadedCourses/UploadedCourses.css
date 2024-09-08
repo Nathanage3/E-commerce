@@ -1,5 +1,27 @@
 .uploaded_crs_content {
-  width: 85%;
-  margin: auto;
-  padding: 2rem ;
+  width: 80%;
+  height: 100%;
+}
+.uploaded_crs_listing{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.inst_content_hdr{
+  font-size: 1rem;
+  color: #000;
+  font-weight: 600;
+  letter-spacing: 2px;
+  padding: 0.5rem 2rem ;
+  background-color: #000;
+  color: #fff;
+}
+.uploaded_crs_list{
+  display: flex;
+  align-items: center;
+}
+.crs_count{
+  margin: 0 0.4rem;
 }
