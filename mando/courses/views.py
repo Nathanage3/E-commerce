@@ -5,9 +5,9 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress
+from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress, CourseVideo
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, InstructorEarningsSerializer, \
-    CourseImageSerializer, ReviewSerializer, CourseProgressSerializer, CustomerSerializer, InstructorEarnings
+    CourseImageSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, CourseVideoSerializer, InstructorEarnings
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from orders.models import OrderItem
 from .pagination import DefaultPagination
@@ -83,6 +83,16 @@ class CourseImageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return CourseImage.objects.filter(course_id=self.kwargs['course_pk'])
+    
+class CourseVideoViewSet(viewsets.ModelViewSet):
+    serializer_class = CourseVideoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'course_id': self.kwargs['course_pk']}
+    
+    def get_queryset(self):
+        return CourseVideo.objects.filter(course_id=self.kwargs['course_pk'])
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

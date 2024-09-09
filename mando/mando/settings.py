@@ -162,5 +162,11 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'current_user': 'core.serializers.UserSerializer',
-    }
-} 
+    },
+    'LOGIN_FIELD': 'email'
+}
+
+# settings.py
+
+# Remove the limit on data upload size
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
