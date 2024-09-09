@@ -40,7 +40,7 @@ class CourseSerializer(serializers.ModelSerializer):
     collection = CollectionSerializer(read_only=True)
     instructor = serializers.StringRelatedField()
     images = CourseImageSerializer(many=True, read_only=True)
-    videos = CollectionSerializer(many=True, read_only=True)
+    videos = CourseVideoSerializer(many=True, read_only=True)
     
     class Meta:
         model = Course
