@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-d3xp9rrm^qe-8x(-tg0xy@(xr0z+$!%j5bjtn+tx@2l)o0#e5e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['6b29-102-218-51-225.ngrok-free.app', '2257318eac8b0ba0a686bc807ffea81f.serveo.net','localhost', '127.0.0.1']
 
 
 # Application definition
@@ -56,9 +56,10 @@ ROOT_URLCONF = 'mando.urls'
 
 INTERNAL_IPS = ["127.0.0.1"]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Add your frontend URL here
-]
+CORS_ALLOW_ALL_ORIGINS = True
+#= [
+ #   "http://localhost:5173",  # Add your frontend URL here
+#]
 
 TEMPLATES = [
     {

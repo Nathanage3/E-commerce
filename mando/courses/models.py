@@ -32,17 +32,44 @@ class Promotion(models.Model):
 
 
 class Course(models.Model):
+    CURRENCY_USD = 'USD'
+    CURRENCY_EUR = 'EUR'
+    CURRENCY_GBP = 'GBP'
+    
+    CURRENCY_CHOICES = [
+        (CURRENCY_USD, "US Dollar"),
+        (CURRENCY_EUR, "Euro"),
+        (CURRENCY_GBP, "British Pound")
+    ]
+
+    LEVEL_BEGINNER = 1
+    LEVEL_INTERMEDIATE = 2
+    LEVEL_ADVANCED = 3
+    
+    LEVEL_CHOICES = [
+        (LEVEL_BEGINNER, "Beginner"),
+        (LEVEL_INTERMEDIATE, "Intermediate"),
+        (LEVEL_ADVANCED, "Advanced")
+    ]
     title = models.CharField(max_length=255)
     slug = models.SlugField(default='-')
+    courseFor = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2,
-    validators=[MinValueValidator(Decimal('0.01'))])
+                               validators=[MinValueValidator(Decimal('0.01'))])
+    oldPrice = models.DecimalField(max_digits=10, decimal_places=2,
+                               validators=[MinValueValidator(Decimal('0.01'))])
     rating = models.FloatField(default=1.0, validators=[MinValueValidator(Decimal('1.0')), 
                                MaxValueValidator(Decimal('5.0'))])
+    currency = models.CharField(
+        max_length=10, choices=CURRENCY_CHOICES, default=CURRENCY_USD)
+    ratingCount = models.PositiveIntegerField(blank=True, null=True)
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    level = models.PositiveSmallIntegerField(choices=LEVEL_CHOICES, 
+        default=LEVEL_BEGINNER)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='courses')
     promotions = models.ManyToManyField(Promotion, blank=True)
     last_update = models.DateTimeField(auto_now=True)

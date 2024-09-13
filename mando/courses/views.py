@@ -37,7 +37,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 
 class CourseViewSet(viewsets.ModelViewSet):
-    queryset = Course.objects.select_related('instructor', 'collection').prefetch_related('images').all().order_by('id')
+    queryset = Course.objects.select_related('instructor', 'collection').prefetch_related('images', 'videos').all().order_by('id')
 
     serializer_class = CourseSerializer
     permission_classes = [IsAdminOrReadOnly]
