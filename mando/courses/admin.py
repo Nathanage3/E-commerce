@@ -25,7 +25,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ['title', 'price', 'collection_title', 'rating']
     inlines = [CourseImageInLine]
     list_editable = ['price']
-    list_filter = ['collection', 'last_update', 'rating']
+    list_filter = ['collection', 'last_update', 'rating', 'id']
     list_per_page = 10
     list_select_related = ['collection']
     search_fields = ['title']
@@ -84,3 +84,8 @@ class CustomerAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(
             orders_count=Count('order')
         )
+    
+@admin.register(models.InstructorEarnings)
+class InstructorEarningAdmin(admin.ModelAdmin):
+    list_display = ['instructor_id', 'total_earnings', 'last_payout']
+    search_fields = ['instructor__username', 'total_earnings']

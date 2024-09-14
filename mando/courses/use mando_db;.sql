@@ -1,3 +1,0 @@
-use mando_db;
-insert into courses_course (id, slug, coursefor, description, price, oldPrice, rating, ratingCount, instructor_id, syllabus, prerequisites, is_active, collection_id, last_update, title, currency, level) values (1, 'amlodipine besylate and atorvastatin calcium', 'Warfarin Sodium', 'Premature beats NOS', 8, 67, 53, 7582, 4, 'Bnign shuddering attacks', 'Fail sterile injection', 
-false, 10, '2023-12-24', 'Celery', 'Virus 2000', 2);

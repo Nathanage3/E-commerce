@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress, CourseVideo
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, InstructorEarningsSerializer, \
     CourseImageSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, CourseVideoSerializer, InstructorEarnings
-from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
+from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, IsStudentOrInstructor
 from orders.models import OrderItem
 from .pagination import DefaultPagination
 
@@ -105,23 +105,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CourseProgressViewSet(viewsets.ModelViewSet):
-    """
-    A viewset for viewing and editing course progress instances.
-    """
     queryset = CourseProgress.objects.prefetch_related('student').select_related('course').all()
     serializer_class = CourseProgressSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsStudentOrInstructor]
 
     def perform_create(self, serializer):
-        """
-        Custom create method to handle additional logic when a new course progress is created.
-        """
-        serializer.save()
-
+        # Get or create the customer instance associated with the current user
+        customer, created = Customer.objects.get_or_create(user_id=self.request.user.id)
+        # Save the course progress and assign the customer’s user (i.e., the User instance) to the student field
+        serializer.save(student=customer.user)
+    
     def update(self, request, *args, **kwargs):
-        """
-        Custom update method to handle progress updates.
-        """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -141,23 +135,24 @@ class CourseProgressViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_update(self, serializer):
-        """
-        Custom perform_update method to handle additional logic during updates.
-        """
         serializer.save()
 
     def destroy(self, request, *args, **kwargs):
-        """
-        Custom destroy method to handle deletion of course progress.
-        """
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+
 class InstructorEarningsViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing instructor earnings.
+    """
     serializer_class = InstructorEarningsSerializer
+    permission_classes = [IsInstructor]
 
     def get_queryset(self):
-        instructor_pk = self.kwargs.get('instructor_pk')
-        return InstructorEarnings.objects.filter(instructor_id=instructor_pk).all()
+        """
+        Only allow instructors to view their own earnings.
+        """
+        return InstructorEarnings.objects.filter(instructor=self.request.user)
