@@ -44,23 +44,21 @@ class CourseSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'price', 'rating',
-        'instructor', 'syllabus', 'prerequisites',
+        fields = ['id', 'title', 'description', 'price', 'oldPrice', 'currency',  'rating',
+        'instructor', 'ratingCount', 'level', 'syllabus', 'prerequisites',
         'collection', 'images', 'videos'
         ]
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
-    instructor = serializers.StringRelatedField()
-
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'price', 'rating',
-        'instructor']
+        fields = ['id', 'title']
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
     course_id = serializers.IntegerField(write_only=True)
+    #course = SimpleCourseSerializer(read_only=True)
     student_id = serializers.IntegerField()
 
     class Meta:
@@ -104,3 +102,9 @@ class InstructorEarningsSerializer(serializers.ModelSerializer):
     class Meta:
         model = InstructorEarnings
         fields = ['id', 'instructor_id', 'total_earnings', 'last_payout']
+
+    def validate_instructor_id(self, value):
+        if not InstructorEarnings.objects.filter(instructor_id=value).exists():
+            raise serializers.ValidationError("Instructor earnings record does not exist.")
+        return value
+    
