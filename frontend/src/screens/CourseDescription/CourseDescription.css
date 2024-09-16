@@ -1,0 +1,241 @@
+.course_desc_page {
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  background-color: aliceblue;
+  padding-bottom: 5rem;
+}
+.course_desc_page.inst_course_desc_page {
+  width: 80%;
+  min-height: calc(100vh - 60px);
+  background-color: aliceblue;
+  padding-bottom: 5rem;
+}
+.desc_page_header {
+  padding: 2rem 3rem;
+  background-color: #000000;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  position: relative;
+}
+.back_to_inst_pge_btn {
+  border: 1px solid teal;
+  background-color: #fff;
+  color: #000000;
+  font-size: 1rem;
+  font-weight: 600;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 4px;
+}
+.desc_header_main {
+  padding: 0 1rem;
+  width: 60%;
+}
+.desc_course_img {
+  width: 30%;
+  height: 100%;
+}
+.desc_course_img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.desc_cc_ttl {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+.small_width {
+  width: 70%;
+}
+.creator {
+  font-size: 0.9rem;
+  color: #d1d1d1;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.creator_name {
+  color: #ffffff;
+  font-size: 1rem;
+}
+.desc_cc_stats {
+  display: flex;
+  align-items: center;
+  color: #d1d1d1;
+}
+.desc_cc_rating {
+  color: var(--glodish1);
+  font-weight: 900;
+}
+
+.desc_cc_rating2 {
+  margin: 0 0.5rem;
+  color: var(--glodish2);
+}
+.desc_cc_details {
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.desc_cc_dur::after,
+.desc_cc_dur::before {
+  content: ' · ';
+}
+.desc_cc_sub_text {
+  font-size: 1rem;
+  color: #ebebeb;
+  width: 100%;
+  line-height: 1;
+  font-size: 1rem;
+  text-align: left;
+  margin: 1rem 0;
+}
+.desc_flex_base {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.desc_cc_tag {
+  width: max-content;
+  color: var(--yellowish-green-dark);
+  background-color: var(--yellowish-green);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.5rem;
+  letter-spacing: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.desc_cc_update {
+  color: rgb(255, 255, 255);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.green {
+  color: rgb(38, 211, 38);
+}
+.desc_add_btns {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 5px 0;
+  height: 40px;
+  margin: 1rem auto;
+}
+.desc_add_to_cart_btn {
+  width: 20%;
+  height: 100%;
+  gap: 0.3rem;
+  background-color: #333;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px;
+  text-align: center;
+  border-radius: 1px;
+  border: 1px solid transparent;
+  outline: none;
+  transition: 0.3s ease-in-out;
+  position: relative;
+}
+.desc_add_to_cart_btn:hover {
+  background-color: #000000;
+}
+.buy_now_link {
+  width: 50%;
+  height: 100%;
+  gap: 0.3rem;
+  background-color: #10bb00;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 5px;
+  text-align: center;
+  border-radius: 1px;
+  border: 1px solid transparent;
+  outline: none;
+  transition: 0.3s ease-in-out;
+  position: relative;
+  box-shadow: 3px 3px 5px #000000;
+}
+.buy_now_link:hover {
+  border: 1px solid #000000;
+  box-shadow: none;
+}
+.desc_add_to_wish {
+  width: 50px;
+  height: 40px;
+  border: 1px solid #000000;
+  cursor: pointer;
+}
+.desc_add_to_wish:hover .desc_icon_heart {
+  color: red;
+}
+.desc_icon_heart {
+  width: 20px;
+  height: 20px;
+  color: #000000;
+}
+
+.desc_page_list {
+  width: 50%;
+  margin: 3rem auto;
+  text-align: center;
+}
+.desc_list_header {
+  font-size: 1.2rem;
+  text-align: left;
+  font-weight: 700;
+}
+.cc_list {
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.cc_li {
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #000000;
+  line-height: 2;
+}
+
+.tick::before {
+  content: '✓';
+  margin-right: 0.7rem;
+  height: 25px;
+  width: 25px;
+}
+.desc_page_courses {
+  width: 80%;
+  margin: 2rem auto;
+}
+
+.desc_c_header {
+  font-size: 1.4rem;
+  margin-left: 1rem;
+  color: black;
+  letter-spacing: 2px;
+}
