@@ -24,10 +24,12 @@ djangorestframework-simplejwt==5.3.1
 djoser==2.2.3
 drf-nested-routers==0.94.1
 git-filter-repo==2.45.0
+gunicorn==23.0.0
 idna==3.8
 kombu==5.4.0
 mysqlclient==2.2.4
 oauthlib==3.2.2
+packaging==24.1
 pillow==10.4.0
 pkg_resources==0.0.0
 prompt_toolkit==3.0.47
