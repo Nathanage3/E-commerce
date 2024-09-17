@@ -23,7 +23,7 @@ class CourseImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CourseImage
-        fields = ['id', 'course', 'image']
+        fields = ['image']
 
 
 class CourseVideoSerializer(serializers.ModelSerializer):
