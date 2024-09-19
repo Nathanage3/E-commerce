@@ -3,9 +3,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 from courses.admin import CourseAdmin
 from courses.models import Course
-from .models import User
-from courses.admin import CourseImageInLine
- 
+from .models import User 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -18,7 +16,7 @@ class UserAdmin(BaseUserAdmin):
 
 
 class CustomCourseAdmin(CourseAdmin):
-  inlines = [CourseImageInLine]
+  pass
   
 admin.site.unregister(Course)
 admin.site.register(Course, CustomCourseAdmin)
