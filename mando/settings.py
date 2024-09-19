@@ -82,16 +82,19 @@ WSGI_APPLICATION = 'mando.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sql7732307',  # Use the remote database name
-        'USER': 'sql7732307',  # Use the remote database username
-        'PASSWORD': 'Ufa64vQ2jl',  # Use the remote database password
-        'HOST': 'sql7.freemysqlhosting.net',  # Use the remote database host
-        'PORT': '3306',  # The remote database port
+        'NAME': os.getenv('DB_NAME', 'sql7732307'),  # Database name from environment
+        'USER': os.getenv('DB_USER', 'sql7732307'),  # Database username from environment
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Ufa64vQ2jl'),  # Database password from environment
+        'HOST': os.getenv('DB_HOST', 'sql7.freemysqlhosting.net'),  # Remote database host
+        'PORT': os.getenv('DB_PORT', '3306'),  # Port number for MySQL
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
