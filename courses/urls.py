@@ -17,8 +17,6 @@ router.register('orders', order_views.OrderViewSet, basename='orders')
 course_router = routers.NestedDefaultRouter(router, 'courses', lookup='course')
 course_router.register('reviews', views.ReviewViewSet, basename='course-reviews')
 course_router.register('progress', views.CourseProgressViewSet, basename='course-progress')
-course_router.register('images', views.CourseImageViewSet, basename='course-images')
-course_router.register('videos', views.CourseVideoViewSet, basename='course-videos')
 
 
 urlpatterns = [

@@ -10,7 +10,8 @@ from courses import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('__debug__/', include(debug_toolbar.urls)), 
+    path('__debug__/', include(debug_toolbar.urls)),
+    path('notifications/', include('notifications.urls')),
     path('course/', include('courses.urls')),  # Course-related endpoints
     path('store/', include('cart.urls')), # Cart-related endpoints
     path('auth/', include('djoser.urls')),

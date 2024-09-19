@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Collection, Promotion, Course, CourseProgress, \
-  Review, Customer, InstructorEarnings, CourseImage, CourseVideo
+  Review, Customer, InstructorEarnings
 
 
 class PromotionSerializer(serializers.ModelSerializer):
@@ -16,37 +16,16 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'courses_count']
 
 
-class CourseImageSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        course_id = self.context['course_id']
-        return CourseImage.objects.create(course_id=course_id, **validated_data)
-
-    class Meta:
-        model = CourseImage
-        fields = ['image']
-
-
-class CourseVideoSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        course_id = self.context['course_id']
-        return CourseVideo.objects.create(course_id=course_id, **validated_data)
-
-    class Meta:
-        model = CourseVideo
-        fields = ['id', 'course', 'video']
-
-
 class CourseSerializer(serializers.ModelSerializer):
     collection = CollectionSerializer(read_only=True)
     instructor = serializers.StringRelatedField()
-    images = CourseImageSerializer(many=True, read_only=True)
-    videos = CourseVideoSerializer(many=True, read_only=True)
+
     
     class Meta:
         model = Course
         fields = ['id', 'title', 'description', 'price', 'oldPrice', 'currency',  'rating',
         'instructor', 'ratingCount', 'level', 'syllabus', 'prerequisites',
-        'collection', 'images', 'videos'
+        'collection', 'image', 'video'
         ]
 
 

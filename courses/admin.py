@@ -6,14 +6,14 @@ from django.urls import reverse
 from . import models
 
 
-class CourseImageInLine(admin.TabularInline):
-    model = models.CourseImage
-    readonly_fields = ['thumbnail']
+# class CourseImageInLine(admin.TabularInline):
+#     model = models.CourseImage
+#     readonly_fields = ['thumbnail']
 
-    def thumbnail(self, instance):
-        if instance.image.name != '':
-            return format_html(f'<img src="{instance.image.url}" class="thumbnail">')
-        return ''
+#     def thumbnail(self, instance):
+#         if instance.image.name != '':
+#             return format_html(f'<img src="{instance.image.url}" class="thumbnail">')
+#         return ''
 
 
 @admin.register(models.Course)
@@ -23,7 +23,6 @@ class CourseAdmin(admin.ModelAdmin):
         'slug': ['title']
     }
     list_display = ['title', 'price', 'collection_title', 'rating']
-    inlines = [CourseImageInLine]
     list_editable = ['price']
     list_filter = ['collection', 'last_update', 'rating', 'id']
     list_per_page = 10

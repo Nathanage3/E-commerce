@@ -6,9 +6,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from .models import Course, Collection, Promotion, CourseImage, Customer, Review, CourseProgress, CourseVideo
-from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, InstructorEarningsSerializer, \
-    CourseImageSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, CourseVideoSerializer, InstructorEarnings
+from .models import Course, Collection, Promotion, Customer, Review, CourseProgress
+from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, InstructorEarningsSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, InstructorEarnings
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, IsStudentOrInstructor
 from orders.models import OrderItem
 from .pagination import DefaultPagination
@@ -38,10 +37,10 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 
 class CourseViewSet(viewsets.ModelViewSet):
-    queryset = Course.objects.select_related('instructor', 'collection').prefetch_related('images', 'videos').all().order_by('id')
+    queryset = Course.objects.select_related('instructor', 'collection').all().order_by('id')
 
     serializer_class = CourseSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
     search_fields = ['title']
     ordering_fields = ['price', 'last_update', 'rating', 'id']
@@ -75,26 +74,6 @@ class PromotionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
-class CourseImageViewSet(viewsets.ModelViewSet):
-    serializer_class = CourseImageSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        return {'course_id': self.kwargs['course_pk']}
-
-    def get_queryset(self):
-        return CourseImage.objects.filter(course_id=self.kwargs['course_pk'])
-    
-class CourseVideoViewSet(viewsets.ModelViewSet):
-    serializer_class = CourseVideoSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_context(self):
-        return {'course_id': self.kwargs['course_pk']}
-    
-    def get_queryset(self):
-        return CourseVideo.objects.filter(course_id=self.kwargs['course_pk'])
-
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
@@ -125,7 +104,7 @@ class CourseProgressViewSet(viewsets.ModelViewSet):
         # Calculate progress based on the number of videos watched
         videos_watched = request.data.get('videos_watched')
         if videos_watched is not None:
-            total_videos = CourseImage.objects.filter(course=instance.course).count()
+            total_videos = Course.objects.filter(video=instance.course.video).count()
             progress = (videos_watched / total_videos) * 100
             instance.progress = progress
 
@@ -157,7 +136,6 @@ class InstructorEarningsViewSet(viewsets.ModelViewSet):
         Only allow instructors to view their own earnings.
         """
         return InstructorEarnings.objects.filter(instructor=self.request.user)
-
 
 def home(request):
     return HttpResponse("Welcome to the home page!")

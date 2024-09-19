@@ -52,6 +52,10 @@ class Course(models.Model):
         (LEVEL_ADVANCED, "Advanced")
     ]
     title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='course/images', blank=True, null=True,
+                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
+    video = models.FileField(upload_to='course/videos', blank=True, null=True,
+                             validators=[FileExtensionValidator(allowed_extensions=['mp4', 'pdf'])])
     slug = models.SlugField(default='-')
     courseFor = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
@@ -73,6 +77,17 @@ class Course(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='courses')
     promotions = models.ManyToManyField(Promotion, blank=True)
     last_update = models.DateTimeField(auto_now=True)
+
+
+    class Meta:
+        unique_together = ['video']
+    
+    def clean(self):
+        if Course.objects.filter(video=self.video).exists():
+            raise ValidationError("This video file already exists.")
+
+    def __str__(self):
+        return f'Video for {self.course.title}'
 
     def __str__(self):
         return self.title
@@ -149,25 +164,3 @@ class InstructorEarnings(models.Model):
 
     def __str__(self):
         return f'Earnings for {self.instructor.username}'
-
-
-class CourseImage(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='course/images', blank=True, null=True,
-                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
-    
-
-class CourseVideo(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='videos')
-    video = models.FileField(upload_to='course/videos', blank=True, null=True,
-                             validators=[FileExtensionValidator(allowed_extensions=['mp4', 'pdf'])])
-    
-    class Meta:
-        unique_together = ['video']
-    
-    def clean(self):
-        if CourseVideo.objects.filter(video=self.video).exists():
-            raise ValidationError("This video file already exists.")
-
-    def __str__(self):
-        return f'Video for {self.course.title}'
