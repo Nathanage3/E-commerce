@@ -41,7 +41,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.select_related('instructor', 'collection').prefetch_related('images', 'videos').all().order_by('id')
 
     serializer_class = CourseSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    # permission_classes = [IsAdminOrReadOnly]
     pagination_class = DefaultPagination
     search_fields = ['title']
     ordering_fields = ['price', 'last_update', 'rating', 'id']
