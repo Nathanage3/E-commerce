@@ -1,5 +1,6 @@
 from django.db.models import OuterRef, Subquery
 from django.db.models.aggregates import Count
+from django.http import HttpResponse
 from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -156,3 +157,7 @@ class InstructorEarningsViewSet(viewsets.ModelViewSet):
         Only allow instructors to view their own earnings.
         """
         return InstructorEarnings.objects.filter(instructor=self.request.user)
+
+
+def home(request):
+    return HttpResponse("Welcome to the home page!")
