@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'core',
+    'core.apps.CoreConfig',
     'courses',
     'notifications',
     'cart',
