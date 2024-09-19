@@ -40,7 +40,7 @@ const CourseCard = ({ course }) => {
     <article className="course_card">
       <Link to={`/course/${course.id}`} className="cc_inner_div">
         <div className="course_img">
-          <img src={course.img} alt="course thumbnail" className="" />
+          <img src={course.images.image} alt="course thumbnail" className="" />
         </div>
       </Link>
       <div className="course_card_body">
