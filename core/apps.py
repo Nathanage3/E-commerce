@@ -1,6 +1,6 @@
 from django.apps import AppConfig
+import os
 
 class CoreConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'core'
-    path = '/workspace/core'  # Adjust this path to where the core app is located
+    name = 'courses'
+    path = os.path.join(os.path.dirname(__file__), 'courses')
