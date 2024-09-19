@@ -1,7 +1,7 @@
 # Ignore compiled bytecode files and __pycache__ directories
 *.pyc
 __pycache__/
-*/__pycache__/
+
 
 # Ignore environment files
 *.venv
@@ -15,5 +15,8 @@ Pipfile.lock
 /templates/
 
 # Ignore media files (images and videos)
-/media/*
 /profile_pictures/*
+# Ignore Python cache files
+
+# Ignore media files if they shouldn't be part of the repo
+media/
