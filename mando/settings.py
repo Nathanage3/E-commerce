@@ -35,10 +35,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'core.apps.CoreConfig',
-    'courses',
-    'notifications',
-    'cart',
-    'orders'
+    'courses.apps.NotificationsConfig',
+    'notifications.apps.NotificationsConfig',
+    'cart.apps.NotificationsConfig',
+    'orders.apps.NotificationsConfig',
 ]
 
 MIDDLEWARE = [
