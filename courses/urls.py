@@ -23,6 +23,7 @@ course_router.register('videos', views.CourseVideoViewSet, basename='course-vide
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('', views.home, name='home'), 
     path('', include(course_router.urls)),
     path('instructors/<int:instructor_pk>/earnings/', views.InstructorEarningsViewSet.as_view({'get': 'list'})),
 ]
