@@ -2,7 +2,6 @@ amqp==5.2.0
 asgiref==3.8.1
 async-timeout==4.0.3
 backports.zoneinfo==0.2.1
-
 billiard==4.2.0
 celery==5.4.0
 certifi==2024.7.4
@@ -17,6 +16,7 @@ defusedxml==0.8.0rc2
 Django==4.2.15
 django-cors-headers==4.4.0
 django-debug-toolbar==4.4.6
+django-environ==0.11.2
 django-filter==24.3
 django-redis==5.4.0
 django-templated-mail==1.1.1
@@ -32,6 +32,7 @@ mysqlclient==2.2.4
 oauthlib==3.2.2
 packaging==24.1
 pillow==10.4.0
+pipdeptree==2.23.3
 pkg_resources==0.0.0
 prompt_toolkit==3.0.47
 pycparser==2.22
@@ -50,3 +51,4 @@ tzdata==2024.1
 urllib3==2.2.2
 vine==5.1.0
 wcwidth==0.2.13
+whitenoise==6.7.0
