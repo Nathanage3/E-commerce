@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'corsheaders',
     'djoser',
-    'core',
     'core.apps.CoreConfig',
     'courses',
     'notifications',
