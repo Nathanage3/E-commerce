@@ -19,7 +19,7 @@ DJANGO_ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "mando.koyeb.app")
 print(DJANGO_ALLOWED_HOSTS) 
 
 ALLOWED_HOSTS = DJANGO_ALLOWED_HOSTS.split(",")
-
+ALLOWED_ORIGINS = ['http://localhost:5173']
 # Application definition
 
 INSTALLED_APPS = [
