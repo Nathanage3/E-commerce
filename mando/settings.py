@@ -20,6 +20,9 @@ print(DJANGO_ALLOWED_HOSTS)
 
 ALLOWED_HOSTS = DJANGO_ALLOWED_HOSTS.split(",")
 
+
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
+
 # Application definition
 
 INSTALLED_APPS = [
