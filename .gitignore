@@ -16,4 +16,5 @@ Pipfile.lock
 
 # Ignore media files (images and videos)
 /media/*
-/profile_pictures/*
+
+/.venv

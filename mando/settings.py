@@ -14,15 +14,16 @@ SECRET_KEY = 'django-insecure-d3xp9rrm^qe-8x(-tg0xy@(xr0z+$!%j5bjtn+tx@2l)o0#e5e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-DJANGO_ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "mando.koyeb.app")
-print(DJANGO_ALLOWED_HOSTS) 
+# DJANGO_ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "mando.koyeb.app")
+# print(DJANGO_ALLOWED_HOSTS) 
 
-ALLOWED_HOSTS = DJANGO_ALLOWED_HOSTS.split(",")
+# ALLOWED_HOSTS = DJANGO_ALLOWED_HOSTS.split(",")
+ALLOWED_HOSTS = ['*']
 
 #CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'https://mando.koyeb.app'
+    #'http://localhost:5173',
+    #'https://mando.koyeb.app'
 ]
 
 # Application definition
@@ -41,9 +42,7 @@ INSTALLED_APPS = [
     'djoser',
     'core.apps.CoreConfig',
     'courses.apps.CoursesConfig',
-    'notifications.apps.NotificationsConfig',
-    'cart.apps.CartConfig',
-    'orders.apps.OrdersConfig',
+    'notifications.apps.NotificationsConfig'
 ]
 
 MIDDLEWARE = [
@@ -87,16 +86,28 @@ WSGI_APPLICATION = 'mando.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 import os
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('DB_NAME', 'bblxuvtp6yqwcc1moe53'),  # Database name from Clever Cloud
+#         'USER': os.getenv('DB_USER', 'uyoxfrz1edvkjufd'),  # Database username from Clever Cloud
+#         'PASSWORD': os.getenv('DB_PASSWORD', 'QV6yk3tRACkW2Q9yGUGY'),  # Database password from Clever Cloud
+#         'HOST': os.getenv('DB_HOST', 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com'),  # Clever Cloud host
+#         'PORT': os.getenv('DB_PORT', '3306'),  # Port number for MySQL
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'bblxuvtp6yqwcc1moe53'),  # Database name from Clever Cloud
-        'USER': os.getenv('DB_USER', 'uyoxfrz1edvkjufd'),  # Database username from Clever Cloud
-        'PASSWORD': os.getenv('DB_PASSWORD', 'QV6yk3tRACkW2Q9yGUGY'),  # Database password from Clever Cloud
-        'HOST': os.getenv('DB_HOST', 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com'),  # Clever Cloud host
-        'PORT': os.getenv('DB_PORT', '3306'),  # Port number for MySQL
+        'NAME': 'mando_db',  # Database name from Clever Cloud
+        'USER': 'root',  # Database username from Clever Cloud
+        'PASSWORD': 'Password',  # Database password from Clever Cloud
+        'HOST': 'localhost',  # Clever Cloud host
+        'PORT': 3306,  # Port number for MySQL
     }
 }
+
 
 
 
@@ -157,7 +168,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
     'AUTH_HEADER_TYPES': ('JWT',),
-    'BLACKLIST_AFTER_ROTATION': True,
+    #'BLACKLIST_AFTER_ROTATION': True,
 }
 
 DJOSER = {
@@ -168,5 +179,31 @@ DJOSER = {
     'LOGIN_FIELD': 'email'
 }
 
+
+DJOSER = {
+    'USER_ID_FIELD': 'username',  # This should be 'username' if you're using it for authentication
+    'SERIALIZERS': {
+        'user_create': 'core.serializers.UserCreateSerializer',
+        'user': 'core.serializers.UserSerializer',
+        'current_user': 'core.serializers.UserSerializer',
+        'set_username': 'core.serializers.SetUsernameSerializer',  # Make sure it's set
+    },
+}
+
+
 # Remove the limit on data upload size
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}

@@ -22,21 +22,22 @@ class IsStudentOrInstructor(permissions.BasePermission):
     Custom permission to allow students to view/edit their own progress
     and instructors to view the progress of students in their courses.
     """
-    def has_object_permission(self, request, view, obj):
-        # Allow admin users full access
-        if request.user.is_staff:
-            return True
+    def has_permission(self, request, view):
+        # Allow access for authenticated users who are students, instructors, or admins
+        return request.user.is_authenticated and (
+            request.user.role == 'student' or 
+            request.user.role == 'instructor' or 
+            request.user.is_staff
+        )
 
-        # Students can view and update only their own course progress
-        if hasattr(request.user, 'customer') and obj.student == request.user.customer:
-            return True
-
-        # Instructors can view the progress of students in their own courses
-        if hasattr(request.user, 'instructor') and obj.course.instructor == request.user.instructor:
-            return True
-
-        return False
-
+class IsInstructorOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Allow read-only access for authenticated users (students)
+        if request.method in permissions.SAFE_METHODS:
+            return request.user.is_authenticated
+        # Allow full access for instructors and admins
+        return request.user.is_authenticated and (request.user.role == 'instructor' or \
+                                                  request.user.is_staff)
 
 class IsInstructor(permissions.BasePermission):
     """
@@ -48,4 +49,5 @@ class IsInstructor(permissions.BasePermission):
             return True
 
         # Instructors can view only their own earnings
-        return hasattr(request.user, 'instructor') and obj.instructor == request.user
+        return request.user.is_authenticated and request.user.role == 'instructor'\
+            and obj.instructor == request.user
