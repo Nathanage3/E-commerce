@@ -77,20 +77,10 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'first_name', 'last_name', 'orders')
+    list_display = ('user', 'role', 'first_name', 'last_name')
     list_filter = ('role',)
     search_fields = ('user__username', 'user__first_name', 'user__last_name')
     ordering = ('user__first_name', 'user__last_name')
-
-    @admin.display(ordering='orders_count')
-    def orders(self, customer):
-        url = (
-            reverse('admin:orders_order_changelist')
-            + '?'
-            + urlencode({
-                'customer__id': str(customer.id)
-            }))
-        return format_html('<a href="{}">{} Orders</a>', url, customer.orders_count)
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
