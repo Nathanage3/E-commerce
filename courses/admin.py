@@ -6,37 +6,50 @@ from django.urls import reverse
 from . import models
 
 
-# class CourseImageInLine(admin.TabularInline):
-#     model = models.CourseImage
-#     readonly_fields = ['thumbnail']
+class CourseImageInLine(admin.TabularInline):
+    model = models.Course
+    readonly_fields = ['thumbnail']
 
-#     def thumbnail(self, instance):
-#         if instance.image.name != '':
-#             return format_html(f'<img src="{instance.image.url}" class="thumbnail">')
-#         return ''
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html(f'<img src="{instance.image.url}" class="thumbnail">')
+        return ''
 
+
+############## CourseAdmin Begin ##############
 
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['collection']
-    prepopulated_fields = {
-        'slug': ['title']
-    }
-    list_display = ['title', 'price', 'collection_title', 'rating']
-    list_editable = ['price']
-    list_filter = ['collection', 'last_update', 'rating', 'id']
-    list_per_page = 10
-    list_select_related = ['collection']
-    search_fields = ['title']
+    list_display = ('title', 'instructor', 'price', 'rating', 'is_active')
+    list_filter = ('instructor', 'is_active', 'level')
+    search_fields = ('title', 'instructor__user__username', 'description')
+    prepopulated_fields = {'slug': ('title',)}
+    ordering = ('title',)
+    readonly_fields = ('last_update',)
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'slug', 'description', 'objectives', 'sections', 
+                       'duration', 'image', 'file', 'courseFor', 'price', 'oldPrice', 
+                       'rating', 'currency', 'ratingCount', 'syllabus', 'prerequisites', 'is_active', 
+                       'level', 'collection', 'promotions')
+        }),
+        ('Instructor Information', {
+            'fields': ('instructor',)
+        }),
+    )
 
-    def collection_title(self, course):
-        return course.collection.title
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(instructor=request.user)
 
-    class Media:
-        css = {
-            'all': ['courses/styles.css']
-        }
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.instructor = request.user
+        super().save_model(request, obj, form, change)
 
+################## CourseAdmin End ##############
 
 @admin.register(models.Collection)
 class CollectionAdmin(admin.ModelAdmin):
@@ -60,19 +73,19 @@ class CollectionAdmin(admin.ModelAdmin):
         )
 
 
+############### CustomerAdmin Begin ############
+
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'orders']
-
-    list_per_page = 10
-    list_select_related = ['user']
-    ordering = ['user__first_name', 'user__last_name']
-    search_fields = ['first_name__istartswith', 'last_name__istartswith']
+    list_display = ('user', 'role', 'first_name', 'last_name', 'orders')
+    list_filter = ('role',)
+    search_fields = ('user__username', 'user__first_name', 'user__last_name')
+    ordering = ('user__first_name', 'user__last_name')
 
     @admin.display(ordering='orders_count')
     def orders(self, customer):
         url = (
-            reverse('admin:orders_order_changelist') # I have made some changes
+            reverse('admin:orders_order_changelist')
             + '?'
             + urlencode({
                 'customer__id': str(customer.id)
@@ -83,8 +96,42 @@ class CustomerAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(
             orders_count=Count('order')
         )
-    
+
+############### CustomerAdmin End ##############
+
+############## InstructorEarningAdmin Begin ###########
+
 @admin.register(models.InstructorEarnings)
-class InstructorEarningAdmin(admin.ModelAdmin):
-    list_display = ['instructor_id', 'total_earnings', 'last_payout']
-    search_fields = ['instructor__username', 'total_earnings']
+class InstructorEarningsAdmin(admin.ModelAdmin):
+    list_display = ('instructor', 'total_earnings', 'last_payout')
+    search_fields = ('instructor__username',)
+    ordering = ('instructor',)
+
+############## InstructorEarningAddmin End ###########
+
+@admin.register(models.Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'order', 'is_active')
+    list_filter = ('course', 'is_active')
+    search_fields = ('title', 'course__title')
+    ordering = ('order',)
+
+    def course_title(self, obj):
+        return obj.course.title
+    course_title.admin_order_field = 'course'  # Allows column order sorting
+    course_title.short_description = 'Course Title'
+
+
+class OrderItemInline(admin.TabularInline):
+    autocomplete_fields = ['course']
+    min_num = 1
+    max_num = 10
+    model = models.OrderItem
+    extra = 0
+
+
+@admin.register(models.Order)
+class OrderAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['customer']
+    inlines = [OrderItemInline]
+    list_display = ['id', 'placed_at', 'customer']
