@@ -26,6 +26,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [IsAdminUser]
+    lookup_field = 'user_id'
     
     @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
     def history(self, request, pk):
