@@ -6,7 +6,6 @@ from .models import User
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
-    role = serializers.CharField(required=True)
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=True)
     class Meta(BaseUserCreateSerializer.Meta):
         model = User  # Ensure this points to your custom User model
