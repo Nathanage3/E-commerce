@@ -219,7 +219,6 @@ class Order(models.Model):
         return f"Order {self.id} - {self.get_payment_status_display()}"
 
 
-
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='items')
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='orderitems')
@@ -229,9 +228,12 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.course.title} - {self.price}"
     
-class Cart(models.Model):
-  id = models.UUIDField(primary_key=True, default=uuid4)
+class Cart(models.Model): # Updated
+  #id = models.UUIDField(primary_key=True, default=uuid4)
+  #created_at = models.DateTimeField(auto_now_add=True)
+  id = models.UUIDField(primary_key=True, default=uuid4) 
   created_at = models.DateTimeField(auto_now_add=True)
+  customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='cart')
 
 
 class CartItem(models.Model):

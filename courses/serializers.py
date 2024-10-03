@@ -22,7 +22,7 @@ class CollectionSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    #collection= CollectionSerializer(read_only=True)
+    collection_id= serializers.IntegerField()
     instructor = serializers.StringRelatedField()
     
     class Meta:
