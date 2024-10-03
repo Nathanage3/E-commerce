@@ -6,12 +6,14 @@ from .models import User
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
+    role = serializers.CharField(required=True)
     class Meta(BaseUserCreateSerializer.Meta):
         model = User  # Ensure this points to your custom User model
         fields = ['id', 'username', 'email', 'password', 'first_name', 'last_name', 'role']
 
 
 class UserSerializer(BaseUserSerializer):
+    role = serializers.CharField(required=True)
     class Meta(BaseUserSerializer.Meta):
         model = User  # Ensure this points to your custom User model
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
