@@ -15,6 +15,6 @@ Pipfile.lock
 /templates/
 
 # Ignore media files (images and videos)
-/media/*
+media/course/*
 
 /.venv

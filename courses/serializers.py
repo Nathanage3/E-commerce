@@ -15,7 +15,7 @@ class PromotionSerializer(serializers.ModelSerializer):
 
 
 class CollectionSerializer(serializers.ModelSerializer):
-    courses_count = serializers.IntegerField(read_only=True)
+    courses_count = serializers.IntegerField()
     class Meta:
         model = Collection
         fields = ['id', 'title', 'courses_count']
