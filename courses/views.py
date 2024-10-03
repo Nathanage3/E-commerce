@@ -80,12 +80,8 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
-    latest_course = Course.objects.filter(collection=OuterRef('pk')).order_by('-last_update').values('id')[:1]
-
     queryset = Collection.objects.annotate(
-        latest_course_id=Subquery(latest_course),
-        course_count=Count('courses')
-        ).select_related('featured_course').prefetch_related('courses').all()
+        courses_count=Count('courses')).all()
     
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
