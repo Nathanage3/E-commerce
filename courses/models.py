@@ -228,12 +228,9 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.course.title} - {self.price}"
     
-class Cart(models.Model): # Updated
-  #id = models.UUIDField(primary_key=True, default=uuid4)
-  #created_at = models.DateTimeField(auto_now_add=True)
-  id = models.UUIDField(primary_key=True, default=uuid4) 
+class Cart(models.Model):
+  id = models.UUIDField(primary_key=True, default=uuid4)
   created_at = models.DateTimeField(auto_now_add=True)
-  customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='cart')
 
 
 class CartItem(models.Model):
