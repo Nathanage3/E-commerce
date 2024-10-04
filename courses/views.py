@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework import permissions
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
     Order, OrderItem, Cart, CartItem, WishList, Purchase
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, \
@@ -71,7 +72,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.select_related('instructor', 'collection').all().order_by('id')
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated, IsInstructorOrReadOnly]
+    #permission_classes = [IsAdminOrReadOnly, IsInstructorOrReadOnly]
     pagination_class = DefaultPagination
     search_fields = ['title']
     ordering_fields = ['price', 'last_update', 'rating', 'id']
@@ -100,6 +101,20 @@ class CourseViewSet(viewsets.ModelViewSet):
                 # Handle the error or provide a default ordering
                 queryset = queryset.order_by('id')
         return queryset
+    
+    def get_permissions(self):
+        if self.action == 'destroy':
+            self.permission_classes = [IsAdminOrReadOnly]
+        elif self.action == 'retrieve':
+            self.permission_classes = [IsStudentOrInstructor]
+        elif self.action == 'create':
+            self.permission_classes = [IsInstructorOrReadOnly]
+        elif self.action == 'update':
+            self.permission_classes = [IsInstructor]
+        else:
+            self.permission_classes = [IsAdminOrReadOnly]
+        return super().get_permissions()
+        
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

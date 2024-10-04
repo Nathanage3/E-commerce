@@ -9,6 +9,7 @@ from datetime import timedelta
 from uuid import uuid4
 
 
+
 class Collection(models.Model):
     title = models.CharField(max_length=255)
     featured_course = models.ForeignKey(
@@ -57,7 +58,7 @@ class Course(models.Model):
     objectives = models.TextField(default="")
     sections = models.IntegerField(default=0)
     duration = models.TimeField()
-    image = models.ImageField(upload_to='course/images', blank=True, null=True,
+    image = models.ImageField(upload_to='course/images',
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
     file = models.FileField(
         upload_to='course/lessons/videos',
@@ -74,7 +75,7 @@ class Course(models.Model):
                                MaxValueValidator(Decimal('5.0'))])
     currency = models.CharField(
         max_length=10, choices=CURRENCY_CHOICES, default=CURRENCY_USD)
-    ratingCount = models.PositiveIntegerField(blank=True, null=True)
+    ratingCount = models.PositiveIntegerField(blank=True, default='0')
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
