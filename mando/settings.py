@@ -87,30 +87,30 @@ WSGI_APPLICATION = 'mando.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 import os
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('DB_NAME', 'bblxuvtp6yqwcc1moe53'),  # Database name from Clever Cloud
-#         'USER': os.getenv('DB_USER', 'uyoxfrz1edvkjufd'),  # Database username from Clever Cloud
-#         'PASSWORD': os.getenv('DB_PASSWORD', 'QV6yk3tRACkW2Q9yGUGY'),  # Database password from Clever Cloud
-#         'HOST': os.getenv('DB_HOST', 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com'),  # Clever Cloud host
-#         'PORT': os.getenv('DB_PORT', '3306'),  # Port number for MySQL
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mando_db',  # Database name from Clever Cloud
-        'USER': 'root',  # Database username from Clever Cloud
-        'PASSWORD': 'Password',  # Database password from Clever Cloud
-        'HOST': 'localhost',  # Clever Cloud host
-        'PORT': 3306,  # Port number fcreaor MySQL
-        'OPTIONS': {
-            'ssl': {'disabled': True},
-            },
-        }
+        'NAME': os.getenv('DB_NAME', 'bblxuvtp6yqwcc1moe53'),  # Database name from Clever Cloud
+        'USER': os.getenv('DB_USER', 'uyoxfrz1edvkjufd'),  # Database username from Clever Cloud
+        'PASSWORD': os.getenv('DB_PASSWORD', 'QV6yk3tRACkW2Q9yGUGY'),  # Database password from Clever Cloud
+        'HOST': os.getenv('DB_HOST', 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com'),  # Clever Cloud host
+        'PORT': os.getenv('DB_PORT', '3306'),  # Port number for MySQL
+    }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'mando_db',  # Database name from Clever Cloud
+#         'USER': 'root',  # Database username from Clever Cloud
+#         'PASSWORD': 'Password',  # Database password from Clever Cloud
+#         'HOST': 'localhost',  # Clever Cloud host
+#         'PORT': 3306,  # Port number fcreaor MySQL
+#         'OPTIONS': {
+#             'ssl': {'disabled': True},
+#             },
+#         }
+# }
 
 
 
