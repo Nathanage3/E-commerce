@@ -67,9 +67,9 @@ class Course(models.Model):
     slug = models.SlugField(default='-')
     courseFor = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2,
+    price = models.DecimalField(max_digits=10, decimal_places=2, 
                                validators=[MinValueValidator(Decimal('0.01'))])
-    oldPrice = models.DecimalField(max_digits=10, decimal_places=2,
+    oldPrice = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True,
                                validators=[MinValueValidator(Decimal('0.01'))])
     rating = models.FloatField(default=1.0, validators=[MinValueValidator(Decimal('1.0')), 
                                MaxValueValidator(Decimal('5.0'))])
