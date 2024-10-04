@@ -26,7 +26,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [IsAdminUser]
-    lookup_field = 'user_id'
     
     @action(detail=True, permission_classes=[ViewCustomerHistoryPermission])
     def history(self, request, pk):
@@ -44,8 +43,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
-
-
+        
     @action(detail=False, methods=['PUT'], permission_classes=[IsAuthenticated])
     def update_profile_picture(self, request):
         try:
@@ -66,12 +64,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response({'error': 'No profile picture uploaded'}, status=400)
         except Customer.DoesNotExist:
             return Response({'error': 'Customer not found'}, status=404)
+    
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.select_related('instructor', 'collection').all().order_by('id')
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated, IsInstructorOrReadOnly]
+    permission_classes = [IsInstructorOrReadOnly]
     pagination_class = DefaultPagination
     search_fields = ['title']
     ordering_fields = ['price', 'last_update', 'rating', 'id']
@@ -100,11 +99,16 @@ class CourseViewSet(viewsets.ModelViewSet):
                 # Handle the error or provide a default ordering
                 queryset = queryset.order_by('id')
         return queryset
-
+    
+    
 
 class CollectionViewSet(viewsets.ModelViewSet):
+    latest_course = Course.objects.filter(collection=OuterRef('pk')).order_by('-last_update').values('id')[:1]
+
     queryset = Collection.objects.annotate(
-        courses_count=Count('courses')).all()
+        latest_course_id=Subquery(latest_course),
+        course_count=Count('courses')
+        ).select_related('featured_course').prefetch_related('courses').all()
     
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
