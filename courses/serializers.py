@@ -15,14 +15,15 @@ class PromotionSerializer(serializers.ModelSerializer):
 
 
 class CollectionSerializer(serializers.ModelSerializer):
-    courses_count = serializers.IntegerField(read_only=True)
+    courses_count = serializers.IntegerField()
     class Meta:
         model = Collection
         fields = ['id', 'title', 'courses_count']
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    #collection= CollectionSerializer(read_only=True)
+    collection_id= serializers.IntegerField()
+    #collection = CollectionSerializer(read_only=True)
     instructor = serializers.StringRelatedField()
     
     class Meta:
@@ -65,11 +66,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField()
+    user_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Customer
-        fields = ['id', 'user_id', 'role', 'bio', 'website', 'profile_picture']
+        fields = ['id', 'user_id', 'bio', 'website', 'profile_picture']
 
 
 class InstructorEarningsSerializer(serializers.ModelSerializer):

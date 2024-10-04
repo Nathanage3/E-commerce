@@ -219,7 +219,6 @@ class Order(models.Model):
         return f"Order {self.id} - {self.get_payment_status_display()}"
 
 
-
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='items')
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='orderitems')
