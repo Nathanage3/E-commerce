@@ -38,7 +38,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             serializer = CustomerSerializer(customer)
             return Response(serializer.data)
-
+        
         elif request.method == 'PUT':
             serializer = CustomerSerializer(customer, data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -75,7 +75,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     pagination_class = DefaultPagination
     search_fields = ['title']
     ordering_fields = ['price', 'last_update', 'rating', 'id']
-    http_method_names = ['get', 'post', 'delete', 'put'] # CRUD
+    http_method_names = ['get', 'post', 'delete', 'put', 'patch'] # CRUD
 
     def get_serializer_context(self):
         return {'request': self.request}
@@ -117,13 +117,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
-    latest_course = Course.objects.filter(collection=OuterRef('pk')).order_by('-last_update').values('id')[:1]
-
-    queryset = Collection.objects.annotate(
-        latest_course_id=Subquery(latest_course),
-        course_count=Count('courses')
-        ).select_related('featured_course').prefetch_related('courses').all()
-    
+    queryset = Collection.objects.annotate(courses_count=Count('courses')).all()
     serializer_class = CollectionSerializer
     permission_classes = [IsAdminOrReadOnly]
 

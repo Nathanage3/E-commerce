@@ -11,7 +11,7 @@ from core.models import User
 class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
-        fields = ['description', 'discount']
+        fields = ['id', 'description', 'discount']
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -23,13 +23,17 @@ class CollectionSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     instructor = serializers.StringRelatedField()
-    promotions = PromotionSerializer(many=True, read_only=False)
-
+    promotions = PromotionSerializer(many=True, read_only=True)
+    ratingCount = serializers.IntegerField(read_only=True)
+    oldPrice = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
+    
     class Meta:
         model = Course
-        fields = ['id', 'collection', 'title', 'description', 'duration', 'price', 'currency',  'rating',
+        fields = ['id', 'collection', 'title', 'description', 'ratingCount', 'oldPrice', 'duration', 'price', 'currency',  'rating',
         'instructor', 'level', 'syllabus', 'prerequisites', 'image', 'file', 'promotions'
         ]
+
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
     class Meta:
