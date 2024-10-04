@@ -29,7 +29,6 @@ idna==3.8
 kombu==5.4.0
 mysqlclient==2.2.4
 oauthlib==3.2.2
-olefile==0.47
 packaging==24.1
 pillow==10.4.0
 pipdeptree==2.23.3
