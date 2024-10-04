@@ -46,6 +46,28 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
 
+    @action(detail=False, methods=['PUT'], permission_classes=[IsAuthenticated])
+    def update_profile_picture(self, request):
+        try:
+            customer = Customer.objects.get(user=request.user)
+            user = request.user
+            if 'profile_picture' in request.FILES:
+                profile_picture = request.FILES['profile_picture']
+            
+                # Update profile picture for Customer
+                customer.profile_picture = profile_picture
+                customer.save()
+            
+                # Update profile picture for User
+                user.profile_picture = profile_picture
+                user.save()
+            
+                return Response({'status': 'Profile picture updated'}, status=200)
+            return Response({'error': 'No profile picture uploaded'}, status=400)
+        except Customer.DoesNotExist:
+            return Response({'error': 'Customer not found'}, status=404)
+
+
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.select_related('instructor', 'collection').all().order_by('id')
     serializer_class = CourseSerializer
