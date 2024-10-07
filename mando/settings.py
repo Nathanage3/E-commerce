@@ -24,7 +24,9 @@ ALLOWED_HOSTS = ['*']
 #CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
-    'https://mando.koyeb.app'
+    'https://mando.koyeb.app',
+    'https://mandotest.netlify.app'
+
 ]
 
 # Application definition
