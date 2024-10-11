@@ -4,7 +4,7 @@ from .models import Notification
 
 class NotificationSerializer(serializers.ModelSerializer):
     is_expired = serializers.SerializerMethodField()
-
+    user = serializers.CharField(read_only=True)
     class Meta:
         model = Notification
         fields = [

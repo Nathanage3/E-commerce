@@ -1,11 +1,11 @@
 from django.shortcuts import render
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Notification
 from .serializers import NotificationSerializer
 
 
-class NotificationViewSet(ModelViewSet):
+class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
 

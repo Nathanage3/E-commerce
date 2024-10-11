@@ -10,21 +10,19 @@ router.register('customers', views.CustomerViewSet, basename='customers')
 router.register('course-progress', views.CourseProgressViewSet, basename='course-progress')
 router.register('instructor-earnings', views.InstructorEarningsViewSet,  basename='instructor-earnings')
 router.register('orders', views.OrderViewSet, basename='orders')
+router.register('order-items', views.OrderItemViewSet, basename='order-items')
 router.register('carts', views.CartViewSet, basename='carts')
-
-cart_router = routers.NestedDefaultRouter(router, 'carts', lookup='cart' )
-cart_router.register('items', views.CartItemViewSet, basename='cart-items')
-
+router.register('cart-items', views.CartItemViewSet, basename='cart-items')
+router.register('promotions', views.PromotionViewSet, basename='promotions')
 
 # Nested routers for Course-related models
 course_router = routers.NestedDefaultRouter(router, 'courses', lookup='course')
 course_router.register('reviews', views.ReviewViewSet, basename='course-reviews')
 course_router.register('progress', views.CourseProgressViewSet, basename='course-progress')
-
+course_router.register('lessons', views.LessonViewSet, basename='course-lessons')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include(cart_router.urls)),
     path('', views.home, name='home'), 
     path('', include(course_router.urls)),
     path('instructors/<int:instructor_pk>/earnings/', views.InstructorEarningsViewSet.as_view({'get': 'list'})),

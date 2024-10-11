@@ -2,16 +2,16 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Collection, Promotion, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, Lesson, Order, OrderItem, \
-  Cart, CartItem, WishList, Purchase
+  Cart, CartItem, WishList, WishListItem
 from courses.signals import order_created
-from courses.signals.handlers import create_purchase
 from core.models import User
 
 
 class PromotionSerializer(serializers.ModelSerializer):
+    instructor = serializers.CharField(read_only=True)
     class Meta:
         model = Promotion
-        fields = ['id', 'description', 'discount']
+        fields = ['id', 'instructor', 'course', 'title', 'message', 'discount', 'start_date', 'end_date']
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -23,17 +23,33 @@ class CollectionSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     instructor = serializers.StringRelatedField()
-    promotions = PromotionSerializer(many=True, read_only=True)
+    promotions = PromotionSerializer(many=True, required=False)
     ratingCount = serializers.IntegerField(read_only=True)
     oldPrice = serializers.IntegerField(read_only=True)
     rating = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = Course
-        fields = ['id', 'collection', 'title', 'description', 'ratingCount', 'oldPrice', 'duration', 'price', 'currency',  'rating',
-        'instructor', 'level', 'syllabus', 'prerequisites', 'image', 'file', 'promotions'
+        fields = ['id', 'collection', 'title', 'objectives', 'sections', 'description', 'ratingCount', 'oldPrice',
+                  'duration', 'price', 'currency',  'rating', 'instructor', 'level', 'syllabus', 'prerequisites',
+                  'image', 'file', 'promotions'
         ]
+    def create(self, validated_data):
+        promotions_data = validated_data.pop('promotions', [])
+        course = Course.objects.create(**validated_data)
 
+        for promotion_data in promotions_data:
+            Promotion.objects.create(course=course, instructor=course.instructor, **promotion_data)
+
+        return course
+    
+    def update(self, instance, validated_data):
+        promotions_data = validated_data.pop('promotions', [])
+        instance = super().update(instance, validated_data)
+
+        for promotion_data in promotions_data:
+            Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
+        return instance
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,13 +57,23 @@ class SimpleCourseSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'instructor', 'description', 'objectives', 'duration']
 
 
+class LessonSerializer(serializers.ModelSerializer):
+    course = SimpleCourseSerializer(read_only=True)
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'course', 'order', 'file', 'is_active']
+
+
 class CourseProgressSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField(write_only=True)
+    #course_id = serializers.IntegerField(write_only=True)
+    course = SimpleCourseSerializer()
+    lesson = LessonSerializer()
 
     class Meta:
         model = CourseProgress
-        fields = ['id', 'course_id', 'completed', 'progress', 'last_accessed']
+        fields = ['id', 'course', 'lesson', 'completed', 'progress', 'last_accessed']
 
+    
     def validate_course_id(self, value):
         if not Course.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid course_id: Course does not exist.")
@@ -75,49 +101,42 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class InstructorEarningsSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = InstructorEarnings
-        fields = ['id', 'total_earnings', 'last_payout']
+        fields = ['id', 'total_earnings', 'last_payout', 'deduction']
 
     def validate_instructor_id(self, value):
         if not User.objects.filter(id=value, role='instructor').exists():
             raise serializers.ValidationError("Instructor does not exist.")
-        return value
-
-    def create(self, validated_data):
-        instructor_id = validated_data.get('instructor_id')
-        instructor, created = InstructorEarnings.objects.get_or_create(instructor_id=instructor_id)
-        instructor.total_earnings = validated_data.get('total_earnings', instructor.total_earnings)
-        instructor.last_payout = validated_data.get('last_payout', instructor.last_payout)
-        instructor.save()
-        return instructor
-    
-
-class LessonSerializer(serializers.ModelSerializer):
-    course = SimpleCourseSerializer(read_only=True)
-    class Meta:
-        model = Lesson
-        fields = ['id', 'title', 'course', 'order', 'file', 'is_active']
+        return value    
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
+  price = serializers.CharField(read_only=True)
   class Meta:
     model = Course
-    fields = ['id', 'title', 'price', 'instructor']
+    fields = ['id', 'title', 'price']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     course = SimpleCourseSerializer()
+    customer = serializers.CharField(read_only=True)
+    instructor = serializers.CharField(read_only=True)
+    price = serializers.IntegerField(read_only=True)
     class Meta:
         model = OrderItem
-        fields = ['id', 'course', 'price']
+        fields = ['id', 'course', 'customer', 'instructor', 'price', 'purchase_at']
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    items  = OrderItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
     class Meta:
         model = Order
-        fields = ['id', 'placed_at', 'payment_status']
+        fields = ['id', 'placed_at', 'payment_status', 'items', 'total_price']
+
+    def get_total_price(self, cart: Cart):
+        return sum([item.course.price for item in cart.items.all()])
 
 
 class CreateOrderSerializer(serializers.Serializer):
@@ -137,12 +156,11 @@ class CreateOrderSerializer(serializers.Serializer):
             order = Order.objects.create(customer=customer)
             cart_items = CartItem.objects.select_related('course').filter(cart_id=cart_id)
             for item in cart_items:
-                order_item = OrderItem(
+                OrderItem.objects.create(
                     order=order,
                     course=item.course,
                     price=item.course.price,
                 )
-                order_item.save()  # Save each OrderItem individually
             Cart.objects.filter(pk=cart_id).delete()
             order_created.send_robust(sender=self.__class__, order=order)
             return order
@@ -172,48 +190,34 @@ class CartSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     items = CartItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
+    customer_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'created_at', 'items', 'total_price']
+        fields = ['id', 'created_at', 'customer_id', 'items', 'total_price']
+    
+    def get_customer_id(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, "user"):
+            customer = Customer.objects.get(user=request.user)
+            return customer.id
+        return None
 
     def get_total_price(self, cart: Cart):
         return sum([item.course.price for item in cart.items.all()])
 
 
-class AddCartItemSerializer(serializers.ModelSerializer):
-    course_id = serializers.IntegerField()
-
-    def save(self, *args, **kwargs):
-        cart_id = self.context['cart_id']
-        course_id = self.validated_data['course_id']
-        try:
-            cart_item = CartItem.objects.get(cart_id=cart_id, course_id=course_id)
-            cart_item.save()
-            self.instance = cart_item
-        except CartItem.DoesNotExist:
-            self.instance = CartItem.objects.create(cart_id=cart_id, **self.validated_data)
-        return self.instance
-
-    class Meta:
-        model = CartItem
-        fields = ['id', 'course_id']
-
-
 class WishListItemSerializer(serializers.ModelSerializer):
-    course_title = serializers.ReadOnlyField(source='course.title')
+    course = SimpleCourseSerializer()
+    
+    class Meta:
+        model = WishListItem
+        fields = ['id', 'course']
 
+
+class WishListSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+    items = WishListItemSerializer(many=True, read_only=True)
     class Meta:
         model = WishList
-        fields = ['id', 'course', 'course_title']
-
-
-class AddWishListItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WishList
-        fields = ['course']
-
-class PurchaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Purchase
-        fields = ['id', 'order', 'course', 'customer', 'instructor', 'purchased_date']
+        fields = ['id', 'created_at', 'items']

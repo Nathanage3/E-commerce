@@ -39,6 +39,7 @@ class IsInstructorOrReadOnly(permissions.BasePermission):
         return request.user.is_authenticated and (request.user.role == 'instructor' or \
                                                   request.user.is_staff)
 
+
 class IsInstructor(permissions.BasePermission):
     """
     Custom permission to allow only instructors to view their own earnings.
@@ -51,3 +52,10 @@ class IsInstructor(permissions.BasePermission):
         # Instructors can view only their own earnings
         return request.user.is_authenticated and request.user.role == 'instructor'\
             and obj.instructor == request.user
+    
+class IsOwnerOrReadOnly(permissions.BasePermission):
+   def has_object_permission(self, request, view, obj):
+      if request.method in permissions.SAFE_METHODS:
+         return True
+      # write permissions are only allowed to the owner of promotion
+      return obj.instructor == request.user
