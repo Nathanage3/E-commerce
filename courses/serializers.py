@@ -32,7 +32,7 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = ['id', 'collection', 'title','courseFor', 'objectives', 'sections', 'description', 'ratingCount', 'oldPrice',
                   'duration', 'price', 'currency',  'rating', 'instructor', 'level', 'syllabus', 'prerequisites',
-                  'image', 'file', 'promotions'
+                  'image', 'file', 'promotions', 'last_update'
         ]
     def create(self, validated_data):
         promotions_data = validated_data.pop('promotions', [])
