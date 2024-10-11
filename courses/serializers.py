@@ -9,9 +9,10 @@ from core.models import User
 
 class PromotionSerializer(serializers.ModelSerializer):
     instructor = serializers.CharField(read_only=True)
+    course_id = serializers.IntegerField()
     class Meta:
         model = Promotion
-        fields = ['id', 'instructor', 'course', 'title', 'message', 'discount', 'start_date', 'end_date']
+        fields = ['id', 'instructor', 'course_id', 'title', 'message', 'discount', 'start_date', 'end_date']
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -189,12 +190,12 @@ class CartItemSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     items = CartItemSerializer(many=True, read_only=True)
-    total_price = serializers.SerializerMethodField()
+    #total_price = serializers.SerializerMethodField()
     customer_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'created_at', 'customer_id', 'items', 'total_price']
+        fields = ['id', 'created_at', 'customer_id', 'items']
     
     def get_customer_id(self, obj):
         request = self.context.get('request')
@@ -203,8 +204,8 @@ class CartSerializer(serializers.ModelSerializer):
             return customer.id
         return None
 
-    def get_total_price(self, cart: Cart):
-        return sum([item.course.price for item in cart.items.all()])
+    # def get_total_price(self, cart: CartItem):
+    #     return sum([item.course.price for item in cart.items])
 
 
 class WishListItemSerializer(serializers.ModelSerializer):
