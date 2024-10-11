@@ -231,6 +231,70 @@ class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
         instance = serializer.save(instructor=self.request.user)
         instance.calculate_total_earnings()
 
+
+# class OrderViewSet(viewsets.ModelViewSet):
+#     serializer_class = OrderSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         customer = self.request.user.customer_profile
+#         return Order.objects.filter(customer=customer)
+
+#     def get_cart(self, request):
+#         customer = self.request.user.customer_profile
+#         if not customer:
+#             logger.error('Customer profile not found')
+#             return Response({'detail': 'Customer profile not found'}, status=status.HTTP_400_BAD_REQUEST)
+#         return customer.cart
+
+#     @action(detail=False, methods=['post'], url_path='checkout')
+#     def checkout(self, request):
+#         user = request.user
+#         try:
+#             customer = user.customer_profile
+#         except Customer.DoesNotExist:
+#             logger.error('Customer profile not found')
+#             return Response({'detail': 'Customer profile not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         cart = self.get_cart(request)
+#         if not cart.items.exists():
+#             logger.error('Cart is empty')
+#             return Response({'detail': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         logger.info(f"Creating order for customer: {customer.id}")
+#         order = Order.objects.create(customer=customer, payment_status='C')
+#         logger.info(f"Order created: {order.id}")
+
+#         for item in cart.items.all():
+#             order_item = OrderItem.objects.create(
+#                 order=order, 
+#                 course=item.course, 
+#                 price=item.course.price,
+#                 customer=customer,
+#                 instructor=item.course.instructor
+#             )
+#             logger.info(f"OrderItem created: {order_item.id} for course: {item.course.id}")
+
+#             # Fetch or create lesson
+#             lesson = Lesson.objects.filter(course=item.course).first()
+#             if not lesson:
+#                 lesson = Lesson.objects.create(title='Default Lesson', course=item.course)
+#                 logger.info(f"Default lesson created for course: {item.course.id}")
+
+#             try:
+#                 # Ensure unique combination of student, course, and lesson
+#                 progress, created = CourseProgress.objects.get_or_create(student=user, course=item.course, lesson=lesson)
+#                 if created:
+#                     logger.info(f"CourseProgress created: {progress}")
+#                 else:
+#                     logger.info(f"CourseProgress already exists for student: {user}, course: {item.course}, lesson: {lesson}")
+#             except IntegrityError as e:
+#                 logger.error(f"CourseProgress entry error for student: {user}, course: {item.course}, lesson: {lesson} - {str(e)}")
+
+#         cart.items.all().delete()
+#         cart.delete()
+#         return Response(OrderSerializer(order).data)
+
 import logging
 
 # Configure logging
@@ -286,8 +350,13 @@ class OrderViewSet(viewsets.ModelViewSet):
                 logger.info(f"Default lesson created for course: {item.course.id}")
 
             try:
-                # Ensure unique combination of student, course, and lesson
-                progress, created = CourseProgress.objects.get_or_create(student=user, course=item.course, lesson=lesson)
+                # Directly copy OrderItem to CourseProgress
+                progress, created = CourseProgress.objects.get_or_create(
+                    student=user, 
+                    course=item.course, 
+                    lesson=lesson,
+                    defaults={'completed': False, 'progress': 0.0}
+                )
                 if created:
                     logger.info(f"CourseProgress created: {progress}")
                 else:
@@ -306,36 +375,74 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+# class CartViewSet(viewsets.ModelViewSet):
+#     serializer_class = CartSerializer
+#     queryset = Cart.objects.all()
+#     permission_classes = [IsAuthenticated]
+
+#     def get_cart(self, request):
+#         """Get or Create associated with the current user"""
+#         customer = request.user.customer_profile
+#         cart, created = Cart.objects.get_or_create(customer=customer)
+#         return cart
+
+#     # Add items to cart (POST request to a custom route)
+#     @action(detail=False, methods=['post'], url_path='add-item')
+#     def add_item(self, request):
+#         cart = self.get_cart(request)
+#         course_id = request.data.get('course_id')
+
+#         if not course_id:
+#             return Response({'detail': 'course_id is requered'}, status=status.HTTP_400_BAD_REQUEST)
+        
+#         try:
+#             course = Course.objects.get(id=course_id)
+#         except Course.DoesNotExist:
+#             return Response({'detail': 'Invalid course_id'}, status=status.HTTP_404_NOT_FOUND)
+        
+#         CartItem.objects.create(cart=cart, course=course)
+#         return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+
+#     def perform_create(self, serializer):
+#         customer = Customer.objects.get(user=self.request.user)
+#         serializer.save(customer=customer)
+
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
     queryset = Cart.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get_cart(self, request):
-        """Get or Create associated with the current user"""
+        """Get or Create cart associated with the current user"""
         customer = request.user.customer_profile
         cart, created = Cart.objects.get_or_create(customer=customer)
         return cart
 
-    # Add items to cart (POST request to a custom route)
     @action(detail=False, methods=['post'], url_path='add-item')
     def add_item(self, request):
         cart = self.get_cart(request)
         course_id = request.data.get('course_id')
 
+        # Check if course_id is provided
         if not course_id:
-            return Response({'detail': 'course_id is requered'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'course_id is required'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Ensure the course exists
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
             return Response({'detail': 'Invalid course_id'}, status=status.HTTP_404_NOT_FOUND)
         
+        # Add item to cart
         CartItem.objects.create(cart=cart, course=course)
         return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         customer = Customer.objects.get(user=self.request.user)
+        # Ensure no duplicate cart creation
+        existing_cart = Cart.objects.filter(customer=customer).first()
+        if existing_cart:
+            return Response({'detail': 'Cart already exists for this customer'}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save(customer=customer)
 
 
