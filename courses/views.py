@@ -1,26 +1,21 @@
-from django.db.models import OuterRef, Subquery
 from django.db.utils import IntegrityError
 from django.db.models.aggregates import Count
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework import permissions
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
-    Order, OrderItem, Cart, CartItem, WishList, Purchase
+    Order, OrderItem, Cart, CartItem, WishList, WishListItem
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, \
     InstructorEarningsSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer,\
-    InstructorEarnings, LessonSerializer, CreateOrderSerializer, OrderSerializer, UpdateOrderSerializer, \
-    OrderItemSerializer, CartSerializer, AddCartItemSerializer, CartItemSerializer, \
-AddWishListItemSerializer, WishListItemSerializer, PurchaseSerializer
+    InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
+    WishListItemSerializer, WishListItemSerializer, WishListSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
-    IsStudentOrInstructor, IsInstructorOrReadOnly
+    IsStudentOrInstructor, IsInstructorOrReadOnly, IsOwnerOrReadOnly
 from .pagination import DefaultPagination
+from uuid import uuid4
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -65,7 +60,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response({'error': 'No profile picture uploaded'}, status=400)
         except Customer.DoesNotExist:
             return Response({'error': 'Customer not found'}, status=404)
-    
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -100,7 +94,8 @@ class CourseViewSet(viewsets.ModelViewSet):
                 # Handle the error or provide a default ordering
                 queryset = queryset.order_by('id')
         return queryset
-    
+
+
     def get_permissions(self):
         if self.action == 'destroy':
             self.permission_classes = [IsAdminOrReadOnly]
@@ -113,8 +108,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [IsAdminOrReadOnly]
         return super().get_permissions()
-        
-
+     
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.annotate(courses_count=Count('courses')).all()
@@ -125,7 +119,10 @@ class CollectionViewSet(viewsets.ModelViewSet):
 class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly]
+    
+    def perform_create(self, serializer):
+        serializer.save(instructor=self.request.user)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -135,17 +132,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Review.objects.filter(course_id=self.kwargs['course_pk'])
-  
+
+
 class LessonViewSet(viewsets.ModelViewSet):
     serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated, IsInstructorOrReadOnly]
+    permission_classes = [IsInstructorOrReadOnly]
     
     def get_queryset(self):
         course_id = self.kwargs.get('course_pk')
         if course_id:
             return Lesson.objects.filter(course_id=course_id)
         return Lesson.objects.all()
-    
+
     def perform_create(self, serializer):
         course_id = self.kwargs.get('course_pk')
         course = get_object_or_404(Course, pk=course_id)
@@ -153,59 +151,75 @@ class LessonViewSet(viewsets.ModelViewSet):
         serializer.save(course=course, order=order)
 
 
-class CourseProgressViewSet(viewsets.ModelViewSet):
+# class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
+#     serializer_class = CourseProgressSerializer
+#     permission_classes = [IsStudentOrInstructor]
+
+#     def get_queryset(self):
+#         queryset = CourseProgress.objects.prefetch_related('student').select_related('course')
+#         if self.request.user.is_staff:
+#             return queryset.all()
+#         # Get the cutomer instance linked to the current course
+
+#         customer = Customer.objects.get(user=self.request.user)
+
+#         # Check if the user has completed the payment for the course
+#         purchased_courses = OrderItem.objects.filter(
+#             order__customer=customer,
+#             order__payment_status='C'
+#         ).values_list('course', flat=True)
+
+#         print(f"Purchased course: {purchased_courses}") # Debugger
+        
+#         filtered_queryset = queryset.filter(student=self.request.user, course__in=purchased_courses)
+#         print(f"Filtered CourseProgress: {filtered_queryset}")
+#         return filtered_queryset
+import logging
+
+logger = logging.getLogger(__name__)
+
+class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CourseProgressSerializer
     permission_classes = [IsStudentOrInstructor]
 
     def get_queryset(self):
         queryset = CourseProgress.objects.prefetch_related('student').select_related('course')
-        if self.request.user.is_staff:
-            return queryset.all()
-        return queryset.filter(student=self.request.user)
-
-    def perform_create(self, serializer):
-        try:
-            serializer.save(student=self.request.user)
-        except IntegrityError:
-            return Response({"error": "Duplicate entry"}, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
         
-        # Calculate progress based on the number of videos watched
-        videos_watched = request.data.get('videos_watched')
-        if videos_watched is not None:
-            total_videos = instance.course.lessons.count()  # Assuming lessons are videos
-            if total_videos > 0:
-                progress = (videos_watched / total_videos) * 100
-                instance.progress = progress
+        if self.request.user.is_staff:
+            logger.info(f"Admin user accessing CourseProgress")
+            return queryset.all()
 
-        # Save and automatically set 'completed' if progress is 100%
-        instance.save()
-        self.perform_update(serializer)
-        return Response(serializer.data)
+        # Get the customer instance linked to the current user
+        customer = Customer.objects.get(user=self.request.user)
 
-    def perform_update(self, serializer):
-        serializer.save()
+        # Check if the user has completed the payment for the course
+        purchased_courses = OrderItem.objects.filter(
+            order__customer=customer,
+            order__payment_status='C'
+        ).values_list('course_id', flat=True)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        logger.info(f"Purchased courses: {purchased_courses}")
+        
+        filtered_queryset = queryset.filter(student=self.request.user, course_id__in=purchased_courses)
+        logger.info(f"Filtered CourseProgress: {filtered_queryset}")
+        return filtered_queryset
 
 
-class InstructorEarningsViewSet(viewsets.ModelViewSet):
+class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = InstructorEarningsSerializer
     permission_classes = [IsInstructor]
 
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permission() for permission in [IsInstructor]]
+        else:
+            return [permission() for permission in [IsAdminUser]]
+    
     def get_queryset(self):
         queryset = InstructorEarnings.objects.select_related('instructor')
         if self.request.user.is_staff:
             return queryset.all()
-        return queryset.filter(instructor=self.request.user).all()
+        return queryset.filter(instructor=self.request.user)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -217,86 +231,178 @@ class InstructorEarningsViewSet(viewsets.ModelViewSet):
         instance = serializer.save(instructor=self.request.user)
         instance.calculate_total_earnings()
 
-class OrderViewSet(ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
-
-    def get_permissions(self):
-        if self.request.method in ['PATCH', 'DELETE']:
-            return [IsAdminUser()]
-        return [IsAuthenticated()]
-    
-    def get_serializer_context(self):
-        return {'user_id': self.request.user.id}
-    
-    def create(self, request, *args, **kwargs):
-        serializer = CreateOrderSerializer(
-            data=request.data,
-            context={'user_id': self.request.user.id})
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateOrderSerializer
-        elif self.request.method == 'PATCH':
-            return UpdateOrderSerializer
-        return OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_staff:
-            return Order.objects.all()
-        (customer_id, created) = Customer.objects.only('id')\
-            .get_or_create(user_id=self.request.user.id)
-        return Order.objects.filter(customer_id=customer_id)
+        customer = self.request.user.customer_profile
+        return Order.objects.filter(customer=customer)
+
+    def get_cart(self, request):
+        customer = self.request.user.customer_profile
+        if not customer:
+            logger.error('Customer profile not found')
+            return Response({'detail': 'Customer profile not found'}, status=status.HTTP_400_BAD_REQUEST)
+        return customer.cart
+
+    @action(detail=False, methods=['post'], url_path='checkout')
+    def checkout(self, request):
+        user = request.user
+        try:
+            customer = user.customer_profile
+        except Customer.DoesNotExist:
+            logger.error('Customer profile not found')
+            return Response({'detail': 'Customer profile not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart = self.get_cart(request)
+        if not cart.items.exists():
+            logger.error('Cart is empty')
+            return Response({'detail': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+        logger.info(f"Creating order for customer: {customer.id}")
+        order = Order.objects.create(customer=customer, payment_status='C')
+        logger.info(f"Order created: {order.id}")
+
+        for item in cart.items.all():
+            order_item = OrderItem.objects.create(
+                order=order, 
+                course=item.course, 
+                price=item.course.price,
+                customer=customer,
+                instructor=item.course.instructor
+            )
+            logger.info(f"OrderItem created: {order_item.id} for course: {item.course.id}")
+
+            # Fetch or create lesson
+            lesson = Lesson.objects.filter(course=item.course).first()
+            if not lesson:
+                lesson = Lesson.objects.create(title='Default Lesson', course=item.course)
+                logger.info(f"Default lesson created for course: {item.course.id}")
+
+            try:
+                # Ensure unique combination of student, course, and lesson
+                progress, created = CourseProgress.objects.get_or_create(student=user, course=item.course, lesson=lesson)
+                if created:
+                    logger.info(f"CourseProgress created: {progress}")
+                else:
+                    logger.info(f"CourseProgress already exists for student: {user}, course: {item.course}, lesson: {lesson}")
+            except IntegrityError as e:
+                logger.error(f"CourseProgress entry error for student: {user}, course: {item.course}, lesson: {lesson} - {str(e)}")
+
+        cart.items.all().delete()
+        cart.delete()
+        return Response(OrderSerializer(order).data)
 
 
-class OrderItemViewSet(ModelViewSet):
-    queryset = OrderItem.objects.all()
+class OrderItemViewSet(viewsets.ModelViewSet):
     serializer_class = OrderItemSerializer
+    queryset = OrderItem.objects.all()
+    permission_classes = [IsAuthenticated]
 
 
-class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
-    queryset = Cart.objects.prefetch_related('items__course').all()
+class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
+    queryset = Cart.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_cart(self, request):
+        """Get or Create associated with the current user"""
+        customer = request.user.customer_profile
+        cart, created = Cart.objects.get_or_create(customer=customer)
+        return cart
+
+    # Add items to cart (POST request to a custom route)
+    @action(detail=False, methods=['post'], url_path='add-item')
+    def add_item(self, request):
+        cart = self.get_cart(request)
+        course_id = request.data.get('course_id')
+
+        if not course_id:
+            return Response({'detail': 'course_id is requered'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'detail': 'Invalid course_id'}, status=status.HTTP_404_NOT_FOUND)
+        
+        CartItem.objects.create(cart=cart, course=course)
+        return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        customer = Customer.objects.get(user=self.request.user)
+        serializer.save(customer=customer)
 
 
-class CartItemViewSet(ModelViewSet):
-    http_method_names = ['get', 'post', 'delete']
+class CartItemViewSet(viewsets.ModelViewSet):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return AddCartItemSerializer
-        return CartItemSerializer
+    def get_cart(self, request):
+        """Get the cart associated with the current user"""
+        customer = request.user.customer_profile
+        cart, created = Cart.objects.get_or_create(customer=customer)
+        return cart
+    
+    def get_queryset(self):
+        # Limit the query to the current user's cart items
+        cart = self.get_cart(self.request)
+        return CartItem.objects.filter(cart=cart)
+    
+    # Add an Item to the cart (POST)
+    def create(self, request, *args, **kwargs):
+        cart = self.get_cart(request)
+        course_id = request.data.get('course_id')
+        
+        if not course_id:
+            return Response({'detail': 'course_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'detail': 'Invalid  course_id'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Add item to the cart or update if already exists
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, course=course)
+        if not created:
+            return Response({'detail': 'Item Already in cart'}, status=status.HTTP_200_OK)
+        
+        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+    
+    # Remove an Item from the Cart (DELETE)
+    def destroy(self, request, pk=None):
+        cart_item = self.get_object()
+        cart_item.delete()
+        return Response({'detail' : 'Item removed from the cart'}, status=status.HTTP_204_NO_CONTENT)
 
-    def get_serializer_context(self):
-        return {'cart_id': self.kwargs['cart_pk']}
+    # Retrieve the cart items (GET)
+    def list(self, request, cart_pk=None):
+        cart = self.get_cart(request)
+        cart_items = cart.items.all()
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response(serializer.data)
+
+
+class WishListViewSet(viewsets.ModelViewSet):
+    serializer_class = WishListSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('course').all()
+        return WishList.objects.filter(customer=self.request.user.customer_profile)
 
-class WishListViewSet(ModelViewSet):
-    http_method_names = ['get', 'post', 'delete']
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return AddWishListItemSerializer
-        return WishListItemSerializer
-
-    def get_serializer_context(self):
-        return {'wishlist_id': self.kwargs['wishlist_pk']}
+class WishListItemViewSet(viewsets.ModelViewSet):
+    serializer_class = WishListItemSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return WishList.objects.filter(id=self.kwargs['wishlist_pk'])\
-                               .select_related('course').all()
+        wishlist = WishList.objects.get(pk=self.kwargs['wishlist_pk'])
+        return WishListItem.objects.filter(wishlist=wishlist)
 
-
-class PurchaseViewSet(ModelViewSet):
-    queryset = Purchase.objects.all()
-    # Purchase.objects.select_related('course', 'customer', 'instructor').all()
-    serializer_class = PurchaseSerializer
 
 def home(request):
     return HttpResponse("Welcome to the home page!")

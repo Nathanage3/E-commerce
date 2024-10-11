@@ -65,8 +65,6 @@ ROOT_URLCONF = 'mando.urls'
 
 INTERNAL_IPS = ["127.0.0.1"]
 
-# CORS_ALLOW_ALL_ORIGINS = True
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -174,7 +172,6 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
     'AUTH_HEADER_TYPES': ('JWT',),
-    #'BLACKLIST_AFTER_ROTATION': True,
 }
 
 DJOSER = {

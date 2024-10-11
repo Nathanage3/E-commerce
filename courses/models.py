@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.postgres.fields import ArrayField
 from decimal import Decimal
 from django.core.validators import MinValueValidator, FileExtensionValidator, \
     MaxValueValidator
@@ -6,8 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from datetime import timedelta
+from notifications.notifications import send_course_completion_notification
 from uuid import uuid4
-
 
 
 class Collection(models.Model):
@@ -27,8 +28,17 @@ class Collection(models.Model):
 
 
 class Promotion(models.Model):
-    description = models.CharField(max_length=255)
-    discount = models.FloatField()
+   instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='promotions')
+   course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name="promotion_courses")
+   title = models.CharField(max_length=100)
+   message = models.TextField()
+   discount = models.FloatField()
+   start_date = models.DateTimeField()
+   end_date = models.DateTimeField()
+
+   def __str__(self):
+    return f"Promotion: {self.title} for {self.course.title}"
+
 
     def __str__(self):
         return f'{self.description} - {self.discount}%'
@@ -55,7 +65,7 @@ class Course(models.Model):
         (LEVEL_ADVANCED, "Advanced")
     ]
     title = models.CharField(max_length=255)
-    objectives = models.TextField(default="")
+    objectives = models.TextField(blank=True)
     sections = models.IntegerField(default=0)
     duration = models.TimeField()
     image = models.ImageField(upload_to='course/images',
@@ -83,7 +93,7 @@ class Course(models.Model):
     level = models.CharField(max_length=12, choices=LEVEL_CHOICES, 
         default=LEVEL_BEGINNER)
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='courses')
-    promotions = models.ManyToManyField(Promotion, blank=True)
+    promotions = models.ManyToManyField(Promotion, blank=True, related_name='course_promotions')
     last_update = models.DateTimeField(auto_now=True)
 
 
@@ -115,11 +125,15 @@ class Lesson(models.Model):
 
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='progress')
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='progress')
+    lesson = models.ForeignKey(Lesson, on_delete=models.PROTECT)
     completed = models.BooleanField(default=False)
     progress = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # percentage
     last_accessed = models.DateTimeField(auto_now=True)
     completed_lessons = models.ManyToManyField(Lesson, blank=True, related_name='completed_by')  # Track completed lessons
+
+    class Meta:
+        unique_together = ('student', 'course', 'lesson')
 
     def __str__(self):
         return f'{self.student.username} - {self.course.title}'
@@ -132,6 +146,13 @@ class CourseProgress(models.Model):
             self.progress = (completed_lessons / total_lessons) * 100
         
         self.completed = self.progress >= 100.0
+    
+        if self.completed:
+            send_course_completion_notification(
+                self.course.instructor,
+                self.course,
+                self.student
+            )
 
     def save(self, *args, **kwargs):
         if not self.pk:  # Check if the instance is being created
@@ -154,7 +175,6 @@ class Review(models.Model):
 class Customer(models.Model):
     STUDENT = 'student'
     INSTRUCTOR = 'instructor'
-
     ROLE_CHOICES = [
         (STUDENT, 'Student'),
         (INSTRUCTOR, 'Instructor'),
@@ -185,16 +205,27 @@ class Customer(models.Model):
         ('view_history', 'Can view history')
         ]
 
+
 class InstructorEarnings(models.Model):
     instructor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, 
                                       related_name='earnings')
-    total_earnings = models.DecimalField(max_digits=10, decimal_places=2,
+    total_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.0,
     validators=[MinValueValidator(Decimal('0.0'))])
     last_payout = models.DateTimeField(blank=True, null=True)
+    deduction_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=30)
 
     def __str__(self):
         return f'Earnings for {self.instructor.username}'
     
+    def calculate_total_earnings(self):
+        # Sum all earnings from order item
+        total = sum(order_item.price for order_item in OrderItem.objects.filter(course__instructor=self.instructor))
+        # Deduct a percentage
+        deduction = (total * self.deduction_percentage) / 100
+        self.total_earnings = total - deduction
+        self.save()
+
+
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
     PAYMENT_STATUS_COMPLETE = 'C'
@@ -225,13 +256,18 @@ class OrderItem(models.Model):
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='orderitems')
     price = models.DecimalField(max_digits=6, decimal_places=2,
                                 validators=[MinValueValidator(Decimal('0.00'))])
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    purchase_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.course.title} - {self.price}"
-    
+
+
 class Cart(models.Model):
-  id = models.UUIDField(primary_key=True, default=uuid4)
+  id = models.UUIDField(primary_key=True, default=uuid4, serialize=False)
   created_at = models.DateTimeField(auto_now_add=True)
+  customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='cart')
 
 
 class CartItem(models.Model):
@@ -244,17 +280,12 @@ class CartItem(models.Model):
   def __str__(self):
     return self.course.title
 
-
 class WishList(models.Model):
-  course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='wishlist')
+  id = models.UUIDField(primary_key=True, default=uuid4, serialize=False)
+  customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='wishlists')
+  created_at = models.DateTimeField(auto_now_add=True)
 
 
-class Purchase(models.Model):
-    orderitem = models.ForeignKey(OrderItem, on_delete=models.PROTECT)
-    course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='purchase')
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
-    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    purchase_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Purchase {self.id} - {self.course.title} by {self.customer.user.username}"
+class WishListItem(models.Model):
+    wishlist = models.ForeignKey(WishList, on_delete=models.CASCADE, related_name='items')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
