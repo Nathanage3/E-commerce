@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 
 load_dotenv() # Load environmental variables from the .env file
 
+
+print(f"DB_NAME: {os.getenv('DB_NAME')}")
+
+
 APPEND_SLASH=True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
