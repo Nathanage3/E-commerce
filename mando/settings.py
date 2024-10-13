@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv() # Load environmental variables from the .env file
 
 
-print(f"DB_NAME: {os.getenv('DB_NAME')}")
-
+if os.getenv('DISABLE_COLLECTSTATIC'):
+  COLLECT_STATIC = False
 
 APPEND_SLASH=True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
