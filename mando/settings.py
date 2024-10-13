@@ -5,23 +5,6 @@ from dotenv import load_dotenv
 
 #load_dotenv() # Load environmental variables from the .env file
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ModuleNotFoundError as e:
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error(f"Could not import dotenv: {e}") # logger error
-
-# Load .env file if dotenv is available
-if os.getenv('ENVIRONMENT') != 'PRODUCTION':
-    try:
-        from dotenv import load_dotenv
-        load_dotenv()
-    except ModuleNotFoundError:
-        print("dotenv not available. Skipping loading .env file.")
-
-
 if os.getenv('DISABLE_COLLECTSTATIC'):
   COLLECT_STATIC = False
 
