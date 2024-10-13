@@ -29,6 +29,30 @@ class IsStudentOrInstructor(permissions.BasePermission):
             request.user.role == 'instructor' or 
             request.user.is_staff
         )
+  
+
+class IsInstructorOrAdmin(permissions.BasePermission):
+   """Custom permissions to allow instructor view/edit their course
+   """
+   def has_permission(self, request, view):
+      # Allow access to authenticated user who is instructor or staff
+      return request.user.is_authenticated and (
+         request.user.role == 'instructor' or 
+         request.user.is_staff
+         )
+
+
+
+class IsStudentOrAdmin(permissions.BasePermission):
+  """Custom permission to allow students to view/edit their own progress
+     and instructors to view the progress of students in their courses.
+  """
+  def has_permission(self, request, view):
+     # Allow access for authenticated users who are students and Admin
+     return request.user.is_authenticated and (
+        request.user.role == 'student' or
+        request.user.is_staff
+     )
 
 class IsInstructorOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -44,18 +68,19 @@ class IsInstructor(permissions.BasePermission):
     """
     Custom permission to allow only instructors to view their own earnings.
     """
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         # Allow admin users full access
         if request.user.is_staff:
             return True
 
         # Instructors can view only their own earnings
-        return request.user.is_authenticated and request.user.role == 'instructor'\
-            and obj.instructor == request.user
+        return request.user.is_authenticated and (
+           request.user.role == "instructor"
+          )
     
 class IsOwnerOrReadOnly(permissions.BasePermission):
-   def has_object_permission(self, request, view, obj):
+   def has_permission(self, request, view):
       if request.method in permissions.SAFE_METHODS:
          return True
       # write permissions are only allowed to the owner of promotion
-      return obj.instructor == request.user
+      return request.user.is_authenticated and request.user == "instructor"

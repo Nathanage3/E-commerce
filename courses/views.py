@@ -13,9 +13,12 @@ from .serializers import CourseSerializer, CollectionSerializer, PromotionSerial
     InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
     WishListItemSerializer, WishListItemSerializer, WishListSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
-    IsStudentOrInstructor, IsInstructorOrReadOnly, IsOwnerOrReadOnly
+    IsStudentOrInstructor, IsInstructorOrReadOnly, IsOwnerOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin
 from .pagination import DefaultPagination
 from uuid import uuid4
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -65,7 +68,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.select_related('instructor', 'collection').all().order_by('id')
     serializer_class = CourseSerializer
-    #permission_classes = [IsAdminOrReadOnly, IsInstructorOrReadOnly]
     pagination_class = DefaultPagination
     search_fields = ['title']
     ordering_fields = ['price', 'last_update', 'rating', 'id']
@@ -86,6 +88,11 @@ class CourseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         ordering = self.request.query_params.get('ordering', None)
+        
+        if self.request.user.role == 'instructor':
+            return queryset.filter(instructor=self.request.user)
+        return queryset
+    
         if ordering:
             try:
                 queryset = queryset.order_by(ordering)
@@ -96,9 +103,21 @@ class CourseViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+    @action(detail=True, methods=['get'], permission_classes=[IsInstructorOrAdmin])
+    def statistics(self, request, pk=None):
+        # Custom action to retrieve the ratingCount and numberOfStudent for specific course
+        course = self.get_object()
+        data = {
+            "ratingCount": course.ratingCount,
+            "numberOfStudents": course.numberOfStudents,
+            
+        }
+        return Response(data)
+
+
     def get_permissions(self):
         if self.action == 'destroy':
-            self.permission_classes = [IsAdminOrReadOnly]
+            self.permission_classes = [IsInstructorOrAdmin]
         elif self.action == 'retrieve':
             self.permission_classes = [IsStudentOrInstructor]
         elif self.action == 'create':
@@ -136,12 +155,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class LessonViewSet(viewsets.ModelViewSet):
     serializer_class = LessonSerializer
-    permission_classes = [IsInstructorOrReadOnly]
+    permission_classes = [IsInstructor]
     
     def get_queryset(self):
         course_id = self.kwargs.get('course_pk')
         if course_id:
-            return Lesson.objects.filter(course_id=course_id)
+            return Lesson.objects.filter(course_id=course_id, course__instructor=self.request.user)
         return Lesson.objects.all()
 
     def perform_create(self, serializer):
@@ -174,9 +193,7 @@ class LessonViewSet(viewsets.ModelViewSet):
 #         filtered_queryset = queryset.filter(student=self.request.user, course__in=purchased_courses)
 #         print(f"Filtered CourseProgress: {filtered_queryset}")
 #         return filtered_queryset
-import logging
 
-logger = logging.getLogger(__name__)
 
 class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CourseProgressSerializer
@@ -184,7 +201,6 @@ class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = CourseProgress.objects.prefetch_related('student').select_related('course')
-        
         if self.request.user.is_staff:
             logger.info(f"Admin user accessing CourseProgress")
             return queryset.all()
@@ -231,14 +247,10 @@ class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
         instance = serializer.save(instructor=self.request.user)
         instance.calculate_total_earnings()
 
-import logging
-from django.db import IntegrityError
-
-logger = logging.getLogger(__name__)
 
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentOrAdmin]
 
     def get_queryset(self):
         customer = self.request.user.customer_profile
@@ -294,7 +306,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                     logger.info(f"CourseProgress already exists for student: {user}, course: {item.course}, lesson: {lesson}")
             except IntegrityError as e:
                 logger.error(f"CourseProgress entry error for student: {user}, course: {item.course}, lesson: {lesson} - {str(e)}")
-
+            item.course.update_student_count()
+            logger.info(f"Updated number of students for course: {item.course.id}")
         cart.items.all().delete()
         cart.delete()
         return Response(OrderSerializer(order).data)
@@ -376,7 +389,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 class OrderItemViewSet(viewsets.ModelViewSet):
     serializer_class = OrderItemSerializer
     queryset = OrderItem.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentOrAdmin]
 
 
 # class CartViewSet(viewsets.ModelViewSet):
@@ -414,7 +427,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
     queryset = Cart.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentOrAdmin]
 
     def get_cart(self, request):
         """Get or Create cart associated with the current user"""
@@ -452,7 +465,7 @@ class CartViewSet(viewsets.ModelViewSet):
 
 class CartItemViewSet(viewsets.ModelViewSet):
     serializer_class = CartItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentOrAdmin]
 
     def get_cart(self, request):
         """Get the cart associated with the current user"""
@@ -500,7 +513,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
 class WishListViewSet(viewsets.ModelViewSet):
     serializer_class = WishListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentOrAdmin]
 
     def get_queryset(self):
         return WishList.objects.filter(customer=self.request.user.customer_profile)
@@ -508,7 +521,7 @@ class WishListViewSet(viewsets.ModelViewSet):
 
 class WishListItemViewSet(viewsets.ModelViewSet):
     serializer_class = WishListItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentOrAdmin]
 
     def get_queryset(self):
         wishlist = WishList.objects.get(pk=self.kwargs['wishlist_pk'])
