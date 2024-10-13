@@ -3,7 +3,15 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
-load_dotenv() # Load environmental variables from the .env file
+#load_dotenv() # Load environmental variables from the .env file
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ModuleNotFoundError as e:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"Could not import dotenv: {e}")
 
 
 if os.getenv('DISABLE_COLLECTSTATIC'):
