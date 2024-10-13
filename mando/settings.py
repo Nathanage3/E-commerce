@@ -11,7 +11,7 @@ try:
 except ModuleNotFoundError as e:
     import logging
     logger = logging.getLogger(__name__)
-    logger.error(f"Could not import dotenv: {e}")
+    logger.error(f"Could not import dotenv: {e}") # logger error
 
 # Load .env file if dotenv is available
 if os.getenv('ENVIRONMENT') != 'PRODUCTION':
