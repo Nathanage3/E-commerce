@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.conf import settings
 from django.db import transaction
 from .models import Collection, Promotion, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, Lesson, Order, OrderItem, \
@@ -28,13 +29,17 @@ class CourseSerializer(serializers.ModelSerializer):
     ratingCount = serializers.IntegerField(read_only=True)
     oldPrice = serializers.IntegerField(read_only=True)
     rating = serializers.IntegerField(read_only=True)
+    numberOfStudents = serializers.SerializerMethodField()
     
     class Meta:
         model = Course
         fields = ['id', 'collection', 'title','courseFor', 'objectives', 'sections', 'description', 'ratingCount', 'oldPrice',
                   'duration', 'price', 'currency',  'rating', 'instructor', 'level', 'syllabus', 'prerequisites',
-                  'image', 'file', 'promotions', 'last_update'
+                  'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
         ]
+    def get_numberOfStudents(self, obj):
+        return OrderItem.objects.filter(course=obj).values('order__customer').distinct().count()
+    
     def create(self, validated_data):
         promotions_data = validated_data.pop('promotions', [])
         course = Course.objects.create(**validated_data)

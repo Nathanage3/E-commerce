@@ -67,10 +67,10 @@ class Course(models.Model):
     title = models.CharField(max_length=255)
     objectives = models.TextField(blank=True)
     sections = models.IntegerField(default=0)
-    duration = models.TimeField()
+    duration = models.IntegerField()
     image = models.ImageField(upload_to='course/images',
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
-    file = models.FileField(
+    preview = models.FileField(
         upload_to='course/lessons/videos',
         validators=[FileExtensionValidator(allowed_extensions=['mp4'])]
     )
@@ -95,10 +95,11 @@ class Course(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='courses')
     promotions = models.ManyToManyField(Promotion, blank=True, related_name='course_promotions')
     last_update = models.DateTimeField(auto_now=True)
+    numberOfStudents = models.PositiveIntegerField(default=0)
 
 
     class Meta:
-        unique_together = ['file']
+        unique_together = ['preview']
     
     def clean(self):
         if Course.objects.filter(file=self.file).exists():
@@ -109,12 +110,17 @@ class Course(models.Model):
     
     def __str__(self):
         return self.title
+    
+    def update_student_count(self):
+        # Updating the number of distinct students who purchased this course
+        self.numberOfStudents = OrderItem.objects.filter(course=self, order__payment_status='C').values('order__customer').distinct().count()
+        self.save()
 
 
 class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='course/lessons/videos', null=True, blank=True,
+    file = models.FileField(upload_to='course/lessons/videos', null=True, blank=True, unique=True,
                             validators=[FileExtensionValidator(allowed_extensions=['mp4'])])
     order = models.PositiveIntegerField()  # Helps in sorting lessons
     is_active = models.BooleanField(default=True)  # Mark if the lesson is available for students
@@ -175,6 +181,7 @@ class Review(models.Model):
 class Customer(models.Model):
     STUDENT = 'student'
     INSTRUCTOR = 'instructor'
+
     ROLE_CHOICES = [
         (STUDENT, 'Student'),
         (INSTRUCTOR, 'Instructor'),
@@ -279,6 +286,7 @@ class CartItem(models.Model):
 
   def __str__(self):
     return self.course.title
+
 
 class WishList(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid4, serialize=False)
