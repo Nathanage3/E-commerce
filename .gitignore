@@ -4,8 +4,10 @@ __pycache__/
 */__pycache__/
 
 # Ignore environment files
-*.venv
-Pipfile
+.env
+/.env
+
+
 Pipfile.lock
 
 # Ignore VSCode workspace settings

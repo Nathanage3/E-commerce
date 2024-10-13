@@ -1,6 +1,9 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv() # Load environmental variables from the .env file
 
 APPEND_SLASH=True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,11 +93,11 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'bblxuvtp6yqwcc1moe53'),  # Database name from Clever Cloud
-        'USER': os.getenv('DB_USER', 'uyoxfrz1edvkjufd'),  # Database username from Clever Cloud
-        'PASSWORD': os.getenv('DB_PASSWORD', 'QV6yk3tRACkW2Q9yGUGY'),  # Database password from Clever Cloud
-        'HOST': os.getenv('DB_HOST', 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com'),  # Clever Cloud host
-        'PORT': os.getenv('DB_PORT', '3306'),  # Port number for MySQL
+        'NAME': os.getenv('DB_NAME'),  # Database name from Clever Cloud
+        'USER': os.getenv('DB_USER'),  # Database username from Clever Cloud
+        'PASSWORD': os.getenv('DB_PASSWORD'),  # Database password from Clever Cloud
+        'HOST': os.getenv('DB_HOST'),  # Clever Cloud host
+        'PORT': os.getenv('DB_PORT'),  # Port number for MySQL
     }
 }
 
