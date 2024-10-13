@@ -13,6 +13,14 @@ except ModuleNotFoundError as e:
     logger = logging.getLogger(__name__)
     logger.error(f"Could not import dotenv: {e}")
 
+# Load .env file if dotenv is available
+if os.getenv('ENVIRONMENT') != 'PRODUCTION':
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ModuleNotFoundError:
+        print("dotenv not available. Skipping loading .env file.")
+
 
 if os.getenv('DISABLE_COLLECTSTATIC'):
   COLLECT_STATIC = False
