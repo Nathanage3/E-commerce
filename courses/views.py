@@ -90,6 +90,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         ordering = self.request.query_params.get('ordering', None)
         
         
+        
         if self.request.user.is_authenticated:
             if self.request.user.role == "instructor":
                 return queryset.filter(instructor=self.request.user)
