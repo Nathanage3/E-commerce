@@ -27,7 +27,8 @@ git-filter-repo==2.45.0
 gunicorn==23.0.0
 idna==3.8
 kombu==5.4.0
-mysqlclient==2.1.1
+Django==4.2.15
+mysqlclient
 oauthlib==3.2.2
 packaging==24.1
 pillow==10.4.0
