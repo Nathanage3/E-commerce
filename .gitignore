@@ -3,9 +3,11 @@
 __pycache__/
 */__pycache__/
 
+
 # Ignore environment files
 .env
 /.env
+
 
 
 Pipfile.lock
