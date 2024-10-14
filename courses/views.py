@@ -123,7 +123,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action == 'destroy':
             self.permission_classes = [IsInstructorOrAdmin]
         elif self.action == 'retrieve':
-            self.permission_classes = [IsStudentOrInstructor]
+            self.permission_classes = []
         elif self.action == 'create':
             self.permission_classes = [IsInstructorOrReadOnly]
         elif self.action == 'update':
