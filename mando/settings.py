@@ -93,7 +93,7 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bblxuvtp6yqwcc1moe53',  # Database name from Clever Cloud
+        'NAME': os.getenv('DB_NAME'),  # Database name from Clever Cloud
         'USER': 'uyoxfrz1edvkjufd',  # Database username from Clever Cloud
         'PASSWORD': 'QV6yk3tRACkW2Q9yGUGY',  # Database password from Clever Cloud
         'HOST': 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com',  # Clever Cloud host
