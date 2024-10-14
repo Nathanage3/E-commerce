@@ -94,9 +94,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME'),  # Database name from Clever Cloud
-        'USER': 'uyoxfrz1edvkjufd',  # Database username from Clever Cloud
-        'PASSWORD': 'QV6yk3tRACkW2Q9yGUGY',  # Database password from Clever Cloud
-        'HOST': 'bblxuvtp6yqwcc1moe53-mysql.services.clever-cloud.com',  # Clever Cloud host
+        'USER': os.getenv('DB_USER'),  # Database username from Clever Cloud
+        'PASSWORD': os.getenv('DB_PASSWORD'),  # Database password from Clever Cloud
+        'HOST': os.getenv('DB_HOST'),  # Clever Cloud host
         'PORT': 3306,  # Port number for MySQL
     }
 }
