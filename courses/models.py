@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.postgres.fields import ArrayField
 from decimal import Decimal
 from django.core.validators import MinValueValidator, FileExtensionValidator, \
     MaxValueValidator
