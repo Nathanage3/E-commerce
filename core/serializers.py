@@ -14,6 +14,7 @@ class UserCreateSerializer(BaseUserCreateSerializer):
 
 class UserSerializer(BaseUserSerializer):
     profile_picture = serializers.ImageField(read_only=True)
+    id = serializers.IntegerField(read_only=True)
     #role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=True)
     class Meta(BaseUserSerializer.Meta):
         model = User  # Ensure this points to your custom User model

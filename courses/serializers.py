@@ -30,16 +30,20 @@ class CourseSerializer(serializers.ModelSerializer):
     oldPrice = serializers.IntegerField(read_only=True)
     rating = serializers.IntegerField(read_only=True)
     numberOfStudents = serializers.SerializerMethodField()
-    
+    duration_in_hours = serializers.SerializerMethodField()
+
     class Meta:
         model = Course
         fields = ['id', 'collection', 'title','courseFor', 'objectives', 'sections', 'description', 'ratingCount', 'oldPrice',
-                  'duration', 'price', 'currency',  'rating', 'instructor', 'level', 'syllabus', 'prerequisites',
+                  'duration_in_hours', 'price', 'currency',  'rating', 'instructor', 'level', 'syllabus', 'prerequisites',
                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
         ]
     def get_numberOfStudents(self, obj):
         return OrderItem.objects.filter(course=obj).values('order__customer').distinct().count()
     
+    def get_duration_in_hours(self, obj):
+        return obj.duration_in_hours()
+
     def create(self, validated_data):
         promotions_data = validated_data.pop('promotions', [])
         course = Course.objects.create(**validated_data)
@@ -99,22 +103,27 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(read_only=True)
+    # user_id = serializers.IntegerField(read_only=True)
+    # id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Customer
-        fields = ['id', 'user_id', 'bio', 'website', 'profile_picture']
-
+        #fields = ['id', 'user_id', 'bio', 'website', 'profile_picture']
+        exclude = ['id', 'user']
 
 class InstructorEarningsSerializer(serializers.ModelSerializer):
+    earnings_after_deduction = serializers.SerializerMethodField()
     class Meta:
         model = InstructorEarnings
-        fields = ['id', 'total_earnings', 'last_payout', 'deduction']
+        fields = ['id', 'earnings_after_deduction', 'last_payout']
 
     def validate_instructor_id(self, value):
         if not User.objects.filter(id=value, role='instructor').exists():
             raise serializers.ValidationError("Instructor does not exist.")
-        return value    
+        return value
+
+    def get_earnings_after_deduction(self, obj):
+        return obj.calculate_earnings() 
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
@@ -195,7 +204,6 @@ class CartItemSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     items = CartItemSerializer(many=True, read_only=True)
-    #total_price = serializers.SerializerMethodField()
     customer_id = serializers.SerializerMethodField()
 
     class Meta:
@@ -209,10 +217,7 @@ class CartSerializer(serializers.ModelSerializer):
             return customer.id
         return None
 
-    # def get_total_price(self, cart: CartItem):
-    #     return sum([item.course.price for item in cart.items])
-
-
+    
 class WishListItemSerializer(serializers.ModelSerializer):
     course = SimpleCourseSerializer()
     

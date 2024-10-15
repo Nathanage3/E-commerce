@@ -77,8 +77,7 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'first_name', 'last_name')
-    list_filter = ('role',)
+    list_display = ('user', 'first_name', 'last_name')
     search_fields = ('user__username', 'user__first_name', 'user__last_name')
     ordering = ('user__first_name', 'user__last_name')
 

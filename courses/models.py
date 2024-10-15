@@ -100,6 +100,10 @@ class Course(models.Model):
     class Meta:
         unique_together = ['preview']
     
+    def duration_in_hours(self):
+        hours = self.duration / 60
+        return round(hours, 2)
+
     def clean(self):
         if Course.objects.filter(preview=self.preview).exists():
             raise ValidationError("This video file already exists.")
@@ -178,17 +182,9 @@ class Review(models.Model):
 
 
 class Customer(models.Model):
-    STUDENT = 'student'
-    INSTRUCTOR = 'instructor'
-
-    ROLE_CHOICES = [
-        (STUDENT, 'Student'),
-        (INSTRUCTOR, 'Instructor'),
-    ]
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                 related_name='customer_profile')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=STUDENT)
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     website = models.URLField(blank=True, null=True)
@@ -223,13 +219,11 @@ class InstructorEarnings(models.Model):
     def __str__(self):
         return f'Earnings for {self.instructor.username}'
     
-    def calculate_total_earnings(self):
-        # Sum all earnings from order item
-        total = sum(order_item.price for order_item in OrderItem.objects.filter(course__instructor=self.instructor))
-        # Deduct a percentage
-        deduction = (total * self.deduction_percentage) / 100
-        self.total_earnings = total - deduction
-        self.save()
+    def calculate_earnings(self):
+        # Get all orders related to the instructor
+        order_items = OrderItem.objects.filter(instructor=self.instructor)
+        earnings = sum((item.price * (1 - self.deduction_percentage / 100)) for item in order_items)
+        return round(earnings, 2)
 
 
 class Order(models.Model):
