@@ -142,7 +142,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsInstructorOrReadOnly]
     
     def perform_create(self, serializer):
         serializer.save(instructor=self.request.user)
