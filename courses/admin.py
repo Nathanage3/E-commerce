@@ -29,7 +29,7 @@ class CourseAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('title', 'slug', 'description', 'objectives', 'sections', 
-                       'duration', 'image', 'file', 'courseFor', 'price', 'oldPrice', 
+                       'duration', 'image', 'preview', 'courseFor', 'price', 'oldPrice', 
                        'rating', 'currency', 'ratingCount', 'syllabus', 'prerequisites', 'is_active', 
                        'level', 'collection', 'promotions')
         }),

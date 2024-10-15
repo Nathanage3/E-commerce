@@ -174,31 +174,6 @@ class LessonViewSet(viewsets.ModelViewSet):
         serializer.save(course=course, order=order)
 
 
-# class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
-#     serializer_class = CourseProgressSerializer
-#     permission_classes = [IsStudentOrInstructor]
-
-#     def get_queryset(self):
-#         queryset = CourseProgress.objects.prefetch_related('student').select_related('course')
-#         if self.request.user.is_staff:
-#             return queryset.all()
-#         # Get the cutomer instance linked to the current course
-
-#         customer = Customer.objects.get(user=self.request.user)
-
-#         # Check if the user has completed the payment for the course
-#         purchased_courses = OrderItem.objects.filter(
-#             order__customer=customer,
-#             order__payment_status='C'
-#         ).values_list('course', flat=True)
-
-#         print(f"Purchased course: {purchased_courses}") # Debugger
-        
-#         filtered_queryset = queryset.filter(student=self.request.user, course__in=purchased_courses)
-#         print(f"Filtered CourseProgress: {filtered_queryset}")
-#         return filtered_queryset
-
-
 class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CourseProgressSerializer
     permission_classes = [IsStudentOrInstructor]
