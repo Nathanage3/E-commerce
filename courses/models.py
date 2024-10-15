@@ -64,7 +64,7 @@ class Course(models.Model):
         (LEVEL_ADVANCED, "Advanced")
     ]
     title = models.CharField(max_length=255)
-    objectives = models.TextField(blank=True)
+    objectives = models.JSONField(blank=True, default=list)
     sections = models.IntegerField(default=0)
     duration = models.IntegerField()
     image = models.ImageField(upload_to='course/images',
@@ -101,7 +101,7 @@ class Course(models.Model):
         unique_together = ['preview']
     
     def clean(self):
-        if Course.objects.filter(file=self.file).exists():
+        if Course.objects.filter(preview=self.preview).exists():
             raise ValidationError("This video file already exists.")
 
     def __str__(self):
