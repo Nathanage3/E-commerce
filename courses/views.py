@@ -150,7 +150,7 @@ class SectionViewSet(viewsets.ModelViewSet):
 
         if not Course.objects.filter(id=course_id, instructor=user).exists():
             raise PermissionDenied("You do not have permissons to acces this course's sections.")
-        return Section.objects.prefetch_related('course').filter(course_id=course_id, instructor=user)
+        return Section.objects.filter(course_id=course_id, course__instructor=user)
     
     def perform_create(self, serializer):
         course_id = self.kwargs['course_pk']
@@ -158,7 +158,7 @@ class SectionViewSet(viewsets.ModelViewSet):
 
         if course.instructor != self.request.user:
             raise PermissionDenied("You do not have permissions to create section for this course.")
-        serializer.save(instructor=self.request.user, course=course)
+        serializer.save(course=course)
 
 
 class PromotionViewSet(viewsets.ModelViewSet):
@@ -195,10 +195,9 @@ class LessonViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInstructor]
     
     def get_queryset(self):
-        section_id = self.kwargs.get('section_pk')
-        user = self.request.user
-        if not Section.objects.filter(id=section_id, instructor=user).exists():
-            raise PermissionDenied("You do dot have permission to access this course's lessons.")
+        section_id = self.kwargs['section_pk']
+        # if not Section.objects.filter(id=section_id).exists():
+        #     raise PermissionDenied("You do dot have permission to access this course's lessons.")
         return Lesson.objects.filter(section_id=section_id)
         
 
