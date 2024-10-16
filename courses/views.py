@@ -3,15 +3,16 @@ from django.db.models.aggregates import Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
-    Order, OrderItem, Cart, CartItem, WishList, WishListItem
+    Order, OrderItem, Cart, CartItem, WishList, WishListItem, Section
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, \
     InstructorEarningsSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer,\
     InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
-    WishListItemSerializer, WishListItemSerializer, WishListSerializer
+    WishListItemSerializer, WishListItemSerializer, WishListSerializer, SectionSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
     IsStudentOrInstructor, IsInstructorOrReadOnly, IsOwnerOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin
 from .pagination import DefaultPagination
@@ -139,13 +140,45 @@ class CollectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
-class PromotionViewSet(viewsets.ModelViewSet):
-    queryset = Promotion.objects.all()
-    serializer_class = PromotionSerializer
-    permission_classes = [IsInstructorOrReadOnly]
+class SectionViewSet(viewsets.ModelViewSet):
+    serializer_class = SectionSerializer
+    permission_classes = [IsInstructorOrAdmin]
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_pk']
+        user = self.request.user
+
+        if not Course.objects.filter(id=course_id, instructor=user).exists():
+            raise PermissionDenied("You do not have permissons to acces this course's sections.")
+        return Section.objects.prefetch_related('course').filter(course_id=course_id, instructor=user)
     
     def perform_create(self, serializer):
-        serializer.save(instructor=self.request.user)
+        course_id = self.kwargs['course_pk']
+        course = Course.objects.get(id=course_id)
+
+        if course.instructor != self.request.user:
+            raise PermissionDenied("You do not have permissions to create section for this course.")
+        serializer.save(instructor=self.request.user, course=course)
+
+
+class PromotionViewSet(viewsets.ModelViewSet):
+    serializer_class = PromotionSerializer
+    permission_classes = [IsInstructorOrReadOnly]
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_pk']
+        user = self.request.user
+
+        if not Course.objects.filter(id=course_id, instructor=user).exists():
+            raise PermissionDenied("You do not have permission to access this course's promotions.")
+        return Promotion.objects.filter(course_id=course_id)
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs['course_pk']
+        course = Course.objects.get(id=course_id)
+        if course.instructor != self.request.user:
+            raise PermissionDenied("You do not have permissions to create a promotion for this course.")
+        serializer.save(instructor=self.request.user, course=course)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -162,16 +195,23 @@ class LessonViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInstructor]
     
     def get_queryset(self):
-        course_id = self.kwargs.get('course_pk')
-        if course_id:
-            return Lesson.objects.filter(course_id=course_id, course__instructor=self.request.user)
-        return Lesson.objects.all()
+        section_id = self.kwargs.get('section_pk')
+        user = self.request.user
+        if not Section.objects.filter(id=section_id, instructor=user).exists():
+            raise PermissionDenied("You do dot have permission to access this course's lessons.")
+        return Lesson.objects.filter(section_id=section_id)
+        
 
     def perform_create(self, serializer):
-        course_id = self.kwargs.get('course_pk')
-        course = get_object_or_404(Course, pk=course_id)
-        order = Lesson.objects.filter(course=course).count() + 1 
-        serializer.save(course=course, order=order)
+        course_id = self.kwargs['course_pk']
+        section_id = self.kwargs['section_pk']
+        course = Course.objects.get(id=course_id)
+        section = Section.objects.get(id=section_id)
+
+        if course.instructor != self.request.user:
+            raise PermissionDenied(f"You do not have permission to create lessons for {course.title} section {section.title}.")
+        order = Lesson.objects.filter(section=section).count() + 1 
+        serializer.save(section=section, order=order)
 
 
 class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
