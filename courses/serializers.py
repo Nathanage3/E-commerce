@@ -71,17 +71,19 @@ class SimpleCourseSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'instructor', 'description', 'objectives', 'duration']
 
 
-class SectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Section
-        fields = ['id', 'title', 'course', 'number_of_lessons', 'duration']
-
-
 class LessonSerializer(serializers.ModelSerializer):
-    course = SimpleCourseSerializer(read_only=True)
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'section', 'order', 'file', 'is_active']
+        fields = ['id', 'title', 'order', 'file', 'is_active']
+
+
+class SectionSerializer(serializers.ModelSerializer):
+    lesson = LessonSerializer
+    course = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Section
+        fields = ['id', 'course', 'title', 'number_of_lessons', 'duration']
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
