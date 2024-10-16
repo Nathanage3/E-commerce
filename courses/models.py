@@ -65,7 +65,7 @@ class Course(models.Model):
     ]
     title = models.CharField(max_length=255)
     objectives = models.JSONField(blank=True, default=list)
-    duration = models.IntegerField()
+    duration = models.IntegerField(default=0)
     image = models.ImageField(upload_to='course/images',
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
     preview = models.FileField(
@@ -128,7 +128,7 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField()  # Helps in sorting lessons
     is_active = models.BooleanField(default=True)  # Mark if the lesson is available for students
     
-    
+
     def __str__(self):
         return f'{self.title} - {self.course.title}'
 
