@@ -65,7 +65,6 @@ class Course(models.Model):
     ]
     title = models.CharField(max_length=255)
     objectives = models.JSONField(blank=True, default=list)
-    sections = models.IntegerField(default=0)
     duration = models.IntegerField()
     image = models.ImageField(upload_to='course/images',
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
@@ -73,6 +72,7 @@ class Course(models.Model):
         upload_to='course/lessons/videos',
         validators=[FileExtensionValidator(allowed_extensions=['mp4'])]
     )
+
     slug = models.SlugField(default='-')
     courseFor = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
@@ -121,7 +121,7 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
+    section = models.ForeignKey('Section', on_delete=models.PROTECT, related_name='lessons', default=1)
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to='course/lessons/videos', null=True, blank=True, unique=True,
                             validators=[FileExtensionValidator(allowed_extensions=['mp4'])])
@@ -130,7 +130,14 @@ class Lesson(models.Model):
     
     def __str__(self):
         return f'{self.title} - {self.course.title}'
-    
+
+
+class Section(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name="sections")
+    title = models.CharField(max_length=255, blank=True)
+    number_of_lessons = models.PositiveIntegerField()
+    duration = models.PositiveIntegerField()
+
 
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')

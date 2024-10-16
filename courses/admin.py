@@ -100,15 +100,15 @@ class InstructorEarningsAdmin(admin.ModelAdmin):
 
 @admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'order', 'is_active')
-    list_filter = ('course', 'is_active')
-    search_fields = ('title', 'course__title')
+    list_display = ('title', 'section', 'order', 'is_active')
+    list_filter = ('section', 'is_active')
+    search_fields = ('title', 'section__title')
     ordering = ('order',)
 
-    def course_title(self, obj):
-        return obj.course.title
-    course_title.admin_order_field = 'course'  # Allows column order sorting
-    course_title.short_description = 'Course Title'
+    def section_title(self, obj):
+        return obj.section.title
+    section_title.admin_order_field = 'section'  # Allows column order sorting
+    section_title.short_description = 'Section Title'
 
 
 class OrderItemInline(admin.TabularInline):

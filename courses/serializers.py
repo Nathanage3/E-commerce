@@ -3,17 +3,21 @@ from django.conf import settings
 from django.db import transaction
 from .models import Collection, Promotion, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, Lesson, Order, OrderItem, \
-  Cart, CartItem, WishList, WishListItem
+  Cart, CartItem, WishList, WishListItem, Section
 from courses.signals import order_created
 from core.models import User
 
 
 class PromotionSerializer(serializers.ModelSerializer):
     instructor = serializers.CharField(read_only=True)
-    course_id = serializers.IntegerField()
+
     class Meta:
         model = Promotion
-        fields = ['id', 'instructor', 'course_id', 'title', 'message', 'discount', 'start_date', 'end_date']
+        fields = ['id', 'instructor', 'title', 'message', 'discount', 'start_date', 'end_date']
+    
+    def create(self, validated_data):
+        validated_data['instructor'] = self.context['request'].user
+        return super(PromotionSerializer, self).create(validated_data)
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -50,7 +54,6 @@ class CourseSerializer(serializers.ModelSerializer):
 
         for promotion_data in promotions_data:
             Promotion.objects.create(course=course, instructor=course.instructor, **promotion_data)
-
         return course
     
     def update(self, instance, validated_data):
@@ -61,17 +64,24 @@ class CourseSerializer(serializers.ModelSerializer):
             Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
         return instance
 
+
 class SimpleCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'title', 'instructor', 'description', 'objectives', 'duration']
 
 
+class SectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = ['id', 'title', 'course', 'number_of_lessons', 'duration']
+
+
 class LessonSerializer(serializers.ModelSerializer):
     course = SimpleCourseSerializer(read_only=True)
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'course', 'order', 'file', 'is_active']
+        fields = ['id', 'title', 'section', 'order', 'file', 'is_active']
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
@@ -111,6 +121,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         #fields = ['id', 'user_id', 'bio', 'website', 'profile_picture']
         exclude = ['id', 'user']
 
+
 class InstructorEarningsSerializer(serializers.ModelSerializer):
     earnings_after_deduction = serializers.SerializerMethodField()
     class Meta:
@@ -123,7 +134,7 @@ class InstructorEarningsSerializer(serializers.ModelSerializer):
         return value
 
     def get_earnings_after_deduction(self, obj):
-        return obj.calculate_earnings() 
+        return obj.calculate_earnings()
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
