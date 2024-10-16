@@ -128,6 +128,7 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField()  # Helps in sorting lessons
     is_active = models.BooleanField(default=True)  # Mark if the lesson is available for students
     
+    
     def __str__(self):
         return f'{self.title} - {self.course.title}'
 
