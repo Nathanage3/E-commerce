@@ -64,7 +64,7 @@ class Course(models.Model):
         (LEVEL_ADVANCED, "Advanced")
     ]
     title = models.CharField(max_length=255)
-    objectives = models.JSONField(blank=True, default=list)
+    objectives = models.TextField()
     duration = models.IntegerField(default=0)
     image = models.ImageField(upload_to='course/images',
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
