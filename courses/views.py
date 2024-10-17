@@ -377,8 +377,15 @@ class CartViewSet(viewsets.ModelViewSet):
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
-    serializer_class = CartItemSerializer
+    #serializer_class = CartItemSerializer
     permission_classes = [IsStudentOrAdmin]
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            self.permission_classes = [IsAdminUser]  # Changed to ensure POST is only for admin
+        else:
+            self.permission_classes = [IsStudentOrAdmin]
+        return super(CartItemViewSet, self).get_permissions()
 
     def get_cart(self, request):
         """Get the cart associated with the current user"""

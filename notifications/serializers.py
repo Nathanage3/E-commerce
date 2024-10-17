@@ -22,3 +22,8 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_is_expired(self, obj):
         return obj.is_expired()
+    
+class UpdateNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['read']
