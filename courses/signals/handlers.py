@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.conf import settings
 from django.dispatch import receiver
-from courses.models import Lesson, CourseProgress, Customer, OrderItem, Order, InstructorEarnings
+from courses.models import Lesson, CourseProgress, Rating, Customer, OrderItem, Order, InstructorEarnings
 from notifications.notifications import send_notification_to_instructor, send_notification_to_customer
 
 
@@ -45,3 +45,7 @@ def update_instructor_earnings(sender, instance, created, **kwargs):
     if created:
         instructor = instance.course.instructor
         earnings, created = InstructorEarnings.objects.get_or_create(instructor=instructor)
+
+@receiver(post_save, sender=Rating)
+def update_course_rating_count(sender, instance, **kwargs):
+    instance.course.count_rating()

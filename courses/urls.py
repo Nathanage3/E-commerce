@@ -22,8 +22,9 @@ course_router.register('reviews', views.ReviewViewSet, basename='course-reviews'
 course_router.register('progress', views.CourseProgressViewSet, basename='course-progress')
 course_router.register('promotions', views.PromotionViewSet, basename='promotions')
 course_router.register('sections', views.SectionViewSet, basename='sections')
-
+course_router.register('ratings', views.RatingViewSet, basename="ratings")
 # Nested router for lessons under sections
+
 section_router = routers.NestedDefaultRouter(course_router, r'sections', lookup='section')
 section_router.register(r'lessons', views.LessonViewSet, basename='lessons')
 

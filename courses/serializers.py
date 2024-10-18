@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.conf import settings
 from django.db import transaction
-from .models import Collection, Promotion, Course, CourseProgress, \
+from .models import Collection, Promotion, Rating, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, Lesson, Order, OrderItem, \
   Cart, CartItem, WishList, WishListItem, Section
 from courses.signals import order_created
@@ -32,14 +32,13 @@ class CourseSerializer(serializers.ModelSerializer):
     promotions = PromotionSerializer(many=True, required=False)
     ratingCount = serializers.IntegerField(read_only=True)
     oldPrice = serializers.IntegerField(read_only=True)
-    rating = serializers.IntegerField(read_only=True)
     numberOfStudents = serializers.SerializerMethodField()
     duration_in_hours = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = ['id', 'collection', 'title', 'courseFor', 'objectives', 'description', 'ratingCount', 'oldPrice',
-                  'duration_in_hours', 'price', 'currency',  'rating', 'instructor', 'level', 'syllabus', 'prerequisites',
+                  'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites',
                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
         ]
     def get_numberOfStudents(self, obj):
@@ -244,3 +243,9 @@ class WishListSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishList
         fields = ['id', 'created_at', 'items']
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['id', 'course', 'score', 'user']  # Include 'id' for identifying the rating
+        read_only_fields = ['user']  # Prevent the user from being set manually

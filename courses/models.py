@@ -72,7 +72,6 @@ class Course(models.Model):
         upload_to='course/lessons/videos',
         validators=[FileExtensionValidator(allowed_extensions=['mp4'])]
     )
-
     slug = models.SlugField(default='-')
     courseFor = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
@@ -80,12 +79,10 @@ class Course(models.Model):
                                validators=[MinValueValidator(Decimal('0.01'))])
     oldPrice = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True,
                                validators=[MinValueValidator(Decimal('0.01'))])
-    rating = models.FloatField(default=1.0, validators=[MinValueValidator(Decimal('1.0')), 
-                               MaxValueValidator(Decimal('5.0'))])
     currency = models.CharField(
         max_length=10, choices=CURRENCY_CHOICES, default=CURRENCY_USD)
-    ratingCount = models.PositiveIntegerField(blank=True, default='0')
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
+    ratingCount = models.PositiveIntegerField(blank=True, default=0)
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -109,15 +106,27 @@ class Course(models.Model):
             raise ValidationError("This video file already exists.")
 
     def __str__(self):
-        return f'Video for {self.course.title}'
+        return f'Video for {self.title}'
     
-    def __str__(self):
-        return self.title
+    def count_rating(self):
+        self.ratingCount = self.ratings.count()
+        self.save()
+
     
     def update_student_count(self):
         # Updating the number of distinct students who purchased this course
         self.numberOfStudents = OrderItem.objects.filter(course=self, order__payment_status='C').values('order__customer').distinct().count()
         self.save()
+
+class Rating(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='ratings')
+    score = models.FloatField(validators=[MinValueValidator(1.0),
+                                          MinValueValidator(5.0)
+    ])
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ratings')
+
+    def __str__(self):
+        return f'{self.user.username} rated {self.course.title}'
 
 
 class Lesson(models.Model):
@@ -222,16 +231,26 @@ class InstructorEarnings(models.Model):
     total_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.0,
     validators=[MinValueValidator(Decimal('0.0'))])
     last_payout = models.DateTimeField(blank=True, null=True)
-    deduction_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=30)
+    deduction_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=50)
 
     def __str__(self):
         return f'Earnings for {self.instructor.username}'
     
     def calculate_earnings(self):
         # Get all orders related to the instructor
-        order_items = OrderItem.objects.filter(instructor=self.instructor)
+        order_items = OrderItem.objects.filter(coursee__instructor=self.instructor, order__payment_status='C')
         earnings = sum((item.price * (1 - self.deduction_percentage / 100)) for item in order_items)
-        return round(earnings, 2)
+        self.total_earnings = round(earnings, 2)
+        self.save()
+        return self.total_earnings
+    
+    def total_students_enrolled(self):
+        # Get distinct customers who have purchased any course from the instructor
+        students = OrderItem.objects.filter(
+            course__instructor=self.instructor, 
+            order_payment_status='C',  # Only count completed orders
+        ).values('order__customer').distinct().count()
+        return students
 
 
 class Order(models.Model):

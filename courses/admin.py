@@ -20,7 +20,7 @@ class CourseImageInLine(admin.TabularInline):
 
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'instructor', 'price', 'rating', 'is_active')
+    list_display = ('title', 'instructor', 'price', 'is_active')
     list_filter = ('instructor', 'is_active', 'level')
     search_fields = ('title', 'instructor__user__username', 'description')
     prepopulated_fields = {'slug': ('title',)}
@@ -30,7 +30,7 @@ class CourseAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('title', 'slug', 'description', 'objectives', 'sections', 
                        'duration', 'image', 'preview', 'courseFor', 'price', 'oldPrice', 
-                       'rating', 'currency', 'ratingCount', 'syllabus', 'prerequisites', 'is_active', 
+                        'currency', 'ratingCount', 'syllabus', 'prerequisites', 'is_active', 
                        'level', 'collection', 'promotions')
         }),
         ('Instructor Information', {
@@ -88,15 +88,28 @@ class CustomerAdmin(admin.ModelAdmin):
 
 ############### CustomerAdmin End ##############
 
+
 ############## InstructorEarningAdmin Begin ###########
 
 @admin.register(models.InstructorEarnings)
 class InstructorEarningsAdmin(admin.ModelAdmin):
-    list_display = ('instructor', 'total_earnings', 'last_payout')
-    search_fields = ('instructor__username',)
+    list_display = ('instructor', 'total_earnings', 'last_payout', 'deduction_percentage')
+    search_fields = ('instructor__username',) # Allows searching by instructor's username
     ordering = ('instructor',)
+    readonly_fields = ('total_earnings',) # Make total_earnings read-only
+    list_filter = ('deduction_percentage',) # Filter earnings by deduction percentage
+    
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('instructor')
+    
+    def save_model(self, request, obj, form, change):
+        # Update the total earnings whenever the model is saved
+        obj.total_earnings = obj.calculate_earnings()
+        super().save_model(request, obj, form, change)
 
 ############## InstructorEarningAddmin End ###########
+
 
 @admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):

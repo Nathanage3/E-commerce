@@ -9,9 +9,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
-    Order, OrderItem, Cart, CartItem, WishList, WishListItem, Section
+    Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section
 from .serializers import CourseSerializer, CollectionSerializer, PromotionSerializer, \
-    InstructorEarningsSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer,\
+    InstructorEarningsSerializer, RatingSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer,\
     InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
     WishListItemSerializer, WishListItemSerializer, WishListSerializer, SectionSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
@@ -72,7 +72,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     pagination_class = DefaultPagination
     search_fields = ['title']
-    ordering_fields = ['price', 'last_update', 'rating', 'id']
+    ordering_fields = ['price', 'last_update', 'id']
     http_method_names = ['get', 'post', 'delete', 'put', 'patch'] # CRUD
 
     def get_serializer_context(self):
@@ -246,10 +246,9 @@ class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [permission() for permission in [IsInstructor]]
-        else:
-            return [permission() for permission in [IsAdminUser]]
-    
+            return [IsInstructor()]
+        return [IsAdminUser()]
+
     def get_queryset(self):
         queryset = InstructorEarnings.objects.select_related('instructor')
         if self.request.user.is_staff:
@@ -258,13 +257,18 @@ class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.calculate_total_earnings()
+        instance.calculate_earnings()  # Update total_earnings
+        total_students = instance.total_students_enrolled()  # Get total students enrolled
+
+        # Serialize and include total_students_enrolled in response
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        data = serializer.data
+        data['total_students_enrolled'] = total_students
+        return Response(data)
 
     def perform_create(self, serializer):
         instance = serializer.save(instructor=self.request.user)
-        instance.calculate_total_earnings()
+        instance.calculate_earnings()  # Automatically update earnings on creation
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -369,6 +373,7 @@ class CartViewSet(viewsets.ModelViewSet):
         CartItem.objects.create(cart=cart, course=course)
         return Response(CartSerializer(cart, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
+
     def perform_create(self, serializer):
         customer = self.request.user.customer_profile
         existing_cart = Cart.objects.filter(customer=customer).first()
@@ -448,6 +453,51 @@ class WishListItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         wishlist = WishList.objects.get(pk=self.kwargs['wishlist_pk'])
         return WishListItem.objects.filter(wishlist=wishlist)
+
+
+
+class RatingViewSet(viewsets.ModelViewSet):
+    serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the course ID from the URL and filter ratings based on it
+        course_id = self.kwargs.get('course_id')
+        return Rating.objects.filter(course_id=course_id)
+
+    def create(self, request, course_id=None, *args, **kwargs):
+        # Override create to associate the rating with the current user and course
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({"detail": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user, course=course)  # Associate the rating with the course
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        # Allow the user to update their own ratings only
+        rating = self.get_object()
+        if rating.user != request.user:
+            return Response({"detail": "You do not have permission to edit this rating."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(rating, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        # Allow the user to delete their own ratings only
+        rating = self.get_object()
+        if rating.user != request.user:
+            return Response({"detail": "You do not have permission to delete this rating."}, status=status.HTTP_403_FORBIDDEN)
+
+        self.perform_destroy(rating)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def home(request):
