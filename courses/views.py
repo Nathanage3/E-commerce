@@ -1,8 +1,9 @@
 from django.db.utils import IntegrityError
+from django.db import transaction
 from django.db.models.aggregates import Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -275,22 +276,23 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Order.objects.filter(customer=customer)
 
     def get_cart(self, request):
-        customer = self.request.user.customer_profile
-        if not customer:
-            logger.error('Customer profile not found')
-            return Response({'detail': 'Customer profile not found'}, status=status.HTTP_400_BAD_REQUEST)
-        return customer.cart
-
-    @action(detail=False, methods=['post'], url_path='checkout')
-    def checkout(self, request):
-        user = request.user
         try:
-            customer = user.customer_profile
+            return request.user.customer_profile.cart
         except Customer.DoesNotExist:
             logger.error('Customer profile not found')
             return Response({'detail': 'Customer profile not found'}, status=status.HTTP_400_BAD_REQUEST)
+        except Cart.DoesNotExist:
+            return Response({'detail': 'Your cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['post'], url_path='checkout')
+    @transaction.atomic
+    def checkout(self, request):
+        customer = request.user.customer_profile
         cart = self.get_cart(request)
+
+        if isinstance(cart, Response):
+            return cart  # Return the error response from get_cart
+
         if not cart.items.exists():
             logger.error('Cart is empty')
             return Response({'detail': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
@@ -302,33 +304,30 @@ class OrderViewSet(viewsets.ModelViewSet):
         for item in cart.items.all():
             try:
                 order_item = OrderItem.objects.create(
-                    order=order,  # Ensure order is passed correctly
-                    course=item.course, 
+                    order=order,
+                    course=item.course,
                     price=item.course.price,
                     customer=customer,
                     instructor=item.course.instructor
                 )
                 logger.info(f"OrderItem created: {order_item.id} for course: {item.course.id}")
 
-                # Fetch or create lesson
-                lesson = Lesson.objects.filter(course=item.course).first()
-                if not lesson:
-                    lesson = Lesson.objects.create(title='Default Lesson', course=item.course)
-                    logger.info(f"Default lesson created for course: {item.course.id}")
-
-                # Ensure unique combination of student, course, and lesson
-                progress, created = CourseProgress.objects.get_or_create(student=user, course=item.course, lesson=lesson)
+                progress, created = CourseProgress.objects.get_or_create(student=request.user, course=item.course)
                 if created:
                     logger.info(f"CourseProgress created: {progress}")
                 else:
-                    logger.info(f"CourseProgress already exists for student: {user}, course: {item.course}, lesson: {lesson}")
+                    logger.info(f"CourseProgress already exists for student: {request.user}, course: {item.course}")
             except IntegrityError as e:
-                logger.error(f"CourseProgress entry error for student: {user}, course: {item.course}, lesson: {lesson} - {str(e)}")
+                logger.error(f"CourseProgress entry error for student: {request.user}, course: {item.course} - {str(e)}")
+
             item.course.update_student_count()
             logger.info(f"Updated number of students for course: {item.course.id}")
+
         cart.items.all().delete()
         cart.delete()
-        return Response(OrderSerializer(order).data)
+
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
@@ -339,8 +338,11 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
-    queryset = Cart.objects.all()
     permission_classes = [IsStudentOrAdmin]
+
+    def get_queryset(self):
+        customer = self.request.user.customer_profile
+        return Cart.objects.filter(customer=customer)
 
     def get_cart(self, request):
         """Get or Create cart associated with the current user"""
@@ -365,15 +367,15 @@ class CartViewSet(viewsets.ModelViewSet):
         
         # Add item to cart
         CartItem.objects.create(cart=cart, course=course)
-        return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+        return Response(CartSerializer(cart, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
-        customer = Customer.objects.get(user=self.request.user)
-        # Ensure no duplicate cart creation
+        customer = self.request.user.customer_profile
         existing_cart = Cart.objects.filter(customer=customer).first()
         if existing_cart:
-            return Response({'detail': 'Cart already exists for this customer'}, status=status.HTTP_400_BAD_REQUEST)
+           raise serializers.ValidationError({"detail": "Cart already exists for this customer."})
         serializer.save(customer=customer)
+
 
 
 class CartItemViewSet(viewsets.ModelViewSet):

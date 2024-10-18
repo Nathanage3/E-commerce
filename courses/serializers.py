@@ -222,14 +222,13 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['id', 'created_at', 'customer_id', 'items']
-    
+
     def get_customer_id(self, obj):
         request = self.context.get('request')
         if request and hasattr(request, "user"):
             customer = Customer.objects.get(user=request.user)
             return customer.id
         return None
-
     
 class WishListItemSerializer(serializers.ModelSerializer):
     course = SimpleCourseSerializer()

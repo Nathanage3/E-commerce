@@ -143,39 +143,39 @@ class Section(models.Model):
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='progress')
-    lesson = models.ForeignKey(Lesson, on_delete=models.PROTECT)
+    #lesson = models.ForeignKey(Lesson, on_delete=models.PROTECT)
     completed = models.BooleanField(default=False)
     progress = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # percentage
     last_accessed = models.DateTimeField(auto_now=True)
     completed_lessons = models.ManyToManyField(Lesson, blank=True, related_name='completed_by')  # Track completed lessons
 
     class Meta:
-        unique_together = ('student', 'course', 'lesson')
+        unique_together = ('student', 'course')
 
     def __str__(self):
         return f'{self.student.username} - {self.course.title}'
 
-    def calculate_progress(self):
-        total_lessons = self.course.lessons.count()
-        completed_lessons = self.completed_lessons.count()
+    # def calculate_progress(self):
+    #     total_lessons = self.course.lessons.count()
+    #     completed_lessons = self.completed_lessons.count()
         
-        if total_lessons > 0:
-            self.progress = (completed_lessons / total_lessons) * 100
+    #     if total_lessons > 0:
+    #         self.progress = (completed_lessons / total_lessons) * 100
         
-        self.completed = self.progress >= 100.0
+    #     self.completed = self.progress >= 100.0
     
-        if self.completed:
-            send_course_completion_notification(
-                self.course.instructor,
-                self.course,
-                self.student
-            )
+    #     if self.completed:
+    #         send_course_completion_notification(
+    #             self.course.instructor,
+    #             self.course,
+    #             self.student
+    #         )
 
-    def save(self, *args, **kwargs):
-        if not self.pk:  # Check if the instance is being created
-            super().save(*args, **kwargs)
-        self.calculate_progress()
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.pk:  # Check if the instance is being created
+    #         super().save(*args, **kwargs)
+    #     self.calculate_progress()
+    #     super().save(*args, **kwargs)
 
 
 class Review(models.Model):
@@ -198,7 +198,7 @@ class Customer(models.Model):
     website = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.user.username} ({self.get_role_display()})'
+        return f'{self.user.username} ({self.user.get_role_display()})'
 
 
     @admin.display(ordering='user__first_name')
