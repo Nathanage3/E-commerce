@@ -481,7 +481,6 @@ class WishListItemViewSet(viewsets.ModelViewSet):
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
     permission_classes = [IsAuthenticated]
@@ -495,6 +494,10 @@ class RatingViewSet(viewsets.ModelViewSet):
             # Get the specific rating
             rating = self.get_queryset().get(pk=pk)
 
+            # Check if the rating belongs to the specified course
+            if rating.course.id != int(course_pk):
+                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
             # Return the rating data
             serializer = self.get_serializer(rating)
             return Response(serializer.data)
@@ -502,19 +505,31 @@ class RatingViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, course_pk=None):
+        # Check if the course exists
+        try:
+            course = Course.objects.get(pk=course_pk)
+        except Course.DoesNotExist:
+            return Response({'detail': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         # Add the user to the rating data
         data = request.data.copy()
         data['user'] = request.user.id  # Automatically set the user ID
+        data['course'] = course.pk  # Add the course ID to the rating data
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()  # Save the rating
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, course_pk=None, pk=None):
         try:
             rating = self.get_queryset().get(pk=pk)
+
+            # Check if the rating belongs to the specified course
+            if rating.course.id != int(course_pk):
+                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             # Validate that the rating belongs to the current user
             if rating.user != request.user:
@@ -532,6 +547,10 @@ class RatingViewSet(viewsets.ModelViewSet):
         try:
             rating = self.get_queryset().get(pk=pk)
 
+            # Check if the rating belongs to the specified course
+            if rating.course.id != int(course_pk):
+                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
             # Validate that the rating belongs to the current user
             if rating.user != request.user:
                 return Response({'detail': 'You do not have permission to delete this rating.'}, status=status.HTTP_403_FORBIDDEN)
@@ -540,6 +559,7 @@ class RatingViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Rating.DoesNotExist:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
 
 def home(request):
     return HttpResponse("Welcome to the home page!")
