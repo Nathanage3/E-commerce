@@ -511,12 +511,18 @@ class RatingViewSet(viewsets.ModelViewSet):
         except Course.DoesNotExist:
             return Response({'detail': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Add the user to the rating data
+        # Check if the user has already rated the course
+        existing_rating = Rating.objects.filter(user=request.user, course=course).first()
+        if existing_rating:
+            return Response({'detail': 'You have already rated this course.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a copy of the request data and add the user and course
         data = request.data.copy()
         data['user'] = request.user.id  # Automatically set the user ID
-        data['course'] = course.pk  # Add the course ID to the rating data
+        data['course'] = course  # Set the course instance
 
-        serializer = self.get_serializer(data=data)
+        # Pass the request context to the serializer
+        serializer = self.get_serializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()  # Save the rating
             return Response(serializer.data, status=status.HTTP_201_CREATED)
