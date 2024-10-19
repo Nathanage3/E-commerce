@@ -455,50 +455,91 @@ class WishListItemViewSet(viewsets.ModelViewSet):
         return WishListItem.objects.filter(wishlist=wishlist)
 
 
+# class RatingViewSet(viewsets.ModelViewSet):
+#     serializer_class = RatingSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         # Get the course ID from the URL and filter ratings based on it
+#         #course_id = self.kwargs.get('course_id')
+#         return Rating.objects.filter(user=self.request.user)
+
+#     def create(self, request, course_id=None, *args, **kwargs):
+#         # Override create to associate the rating with the current user and course
+#         try:
+#             course = Course.objects.get(id=course_id)
+#         except Course.DoesNotExist:
+#             return Response({"detail": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             # Save the rating with the current user and course
+#             serializer.save(user=request.user, course=course)
+#             # Call the function to update the course's rating count
+#             course.count_rating()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Get the course ID from the URL and filter ratings based on it
-        course_id = self.kwargs.get('course_id')
-        return Rating.objects.filter(course_id=course_id)
+        # Get ratings for the current user only
+        return Rating.objects.filter(user=self.request.user)
 
-    def create(self, request, course_id=None, *args, **kwargs):
-        # Override create to associate the rating with the current user and course
+    def retrieve(self, request, course_pk=None, pk=None):
         try:
-            course = Course.objects.get(id=course_id)
-        except Course.DoesNotExist:
-            return Response({"detail": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+            # Get the specific rating
+            rating = self.get_queryset().get(pk=pk)
 
-        serializer = self.get_serializer(data=request.data)
+            # Return the rating data
+            serializer = self.get_serializer(rating)
+            return Response(serializer.data)
+        except Rating.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, course_pk=None):
+        # Add the user to the rating data
+        data = request.data.copy()
+        data['user'] = request.user.id  # Automatically set the user ID
+
+        serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save(user=request.user, course=course)  # Associate the rating with the course
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, *args, **kwargs):
-        # Allow the user to update their own ratings only
-        rating = self.get_object()
-        if rating.user != request.user:
-            return Response({"detail": "You do not have permission to edit this rating."}, status=status.HTTP_403_FORBIDDEN)
+    def update(self, request, course_pk=None, pk=None):
+        try:
+            rating = self.get_queryset().get(pk=pk)
 
-        serializer = self.get_serializer(rating, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Validate that the rating belongs to the current user
+            if rating.user != request.user:
+                return Response({'detail': 'You do not have permission to edit this rating.'}, status=status.HTTP_403_FORBIDDEN)
 
-    def destroy(self, request, *args, **kwargs):
-        # Allow the user to delete their own ratings only
-        rating = self.get_object()
-        if rating.user != request.user:
-            return Response({"detail": "You do not have permission to delete this rating."}, status=status.HTTP_403_FORBIDDEN)
+            serializer = self.get_serializer(rating, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Rating.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        self.perform_destroy(rating)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def destroy(self, request, course_pk=None, pk=None):
+        try:
+            rating = self.get_queryset().get(pk=pk)
 
+            # Validate that the rating belongs to the current user
+            if rating.user != request.user:
+                return Response({'detail': 'You do not have permission to delete this rating.'}, status=status.HTTP_403_FORBIDDEN)
+
+            rating.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Rating.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 def home(request):
     return HttpResponse("Welcome to the home page!")
