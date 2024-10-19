@@ -244,12 +244,15 @@ class WishListSerializer(serializers.ModelSerializer):
         model = WishList
         fields = ['id', 'created_at', 'items']
 
-
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['id', 'score', 'user', 'course']  # Include 'course' in fields
+        fields = ['id', 'score']  # Only include fields you want to expose
+        read_only_fields = ['course', 'user']  # Set course and user as read-only
 
     def create(self, validated_data):
-        # Ensure that the user is set when creating a rating
+        # Automatically add user and course to validated_data before saving
+        validated_data['user'] = self.context['request'].user  # Set the user from the request
+        validated_data['course'] = self.context['view'].kwargs['course_pk']  # Set the course ID from the URL
+        
         return super().create(validated_data)
