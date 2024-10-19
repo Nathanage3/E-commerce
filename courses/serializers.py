@@ -244,8 +244,12 @@ class WishListSerializer(serializers.ModelSerializer):
         model = WishList
         fields = ['id', 'created_at', 'items']
 
+
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['id', 'course', 'score', 'user']  # Include 'id' for identifying the rating
-        read_only_fields = ['user']  # Prevent the user from being set manually
+        fields = ['id', 'score', 'user', 'course']  # Include 'course' in fields
+
+    def create(self, validated_data):
+        # Ensure that the user is set when creating a rating
+        return super().create(validated_data)
