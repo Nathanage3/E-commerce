@@ -1,5 +1,9 @@
 from rest_framework import permissions
 from rest_framework import viewsets, status
+from .models import OrderItem
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -84,3 +88,19 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
          return True
       # write permissions are only allowed to the owner of promotion
       return request.user.is_authenticated and request.user == "instructor"
+   
+
+class IsStudentAndPurchasedCourse(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Check if user is a student and has purchased the course
+        if request.user and request.user.is_authenticated:
+            course_id = view.kwargs.get('course_pk') or view.kwargs.get('section_pk') or view.kwargs.get('lesson_id')
+            logger.debug(f"Checking purchase for course_id: {course_id}, user: {request.user.id}")
+            has_purchased = OrderItem.objects.filter(
+                order__customer=request.user.customer_profile,
+                course_id=course_id,
+                order__payment_status='C'
+            ).exists()
+            logger.debug(f"Purchase status for course_id {course_id}: {has_purchased}")
+            return has_purchased
+        return False

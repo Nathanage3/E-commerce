@@ -73,34 +73,43 @@ class SimpleCourseSerializer(serializers.ModelSerializer):
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'order', 'file', 'is_active']
+        fields = ['id', 'title', 'order', 'file', 'is_active', 'opened']
+        read_only_fields = ['order', 'opened']
 
+        def update(self, instance, validated_data):
+            instance.title = validated_data.get('title', instance.title)
+            instance.file = validated_data.get('file', instance.file)
+            instance.is_active = validated_data.get('is_activate', instance.is_active)
+            instance.save()
+            return instance
+        
 
 class SectionSerializer(serializers.ModelSerializer):
-    lesson = LessonSerializer
+    lessons = LessonSerializer(many=True, read_only=True)
     course = serializers.CharField(read_only=True)
     
     class Meta:
         model = Section
-        fields = ['id', 'course', 'title', 'number_of_lessons', 'duration']
+        fields = ['id', 'course', 'title', 'number_of_lessons', 'duration', 'lessons']
+
+
+class CourseDetailSerializer(serializers.ModelSerializer):
+    sections = SectionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'description', 'price', 'currency', 'sections']
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
-    #course_id = serializers.IntegerField(write_only=True)
-    course = SimpleCourseSerializer()
-    lesson = LessonSerializer()
+    completed_lessons = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = CourseProgress
-        fields = ['id', 'course', 'lesson', 'completed', 'progress', 'last_accessed']
+        fields = ['student', 'course', 'completed_lessons', 'completed', 'progress', 'last_accessed']
+        read_only_fields = ['student', 'course', 'completed_lessons']
 
-    
-    def validate_course_id(self, value):
-        if not Course.objects.filter(id=value).exists():
-            raise serializers.ValidationError("Invalid course_id: Course does not exist.")
-        return value
 
- 
 class ReviewSerializer(serializers.ModelSerializer):
     course = serializers.StringRelatedField()
 
@@ -244,15 +253,26 @@ class WishListSerializer(serializers.ModelSerializer):
         model = WishList
         fields = ['id', 'created_at', 'items']
 
+
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['id', 'score']  # Only include fields you want to expose
-        read_only_fields = ['course', 'user']  # Set course and user as read-only
+        fields = ['id', 'score']
+        read_only_fields = ['course', 'user']
 
     def create(self, validated_data):
-        # Automatically add user and course to validated_data before saving
-        validated_data['user'] = self.context['request'].user  # Set the user from the request
-        validated_data['course'] = self.context['view'].kwargs['course_pk']  # Set the course ID from the URL
+        request = self.context.get('request')
+        view = self.context.get('view')
+
+        if request and view and 'course_pk' in view.kwargs:
+            course_id = view.kwargs['course_pk']
+            try:
+                course = Course.objects.get(pk=course_id)
+                validated_data['user'] = request.user
+                validated_data['course'] = course
+            except Course.DoesNotExist:
+                raise serializers.ValidationError("Course not found.")
+        else:
+            raise serializers.ValidationError("Course ID or user not found.")
         
         return super().create(validated_data)
