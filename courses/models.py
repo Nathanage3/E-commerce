@@ -83,7 +83,8 @@ class Course(models.Model):
     currency = models.CharField(
         max_length=10, choices=CURRENCY_CHOICES, default=CURRENCY_USD)
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
-    ratingCount = models.PositiveIntegerField(blank=True, default=0)
+    ratingCount = models.PositiveIntegerField(blank=True, default=0) # Number of students
+    #rating = models.ForeignKey('Rating', on_delete=models.CASCADE)  # Average Rating
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -136,7 +137,8 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField()  # Helps in sorting lessons
     is_active = models.BooleanField(default=True)  # Mark if the lesson is available for students
     opened = models.BooleanField(default=False) # Track if the lesson has been opened
-
+    
+    
     def __str__(self):
         return f'{self.title} - {self.section.course.title}'
 

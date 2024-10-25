@@ -155,34 +155,35 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 class SectionViewSet(viewsets.ModelViewSet):
     serializer_class = SectionSerializer
+    queryset = Section.objects.all()
 
-    def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated(), IsStudentAndPurchasedCourse()]
-        return [IsInstructor()]
+    # def get_permissions(self):
+    #     if self.request.method in SAFE_METHODS:
+    #         return [IsAuthenticated(), IsStudentAndPurchasedCourse()]
+    #     return [IsInstructor()]
 
-    def get_queryset(self):
-        course_id = self.kwargs['course_pk']
-        user = self.request.user
+    # def get_queryset(self):
+    #     course_id = self.kwargs['course_pk']
+    #     user = self.request.user
 
-        if self.request.method in SAFE_METHODS:
-            if OrderItem.objects.filter(
-                course_id=course_id,
-                order__customer=user.customer_profile,
-                order__payment_status='C'
-            ).exists():
-                return Section.objects.filter(course_id=course_id)
-            raise PermissionDenied("You do not have permission to access this course's sections.")
+    #     if self.request.method in SAFE_METHODS:
+    #         if OrderItem.objects.filter(
+    #             course_id=course_id,
+    #             order__customer=user.customer_profile,
+    #             order__payment_status='C'
+    #         ).exists():
+    #             return Section.objects.filter(course_id=course_id)
+    #         raise PermissionDenied("You do not have permission to access this course's sections.")
         
-        if not Course.objects.filter(id=course_id, instructor=user).exists():
-            raise PermissionDenied("You do not have permission to access this course's sections.")
+    #     if not Course.objects.filter(id=course_id, instructor=user).exists():
+    #         raise PermissionDenied("You do not have permission to access this course's sections.")
         
-        return Section.objects.filter(course_id=course_id, course__instructor=user)
+    #     return Section.objects.filter(course_id=course_id, course__instructor=user)
 
-    def perform_create(self, serializer):
-        course_id = self.kwargs['course_pk']
-        course = get_object_or_404(Course, id=course_id)
-        serializer.save(course=course)
+    # def perform_create(self, serializer):
+    #     course_id = self.kwargs['course_pk']
+    #     course = get_object_or_404(Course, id=course_id)
+    #     serializer.save(course=course)
 
 
 class PromotionViewSet(viewsets.ModelViewSet):
