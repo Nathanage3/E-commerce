@@ -1,5 +1,6 @@
 from django.contrib import admin
 from decimal import Decimal
+from django.db.models import Sum, Count
 from django.core.validators import MinValueValidator, FileExtensionValidator, \
     MaxValueValidator
 from django.core.exceptions import ValidationError
@@ -134,10 +135,10 @@ class Lesson(models.Model):
                             validators=[FileExtensionValidator(allowed_extensions=['mp4'])])
     order = models.PositiveIntegerField()  # Helps in sorting lessons
     is_active = models.BooleanField(default=True)  # Mark if the lesson is available for students
-    
+    opened = models.BooleanField(default=False) # Track if the lesson has been opened
 
     def __str__(self):
-        return f'{self.title} - {self.course.title}'
+        return f'{self.title} - {self.section.course.title}'
 
 
 class Section(models.Model):
@@ -150,7 +151,6 @@ class Section(models.Model):
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name='progress')
-    #lesson = models.ForeignKey(Lesson, on_delete=models.PROTECT)
     completed = models.BooleanField(default=False)
     progress = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])  # percentage
     last_accessed = models.DateTimeField(auto_now=True)
@@ -162,27 +162,26 @@ class CourseProgress(models.Model):
     def __str__(self):
         return f'{self.student.username} - {self.course.title}'
 
-    # def calculate_progress(self):
-    #     total_lessons = self.course.lessons.count()
-    #     completed_lessons = self.completed_lessons.count()
+    def calculate_progress(self):
+        total_lessons = self.course.sections.annotate(lesson_count=Count('lessons')).aggregate(total=Sum('lesson_count'))['total']
+        completed_lessons = self.completed_lessons.count()
         
-    #     if total_lessons > 0:
-    #         self.progress = (completed_lessons / total_lessons) * 100
+        if total_lessons:
+            self.progress = (completed_lessons / total_lessons) * 100
+            
+        self.completed = self.progress >= 100.0
         
-    #     self.completed = self.progress >= 100.0
-    
-    #     if self.completed:
-    #         send_course_completion_notification(
-    #             self.course.instructor,
-    #             self.course,
-    #             self.student
-    #         )
+        if self.completed:
+            send_course_completion_notification(
+                self.course.instructor,
+                self.course,
+                self.student
+            )
 
-    # def save(self, *args, **kwargs):
-    #     if not self.pk:  # Check if the instance is being created
-    #         super().save(*args, **kwargs)
-    #     self.calculate_progress()
-    #     super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.calculate_progress()
+        super().save(*args, **kwargs)
 
 
 class Review(models.Model):

@@ -12,7 +12,7 @@ class Notification(models.Model):
         (ALERT, 'Alert'),
         (PROMOTION, 'Promotion'),
     ]
-
+   
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=100, blank=True, null=True)
     message = models.CharField(max_length=255)
