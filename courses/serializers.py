@@ -34,7 +34,7 @@ class CourseSerializer(serializers.ModelSerializer):
     oldPrice = serializers.IntegerField(read_only=True)
     numberOfStudents = serializers.SerializerMethodField()
     duration_in_hours = serializers.SerializerMethodField()
-    averageRating = serializers.FloatField(source='get_average_rating')
+    averageRating = serializers.FloatField(source='get_average_ratings')
 
     class Meta:
         model = Course
