@@ -12,7 +12,10 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Filter notifications for the authenticated user
-        return Notification.objects.filter(user=self.request.user)
+        user = self.request.user
+        if user.is_superuser:
+            return Notification.objects.all()
+        return Notification.objects.filter(user=user, read=False)
     
     def get_serializer_class(self):
         if self.action == 'mark_as_read':
@@ -32,6 +35,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
             partial=True
         )
         if serializer.is_valid():
+            notification.read = True
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

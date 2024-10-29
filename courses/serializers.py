@@ -30,14 +30,15 @@ class CollectionSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     instructor = serializers.StringRelatedField()
     promotions = PromotionSerializer(many=True, required=False)
-    ratingCount = serializers.IntegerField(read_only=True)
+    ratingCount = serializers.IntegerField(source='get_rating_count', read_only=True)
     oldPrice = serializers.IntegerField(read_only=True)
     numberOfStudents = serializers.SerializerMethodField()
     duration_in_hours = serializers.SerializerMethodField()
+    averageRating = serializers.FloatField(source='get_average_rating')
 
     class Meta:
         model = Course
-        fields = ['id', 'collection', 'title', 'courseFor', 'objectives', 'description', 'ratingCount', 'oldPrice',
+        fields = ['id', 'collection', 'title', 'courseFor', 'objectives', 'description', 'ratingCount', 'averageRating', 'oldPrice',
                   'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites',
                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
         ]
@@ -67,30 +68,42 @@ class CourseSerializer(serializers.ModelSerializer):
 class SimpleCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['id', 'title', 'instructor', 'description', 'objectives', 'duration']
+        fields = ['id', 'title', 'instructor', 'description', 'objectives', 'total_duration']
 
 
 class LessonSerializer(serializers.ModelSerializer):
+    opened_for_student = serializers.SerializerMethodField()
+    file = serializers.FileField(required=True)
+
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'order', 'file', 'is_active', 'opened']
-        read_only_fields = ['order', 'opened']
+        fields = ['id', 'title', 'order', 'file', 'is_active', 'opened_for_student']
+        read_only_fields = ['order']
 
-        def update(self, instance, validated_data):
-            instance.title = validated_data.get('title', instance.title)
-            instance.file = validated_data.get('file', instance.file)
-            instance.is_active = validated_data.get('is_activate', instance.is_active)
-            instance.save()
-            return instance
-        
+    def get_opened_for_student(self, obj):
+        # Check if the user is a student and return the `opened` field accordingly
+        request = self.context.get('request')
+        if request and getattr(request.user, 'role', None) == 'student':
+            return obj.opened
+        return None  # Return None or False if the user is not a student
 
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.file = validated_data.get('file', instance.file)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.save()
+        return instance
+
+    
 class SectionSerializer(serializers.ModelSerializer):
     lessons = LessonSerializer(many=True, read_only=True)
     course = serializers.CharField(read_only=True)
+    number_of_lessons = serializers.CharField(read_only=True)
+    total_duration = serializers.DurationField(read_only=True) # Total duration field for section
     
     class Meta:
         model = Section
-        fields = ['id', 'course', 'title', 'number_of_lessons', 'duration', 'lessons']
+        fields = ['id', 'course', 'title', 'number_of_lessons', 'total_duration', 'lessons']
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):

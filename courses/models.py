@@ -1,6 +1,6 @@
 from django.contrib import admin
 from decimal import Decimal
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Avg
 from django.core.validators import MinValueValidator, FileExtensionValidator, \
     MaxValueValidator
 from django.core.exceptions import ValidationError
@@ -8,7 +8,9 @@ from django.db import models
 from django.conf import settings
 from datetime import timedelta
 from notifications.notifications import send_course_completion_notification
+import os
 from uuid import uuid4
+from moviepy.editor import VideoFileClip
 
 
 class Collection(models.Model):
@@ -66,7 +68,7 @@ class Course(models.Model):
     ]
     title = models.CharField(max_length=255)
     objectives = models.TextField()
-    duration = models.IntegerField(default=0)
+    total_duration = models.DurationField(default=timedelta, blank=True)
     image = models.ImageField(upload_to='course/images',
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
     preview = models.FileField(
@@ -84,7 +86,7 @@ class Course(models.Model):
         max_length=10, choices=CURRENCY_CHOICES, default=CURRENCY_USD)
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
     ratingCount = models.PositiveIntegerField(blank=True, default=0) # Number of students
-    #rating = models.ForeignKey('Rating', on_delete=models.CASCADE)  # Average Rating
+    rating = models.ManyToManyField('Rating', related_name='rated_courses')  # Average Rating
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -99,8 +101,19 @@ class Course(models.Model):
     class Meta:
         unique_together = ['preview']
     
+    def get_rating_count(self):
+        return self.course_ratings.count()
+    
+    def get_average_ratings(self):
+        average = self.course_ratings.aggregate(Avg('score'))['score__avg']
+        return round(average, 2) if average else 0.0
+    
+    def update_rating_matrics(self):
+        self.ratingCount = self.get_rating_count()
+        self.save(update_fields=['ratingCount'])
+    
     def duration_in_hours(self):
-        hours = self.duration / 60
+        hours = self.total_duration.total_seconds() / 3600
         return round(hours, 2)
 
     def clean(self):
@@ -109,46 +122,110 @@ class Course(models.Model):
 
     def __str__(self):
         return f'{self.title}'
-    
-    def count_rating(self, course_id):
-        self.ratingCount = Rating.objects.filter(course_id=self.id).count()
-        self.save()
 
     def update_student_count(self):
         # Updating the number of distinct students who purchased this course
         self.numberOfStudents = OrderItem.objects.filter(course=self, order__payment_status='C').values('order__customer').distinct().count()
         self.save()
 
+    def update_total_duration(self):
+        total_duration = timedelta()
+        for section in self.sections.all():
+            total_duration += section.total_duration or timedelta()
+        
+        self.total_duration = total_duration
+        self.save(update_fields=["total_duration"])
+
+
 class Rating(models.Model): 
     score = models.FloatField(validators=[MinValueValidator(1.0),
                                           MaxValueValidator(5.0)
+                                          
     ])
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ratings')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_ratings')
     def __str__(self):
         return f'{self.user.username} rated {self.course.title}'
 
 
 class Lesson(models.Model):
+    VIDEO_EXTENTIONS = ['mp4', 'avi', 'mov', 'wmv', 'mkv', 'flv', 'mpeg']
+
     section = models.ForeignKey('Section', on_delete=models.PROTECT, related_name='lessons', default=1)
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='course/lessons/videos', null=True, blank=True, unique=True,
-                            validators=[FileExtensionValidator(allowed_extensions=['mp4'])])
+    file = models.FileField(
+        upload_to='course/lessons/files',
+        null=True,
+        blank=True,
+        unique=True,
+        validators=[FileExtensionValidator(allowed_extensions=[
+            'mp4', 'avi', 'mov', 'wmv', 'mkv', 'flv', 'mpeg', 
+            'doc', 'docx', 'pdf', 'txt', 'rtf', 'odt', 'html', 'htm'
+        ])]
+    )
     order = models.PositiveIntegerField()  # Helps in sorting lessons
     is_active = models.BooleanField(default=True)  # Mark if the lesson is available for students
+    duration = models.PositiveIntegerField(default=0)
     opened = models.BooleanField(default=False) # Track if the lesson has been opened
     
     
     def __str__(self):
         return f'{self.title} - {self.section.course.title}'
+    
+    def save(self, *args, **kwargs):
+        # Check if the file is a video format
+        if self.file:
+            file_extention = os.path.splitext(self.file.name)[-1][1:].lower() # Get the file extention
+            if file_extention in self.VIDEO_EXTENTIONS:
+                # Only caltulate duration for video files if not already set
+                if not self.duration:
+                    video_path = self.file.path
+                    try:
+                        clip = VideoFileClip(video_path)
+                        self.duration = int(clip.duration) # Covert secods to minutes 
+                        clip.close()
+                    except Exception as e:
+                        print(f"Error reading video duration: {e}")
+            else:
+                # Reset duration for non-video files
+                self.duration = 0
+        # Call the original save method to save the lesson
+        super().save(*args, **kwargs)
+        # Update section and durations
+        self.section.update_total_duration()
+
+    def delete(self, *args, **kwargs):
+        section = self.section # Share reference before deletion
+        # Call original delete method
+        super().delete(*args, **kwargs)
+        # Update section and course duration after deletion
+        section.update_total_duration()
 
 
 class Section(models.Model):
     course = models.ForeignKey(Course, on_delete=models.PROTECT, related_name="sections")
     title = models.CharField(max_length=255, blank=True)
-    number_of_lessons = models.PositiveIntegerField()
-    duration = models.PositiveIntegerField()
+    number_of_lessons = models.PositiveIntegerField(default=0)
+    total_duration = models.DurationField(default=timedelta, blank=True)
 
+    def save(self, *args, **kwargs):
+        # Save the section instance first to ensure it has a primary key
+        is_new_instance = self.pk is None
+        super().save(*args, **kwargs)
+
+        # After saving, update total_duration if it's a new instance
+        if is_new_instance:
+            self.update_total_duration()
+
+    def update_total_duration(self):
+        total_duration = timedelta()
+        for lesson in self.lessons.all():
+            lesson_duration = timedelta(seconds=lesson.duration) if lesson.duration else timedelta()
+            total_duration += lesson_duration
+        self.total_duration = total_duration
+        self.save(update_fields=["total_duration"])
+        self.course.update_total_duration()
+   
 
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
