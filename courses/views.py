@@ -7,7 +7,7 @@ from rest_framework import viewsets, status, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS, AllowAny
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
     Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section
 from .serializers import CourseSerializer, CourseDetailSerializer, CollectionSerializer, PromotionSerializer, \
@@ -15,7 +15,7 @@ from .serializers import CourseSerializer, CourseDetailSerializer, CollectionSer
     InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
     WishListItemSerializer, WishListItemSerializer, WishListSerializer, SectionSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
-    IsStudentOrInstructor, IsInstructorOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin, IsStudentAndPurchasedCourse
+    IsStudentOrInstructor, IsInstructorOwner, IsInstructorOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin, IsStudentAndPurchasedCourse
 from .pagination import DefaultPagination
 from uuid import uuid4
 import logging
@@ -124,8 +124,8 @@ class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'destroy':
             self.permission_classes = [IsInstructorOrAdmin]
-        elif self.action == 'retrieve':
-            self.permission_classes = []
+        elif self.action == 'retrieve' or self.action  == 'list':
+            self.permission_classes = [AllowAny]
         elif self.action == 'create':
             self.permission_classes = [IsInstructorOrReadOnly]
         elif self.action == 'update':
@@ -133,7 +133,8 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = []
         return super().get_permissions()
-     
+
+
 class FullCourseViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CourseDetailSerializer
     permission_classes = [IsAuthenticated]
@@ -153,37 +154,54 @@ class CollectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 class SectionViewSet(viewsets.ModelViewSet):
     serializer_class = SectionSerializer
-    queryset = Section.objects.all()
 
-    # def get_permissions(self):
-    #     if self.request.method in SAFE_METHODS:
-    #         return [IsAuthenticated(), IsStudentAndPurchasedCourse()]
-    #     return [IsInstructor()]
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
+        elif self.action in ['mark_as_finished', 'mark_as_unfinished']:
+            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse]
+        elif self.action in ['create', 'update', 'destroy']:
+            self.permission_classes = [IsAuthenticated, IsInstructorOwner]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
 
-    # def get_queryset(self):
-    #     course_id = self.kwargs['course_pk']
-    #     user = self.request.user
+    def get_queryset(self):
+        course_id = self.kwargs['course_pk']
+        user = self.request.user
 
-    #     if self.request.method in SAFE_METHODS:
-    #         if OrderItem.objects.filter(
-    #             course_id=course_id,
-    #             order__customer=user.customer_profile,
-    #             order__payment_status='C'
-    #         ).exists():
-    #             return Section.objects.filter(course_id=course_id)
-    #         raise PermissionDenied("You do not have permission to access this course's sections.")
-        
-    #     if not Course.objects.filter(id=course_id, instructor=user).exists():
-    #         raise PermissionDenied("You do not have permission to access this course's sections.")
-        
-    #     return Section.objects.filter(course_id=course_id, course__instructor=user)
+        logger.debug(f"User {user.id} is requesting sections for course {course_id}")
 
-    # def perform_create(self, serializer):
-    #     course_id = self.kwargs['course_pk']
-    #     course = get_object_or_404(Course, id=course_id)
-    #     serializer.save(course=course)
+        # Check if the user is an instructor for the course
+        if Course.objects.filter(id=course_id, instructor=user).exists():
+            logger.debug(f"User {user.id} is the instructor for course {course_id} (Instructor Check)")
+            return Section.objects.filter(course_id=course_id)
+
+        # Check if the user is a student who purchased the course
+        if self.request.method in SAFE_METHODS:
+            logger.debug(f"Checking purchase for course_id: {course_id}, user: {user.id}")
+            if OrderItem.objects.filter(
+                course_id=course_id,
+                order__customer=user.customer_profile,
+                order__payment_status='C'
+            ).exists():
+                logger.debug(f"User {user.id} has purchased course {course_id} (Student Check)")
+                return Section.objects.filter(course_id=course_id)
+            logger.warning(f"User {user.id} does not have permission to access purchased sections of course {course_id}")
+            raise PermissionDenied("You do not have permission to access this course's sections.")
+
+        logger.warning(f"User {user.id} does not have permission to access course {course_id} (No Match)")
+        raise PermissionDenied("You do not have permission to access this course's sections.")
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs['course_pk']
+        course = get_object_or_404(Course, id=course_id)
+        serializer.save(course=course)
 
 
 class PromotionViewSet(viewsets.ModelViewSet):
@@ -244,48 +262,109 @@ class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
 class BaseLessonViewSet(viewsets.ModelViewSet):
     serializer_class = LessonSerializer
 
-    def mark_as_opened_and_update_progress(self, request, lesson):
-        lesson.opened = True
-        lesson.save()
+    def create(self, request, *args, **kwargs):
+        print("Creating Lesson:", request.data)  # Print incoming data
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        user = request.user
-        course_progress, created = CourseProgress.objects.get_or_create(
-            student=user, course=lesson.section.course
-        )
-        course_progress.completed_lessons.add(lesson)
-        course_progress.save()
-        return lesson
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
     
+    def update_course_progress(self, request, lesson):
+       user = request.user
+       course_progress, created = CourseProgress.objects.get_or_create(
+          student=user, course=lesson.section.course 
+       )
+       if lesson.opened:
+           course_progress.completed_lessons.add(lesson)
+       else:
+           course_progress.completed_lessons.remove(lesson)
+       
+       course_progress.save()
     def get_queryset(self):
         section_id = self.kwargs['section_pk']
         return Lesson.objects.filter(section_id=section_id)
-
-    def perform_create(self, serializer):
-        course_id = self.kwargs['course_pk']
-        section_id = self.kwargs['section_pk']
-        course = Course.objects.get(Course, id=course_id)
-        section = Section.objects.get(Section, id=section_id)
-        order = Lesson.objects.filter(section=section).count() + 1
-        serializer.save(section=section, order=order)
-
-  
-class LessonViewSet(BaseLessonViewSet):
-   
-    def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated(), IsStudentAndPurchasedCourse()]
-        return [IsInstructor()]
     
-    def retrieve(self, request, *args, **kwargs):
+    def perform_create(self, serializer):
+        section_id = self.kwargs['section_pk']
+        section = Section.objects.get(id=section_id)
+        order = Lesson.objects.filter(section=section).count() + 1
+        lesson = serializer.save(section=section, order=order)
+
+        # Check if the file is a vido and update the duration
+        if lesson.file and lesson.file.name.split('.')[-1].lower() in Lesson.VIDEO_EXTENTIONS:
+            lesson.save() # Triggers the save method with duration calculate if it's a video
+
+        # Update the number_of_lessons for the section
+        section.number_of_lessons += 1
+        section.update_total_duration() # Ensure section duration is updated after adding a lesson 
+        section.save() # Save the updated section
+
+    def perform_destroy(self, instance):
+        section = instance.section
+        super().perform_destroy(instance)
+        section.number_of_lessons -= 1
+        section.update_total_duration() # Update section and course duration after deleting lesson 
+        section.save() # Save the updated section
+
+
+class LessonViewSet(BaseLessonViewSet):
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
+        elif self.action in ['mark_as_finished', 'mark_as_unfinished']:
+            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse]
+        elif self.action in ['create', 'update', 'destroy']:
+            self.permission_classes = [IsAuthenticated, IsInstructorOwner]  # Restricted actions for instructors only
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+
+    def is_student_with_purchase(self, user, course_id):
+        """Check if the user is a student and has purchased the course."""
+        has_purchased = OrderItem.objects.filter(
+            order__customer=user.customer_profile,
+            course_id=course_id,
+            order__payment_status='C'
+        ).exists()
+        logger.debug(f"[Permission Check] Purchase status for user {user.id} and course_id {course_id}: {has_purchased}")
+        return has_purchased
+
+    @action(detail=True, methods=['put'], url_path='mark_as_finished')
+    def mark_as_finished(self, request, *args, **kwargs):
         lesson = self.get_object()
+        course_id = lesson.section.course.id
+
+        # Debug: Check purchase status
+        if not self.is_student_with_purchase(request.user, course_id):
+            logger.debug(f"[Forbidden] User {request.user.id} does not have access to course_id {course_id}")
+            return Response({'detail': 'You do not have permission to perform this action.'}, status=403)
+
+        # Mark lesson as finished
+        lesson.opened = True
+        lesson.save()
+        self.update_course_progress(request, lesson)
         return Response(LessonSerializer(lesson, context={'request': request}).data)
- 
-    @action(detail=True, methods=['get'], url_path='file')
-    def view_file(self, request, *args, **kwargs):
+
+    @action(detail=True, methods=['put'], url_path='mark_as_unfinished')
+    def mark_as_unfinished(self, request, *args, **kwargs):
         lesson = self.get_object()
-        lesson = self.mark_as_opened_and_update_progress(request, lesson)
-        file_path = lesson.file.path
-        return FileResponse(open(file_path, 'rb'), content_type='video/mp4')
+        course_id = lesson.section.course.id
+
+        # Debug: Check purchase status
+        if not self.is_student_with_purchase(request.user, course_id):
+            logger.debug(f"[Forbidden] User {request.user.id} does not have access to course_id {course_id}")
+            return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Mark lesson as unfinished
+        lesson.opened = False
+        lesson.save()
+        self.update_course_progress(request, lesson)
+        return Response(LessonSerializer(lesson, context={'request': request}).data)
 
 
 class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -529,73 +608,52 @@ class RatingViewSet(viewsets.ModelViewSet):
         course_id = self.kwargs['course_pk']
         return Rating.objects.filter(course_id=course_id)
 
-    def retrieve(self, request, course_pk=None, pk=None):
-        try:
-            rating = self.get_queryset().get(pk=pk)
-            if rating.course.id != int(course_pk):
-                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-            serializer = self.get_serializer(rating)
-            return Response(serializer.data)
-        except Rating.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-
     def create(self, request, course_pk=None):
-        try:
-            course = Course.objects.get(pk=course_pk)
-        except Course.DoesNotExist:
-            return Response({'detail': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Check if the user has purchased the course
+        course = get_object_or_404(Course, pk=course_pk)
+        
+        # Check if user purchased the course
         purchased = OrderItem.objects.filter(
             order__customer=request.user.customer_profile,
             course=course,
             order__payment_status='C'
         ).exists()
-
         if not purchased:
             return Response({'detail': 'You can only rate courses you have purchased.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if the user has already rated the course
-        existing_rating = Rating.objects.filter(user=request.user, course=course).first()
-        if existing_rating:
+        # Check if user already rated the course
+        if Rating.objects.filter(user=request.user, course=course).exists():
             return Response({'detail': 'You have already rated this course.'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = request.data.copy()
         data['user'] = request.user.id
         data['course'] = course.id
 
-        serializer = self.get_serializer(data=data, context={'request': request, 'view': self})
+        serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            # Update course rating metrics
+            course.update_rating_metrics()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, course_pk=None, pk=None):
-        try:
-            rating = self.get_queryset().get(pk=pk)
-            if rating.course.id != int(course_pk):
-                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-            if rating.user != request.user:
-                return Response({'detail': 'You do not have permission to edit this rating.'}, status=status.HTTP_403_FORBIDDEN)
-            serializer = self.get_serializer(rating, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Rating.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        course = get_object_or_404(Course, pk=course_pk)
+        rating = get_object_or_404(self.get_queryset(), pk=pk, user=request.user)
+
+        serializer = self.get_serializer(rating, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            course.update_rating_metrics()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, course_pk=None, pk=None):
-        try:
-            rating = self.get_queryset().get(pk=pk)
-            if rating.course.id != int(course_pk):
-                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-            if rating.user != request.user:
-                return Response({'detail': 'You do not have permission to delete this rating.'}, status=status.HTTP_403_FORBIDDEN)
-            rating.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Rating.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        course = get_object_or_404(Course, pk=course_pk)
+        rating = get_object_or_404(self.get_queryset(), pk=pk, user=request.user)
+        
+        rating.delete()
+        course.update_rating_metrics()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def home(request):

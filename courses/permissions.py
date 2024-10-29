@@ -1,6 +1,6 @@
 from rest_framework import permissions
 from rest_framework import viewsets, status
-from .models import OrderItem
+from .models import OrderItem, Course
 import logging
 
 logger = logging.getLogger(__name__)
@@ -90,17 +90,78 @@ class IsInstructor(permissions.BasePermission):
 #       return request.user.is_authenticated and request.user == "instructor"
    
 
+# class IsStudentAndPurchasedCourse(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         # Check if user is a student and has purchased the course
+#         if request.user and request.user.is_authenticated:
+#             course_id = view.kwargs.get('course_pk') or view.kwargs.get('section_pk') or view.kwargs.get('lesson_id')
+#             logger.debug(f"Checking purchase for course_id: {course_id}, user: {request.user.id}")
+#             has_purchased = OrderItem.objects.filter(
+#                 order__customer=request.user.customer_profile,
+#                 course_id=course_id,
+#                 order__payment_status='C'
+#             ).exists()
+#             logger.debug(f"Purchase status for course_id {course_id}: {has_purchased}")
+#             return has_purchased
+#         return False
+
+# class IsStudentAndPurchasedCourse(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         # Check if the user is authenticated
+#         if not request.user.is_authenticated:
+#             return False
+
+#         # First, check if the user is an instructor
+#         course_id = view.kwargs.get('course_pk') or view.kwargs.get('section_pk') or view.kwargs.get('lesson_pk')
+#         logger.debug(f"Checking if user {request.user.id} is an instructor for course_id: {course_id}")
+
+#         if Course.objects.filter(id=course_id, instructor=request.user).exists():
+#             logger.debug(f"User {request.user.id} is an instructor for course_id: {course_id}")
+#             return True
+
+#         # If not an instructor, check if the user has purchased the course
+#         logger.debug(f"Checking purchase for course_id: {course_id}, user: {request.user.id}")
+#         has_purchased = OrderItem.objects.filter(
+#             order__customer=request.user.customer_profile,
+#             course_id=course_id,
+#             order__payment_status='C'
+#         ).exists()
+
+#         logger.debug(f"Purchase status for course_id {course_id}: {has_purchased}")
+#         return has_purchased
 class IsStudentAndPurchasedCourse(permissions.BasePermission):
     def has_permission(self, request, view):
-        # Check if user is a student and has purchased the course
-        if request.user and request.user.is_authenticated:
-            course_id = view.kwargs.get('course_pk') or view.kwargs.get('section_pk') or view.kwargs.get('lesson_id')
-            logger.debug(f"Checking purchase for course_id: {course_id}, user: {request.user.id}")
-            has_purchased = OrderItem.objects.filter(
-                order__customer=request.user.customer_profile,
-                course_id=course_id,
-                order__payment_status='C'
-            ).exists()
-            logger.debug(f"Purchase status for course_id {course_id}: {has_purchased}")
-            return has_purchased
-        return False
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            logger.debug(f"User {request.user.id} is not authenticated")
+            return False
+        
+        # Get course_id from URL kwargs
+        course_id = view.kwargs.get('course_pk')
+        if not course_id:
+            logger.debug("Course ID not found in view kwargs")
+            return False
+        
+        # Ensure the user is not the instructor of the course
+        if Course.objects.filter(id=course_id, instructor=request.user).exists():
+            logger.debug(f"User {request.user.id} is an instructor for course_id: {course_id}")
+            return False
+        
+        # Check if the user has purchased the course
+        has_purchased = OrderItem.objects.filter(
+            order__customer=request.user.customer_profile,
+            course_id=course_id,
+            order__payment_status='C'
+        ).exists()
+        
+        logger.debug(f"Purchase status for user {request.user.id} and course_id {course_id}: {has_purchased}")
+        return has_purchased
+
+
+class IsInstructorOwner(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        course_id = view.kwargs['course_pk']
+        course = Course.objects.get(id=course_id)
+        return request.user.role == 'instructor' and request.user == course.instructor
