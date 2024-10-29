@@ -30,7 +30,7 @@ idna==3.8
 imageio==2.35.1
 imageio-ffmpeg==0.5.1
 kombu==5.4.0
-moviepy==1.0.3
+moviepy
 mysqlclient==2.2.4
 numpy==1.24.4
 oauthlib==3.2.2
