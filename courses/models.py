@@ -175,17 +175,21 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         # Check if the file is a video format
         if self.file:
-            file_extention = os.path.splitext(self.file.name)[-1][1:].lower() # Get the file extention
-            if file_extention in self.VIDEO_EXTENTIONS:
-                # Only caltulate duration for video files if not already set
+            file_extension = os.path.splitext(self.file.name)[-1][1:].lower()  # Get the file extension
+            if file_extension in self.VIDEO_EXTENTIONS:
+                # Only calculate duration for video files if not already set
                 if not self.duration:
                     video_path = self.file.path
-                    try:
-                        clip = VideoFileClip(video_path)
-                        self.duration = int(clip.duration) # Covert secods to minutes 
-                        clip.close()
-                    except Exception as e:
-                        print(f"Error reading video duration: {e}")
+                    # Check if the video file exists
+                    if not os.path.exists(video_path):
+                        print(f"File does not exist: {video_path}")
+                    else:
+                        try:
+                            clip = VideoFileClip(video_path)
+                            self.duration = int(clip.duration)  # Convert seconds to minutes
+                            clip.close()
+                        except Exception as e:
+                            print(f"Error reading video duration for {self.file.name}: {e}")
             else:
                 # Reset duration for non-video files
                 self.duration = 0
