@@ -8,10 +8,6 @@ __pycache__/
 .env
 /.env
 
-
-
-Pipfile.lock
-
 # Ignore VSCode workspace settings
 .vscode/
 
