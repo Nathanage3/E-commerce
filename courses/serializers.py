@@ -60,6 +60,7 @@ class CourseSerializer(serializers.ModelSerializer):
         promotions_data = validated_data.pop('promotions', [])
         instance = super().update(instance, validated_data)
 
+
         for promotion_data in promotions_data:
             Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
         return instance
@@ -224,7 +225,7 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
 class SimpleCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['id', 'title', 'instructor', 'duration', 'price']
+        fields = ['id', 'title', 'instructor', 'total_duration', 'price']
 
 
 class CartItemSerializer(serializers.ModelSerializer):
