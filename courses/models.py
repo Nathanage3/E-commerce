@@ -262,8 +262,8 @@ class CourseProgress(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.calculate_progress()
+        if self.pk:
+            self.calculate_progress()
         super().save(*args, **kwargs)
 
 
