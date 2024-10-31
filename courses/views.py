@@ -154,17 +154,12 @@ class CollectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
-import logging
-logger = logging.getLogger(__name__)
-
 class SectionViewSet(viewsets.ModelViewSet):
     serializer_class = SectionSerializer
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
-        elif self.action in ['mark_as_finished', 'mark_as_unfinished']:
-            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse]
         elif self.action in ['create', 'update', 'destroy']:
             self.permission_classes = [IsAuthenticated, IsInstructorOwner]
         else:
@@ -254,7 +249,9 @@ class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
 
         logger.info(f"Purchased courses: {purchased_courses}")
         
-        filtered_queryset = queryset.filter(student=self.request.user, course_id__in=purchased_courses)
+        #filtered_queryset = queryset.filter(student=self.request.user, course_id__in=purchased_courses)
+        filtered_queryset = queryset.filter(course_id__in=purchased_courses).filter(student_id=self.request.user.id)
+
         logger.info(f"Filtered CourseProgress: {filtered_queryset}")
         return filtered_queryset
 
@@ -275,16 +272,30 @@ class BaseLessonViewSet(viewsets.ModelViewSet):
         return context
     
     def update_course_progress(self, request, lesson):
-       user = request.user
-       course_progress, created = CourseProgress.objects.get_or_create(
-          student=user, course=lesson.section.course 
-       )
-       if lesson.opened:
-           course_progress.completed_lessons.add(lesson)
-       else:
-           course_progress.completed_lessons.remove(lesson)
-       
-       course_progress.save()
+        user = request.user
+        # Get or create the CourseProgress instance and ensure it is saved
+        course_progress, created = CourseProgress.objects.get_or_create(
+        student=user,
+        course=lesson.section.course
+        )
+
+        # Save the instance to ensure it has an ID before accessing many-to-many relationships
+        if created:
+            course_progress.save()
+
+        if lesson.opened:
+            # Add the lesson to completed_lessons if not already added
+            if not course_progress.completed_lessons.filter(id=lesson.id).exists():
+                course_progress.completed_lessons.add(lesson)
+        else:
+            # Remove the lesson from completed_lessons if it exists
+            if course_progress.completed_lessons.filter(id=lesson.id).exists():
+                course_progress.completed_lessons.remove(lesson)
+
+        # Update and save progress
+        course_progress.save()
+
+    
     def get_queryset(self):
         section_id = self.kwargs['section_pk']
         return Lesson.objects.filter(section_id=section_id)
@@ -528,7 +539,11 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        if self.request.method == 'POST':
+
+        if self.action == 'remove':
+            self.permission_classes = [IsStudentOrAdmin]
+
+        elif self.request.method == 'POST':
             self.permission_classes = [IsAdminUser]  # Changed to ensure POST is only for admin
         else:
             self.permission_classes = [IsStudentOrAdmin]
@@ -581,7 +596,19 @@ class CartItemViewSet(viewsets.ModelViewSet):
         logger.debug(f"Listing items for cart: {cart.id}")
         serializer = CartItemSerializer(cart_items, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], url_path='remove')
+    def remove(self, request, pk=None):
+        """Custom endpoint to remove a specific item from the cart"""
+        try:
+            cart_item = CartItem.objects.get(pk=pk, cart=self.get_cart(request))
+            logger.info(f"Removing item {cart_item.id} from cart for custom remove endpoint")
+            cart_item.delete()
+            return Response({'detail': 'Item removed from the cart'}, status=status.HTTP_204_NO_CONTENT)
 
+        except CartItem.DoesNotExist:
+            logger.error(f"Cart item id {pk} not found in cart")
+            return Response({'detail': 'Item not found in cart'}, status=status.HTTP_404_NOT_FOUND)
 
 class WishListViewSet(viewsets.ModelViewSet):
     serializer_class = WishListSerializer

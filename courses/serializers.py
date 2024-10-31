@@ -28,7 +28,7 @@ class CollectionSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    instructor = serializers.StringRelatedField()
+    instructor = serializers.SerializerMethodField()
     promotions = PromotionSerializer(many=True, required=False)
     ratingCount = serializers.IntegerField(source='get_rating_count', read_only=True)
     oldPrice = serializers.IntegerField(read_only=True)
@@ -42,6 +42,13 @@ class CourseSerializer(serializers.ModelSerializer):
                   'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites',
                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
         ]
+    
+    def instructor(self, course: Course):
+        instructor = Course.instructor
+        return {'first_name': instructor.first_name,
+                 'username': instructor.username
+                 }
+    
     def get_numberOfStudents(self, obj):
         return OrderItem.objects.filter(course=obj).values('order__customer').distinct().count()
     
@@ -60,34 +67,31 @@ class CourseSerializer(serializers.ModelSerializer):
         promotions_data = validated_data.pop('promotions', [])
         instance = super().update(instance, validated_data)
 
-
         for promotion_data in promotions_data:
             Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
         return instance
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
+    instructor = serializers.SerializerMethodField()
     class Meta:
         model = Course
         fields = ['id', 'title', 'instructor', 'description', 'objectives', 'total_duration']
 
-
+    def instructor(self, course: Course):
+        instructor = Course.instructor
+        return {'first_name': instructor.first_name,
+                 'username': instructor.username
+                 }
 class LessonSerializer(serializers.ModelSerializer):
-    opened_for_student = serializers.SerializerMethodField()
     file = serializers.FileField(required=True)
+    duration = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'order', 'file', 'is_active', 'opened_for_student']
+        fields = ['id', 'title', 'order', 'file', 'is_active', 'opened', 'duration']
         read_only_fields = ['order']
-
-    def get_opened_for_student(self, obj):
-        # Check if the user is a student and return the `opened` field accordingly
-        request = self.context.get('request')
-        if request and getattr(request.user, 'role', None) == 'student':
-            return obj.opened
-        return None  # Return None or False if the user is not a student
-
+    
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.file = validated_data.get('file', instance.file)
@@ -95,7 +99,7 @@ class LessonSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    
+
 class SectionSerializer(serializers.ModelSerializer):
     lessons = LessonSerializer(many=True, read_only=True)
     course = serializers.CharField(read_only=True)
@@ -109,11 +113,18 @@ class SectionSerializer(serializers.ModelSerializer):
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, read_only=True)
+    instructor = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'price', 'currency', 'sections']
+        fields = ['id', 'title', 'instructor', 'description', 'price', 'currency', 'sections']
 
+    def get_instructor(self, course: Course):
+        instructor = course.instructor
+        return {
+            'first_name': instructor.first_name,
+            'last_name': instructor.last_name
+        }
 
 class CourseProgressSerializer(serializers.ModelSerializer):
     completed_lessons = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -161,11 +172,11 @@ class InstructorEarningsSerializer(serializers.ModelSerializer):
         return obj.calculate_earnings()
 
 
-class SimpleCourseSerializer(serializers.ModelSerializer):
-  price = serializers.CharField(read_only=True)
-  class Meta:
-    model = Course
-    fields = ['id', 'title', 'price']
+# class SimpleCourseSerializer(serializers.ModelSerializer):
+#   price = serializers.CharField(read_only=True)
+#   class Meta:
+#     model = Course
+#     fields = ['id', 'title', 'price']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -222,10 +233,10 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
         fields = ['payment_status']
 
 
-class SimpleCourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = ['id', 'title', 'instructor', 'total_duration', 'price']
+# class SimpleCourseSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Course
+#         fields = ['id', 'title', 'instructor', 'total_duration', 'price']
 
 
 class CartItemSerializer(serializers.ModelSerializer):
