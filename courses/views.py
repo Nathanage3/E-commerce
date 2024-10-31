@@ -345,7 +345,7 @@ class LessonViewSet(BaseLessonViewSet):
         logger.debug(f"[Permission Check] Purchase status for user {user.id} and course_id {course_id}: {has_purchased}")
         return has_purchased
 
-    @action(detail=True, methods=['put'], url_path='mark_as_finished')
+    @action(detail=True, methods=['get', 'put'], url_path='mark_as_finished')
     def mark_as_finished(self, request, *args, **kwargs):
         lesson = self.get_object()
         course_id = lesson.section.course.id
@@ -361,7 +361,7 @@ class LessonViewSet(BaseLessonViewSet):
         self.update_course_progress(request, lesson)
         return Response(LessonSerializer(lesson, context={'request': request}).data)
 
-    @action(detail=True, methods=['put'], url_path='mark_as_unfinished')
+    @action(detail=True, methods=['get', 'put'], url_path='mark_as_unfinished')
     def mark_as_unfinished(self, request, *args, **kwargs):
         lesson = self.get_object()
         course_id = lesson.section.course.id
@@ -597,7 +597,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
         serializer = CartItemSerializer(cart_items, many=True)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['post'], url_path='remove')
+    @action(detail=True, methods=['get', 'delete'], url_path='remove')
     def remove(self, request, pk=None):
         """Custom endpoint to remove a specific item from the cart"""
         try:

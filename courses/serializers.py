@@ -43,10 +43,10 @@ class CourseSerializer(serializers.ModelSerializer):
                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
         ]
     
-    def instructor(self, course: Course):
-        instructor = Course.instructor
+    def get_instructor(self, course: Course):
+        instructor = course.instructor
         return {'first_name': instructor.first_name,
-                 'username': instructor.username
+                 'last_name': instructor.last_name
                  }
     
     def get_numberOfStudents(self, obj):
@@ -78,11 +78,12 @@ class SimpleCourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = ['id', 'title', 'instructor', 'description', 'objectives', 'total_duration']
 
-    def instructor(self, course: Course):
-        instructor = Course.instructor
+    def get_instructor(self, course: Course):
+        instructor = course.instructor
         return {'first_name': instructor.first_name,
-                 'username': instructor.username
+                 'last_name': instructor.last_name
                  }
+
 class LessonSerializer(serializers.ModelSerializer):
     file = serializers.FileField(required=True)
     duration = serializers.IntegerField(read_only=True)
