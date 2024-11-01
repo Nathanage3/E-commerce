@@ -27,8 +27,8 @@ import os
 
 
 logger = logging.getLogger(__name__)
-#stripe.api_key = settings.STRIPE_SECRET_KEY
-stripe.api_key = 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y'
+stripe.api_key = settings.STRIPE_SECRET_KEY
+#stripe.api_key = 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y'
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
