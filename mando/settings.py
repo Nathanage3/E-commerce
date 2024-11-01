@@ -2,7 +2,9 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
-#load_dotenv() # Load environmental variables from the .env file
+
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51QGOCTK6jzJISPxITx1YwyOSyIStTe1Lp3ee3auuuM0PqNt17x8zrUnduWzJLEi2X3ceGVdxkMrvwmImRmJopEM800CJP7UjWy')
 
 
 APPEND_SLASH=True
@@ -10,10 +12,9 @@ APPEND_SLASH=True
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d3xp9rrm^qe-8x(-tg0xy@(xr0z+$!%j5bjtn+tx@2l)o0#e5e'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
