@@ -31,5 +31,5 @@ def send_course_completion_notification(instructor, course, student):
     user=instructor,
     title="Course Completed",
     message=f"{student.username} has completed the course {course.title}.",
-    notificattion_type=Notification.ALERT
+    notification_type=Notification.ALERT
   )
