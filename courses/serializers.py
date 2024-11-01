@@ -76,7 +76,7 @@ class SimpleCourseSerializer(serializers.ModelSerializer):
     instructor = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['id', 'title', 'instructor', 'description', 'objectives', 'total_duration']
+        fields = ['id', 'title', 'instructor', 'price', 'description', 'objectives', 'total_duration']
 
     def get_instructor(self, course: Course):
         instructor = course.instructor
@@ -173,13 +173,6 @@ class InstructorEarningsSerializer(serializers.ModelSerializer):
         return obj.calculate_earnings()
 
 
-# class SimpleCourseSerializer(serializers.ModelSerializer):
-#   price = serializers.CharField(read_only=True)
-#   class Meta:
-#     model = Course
-#     fields = ['id', 'title', 'price']
-
-
 class OrderItemSerializer(serializers.ModelSerializer):
     course = SimpleCourseSerializer()
     customer = serializers.CharField(read_only=True)
@@ -232,12 +225,6 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['payment_status']
-
-
-# class SimpleCourseSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Course
-#         fields = ['id', 'title', 'instructor', 'total_duration', 'price']
 
 
 class CartItemSerializer(serializers.ModelSerializer):

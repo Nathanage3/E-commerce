@@ -485,10 +485,6 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsStudentOrAdmin]
 
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
 
