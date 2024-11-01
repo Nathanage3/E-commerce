@@ -27,8 +27,8 @@ import os
 
 
 logger = logging.getLogger(__name__)
-stripe.api_key = settings.STRIPE_SECRET_KEY
-#stripe.api_key = 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y'
+# stripe.api_key = settings.STRIPE_SECRET_KEY
+# #stripe.api_key = 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y'
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
@@ -683,73 +683,49 @@ class RatingViewSet(viewsets.ModelViewSet):
         course.update_rating_metrics()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# class CreatePaymentIntentViewSet(viewsets.ViewSet):
-#     @action(detail=False, methods=['post'], url_path='create-payment-intent')
-#     def create_payment_intent(self, request):
-#         try:
-#             data = request.data  # Use request.data for better DRF integration
-#             amount = data.get('amount')
-#             print('Received data:', data)
 
-#             payment_intent = stripe.PaymentIntent.create(
-#                 amount=amount,
-#                 currency='usd',
-#                 payment_method_types=['card'],
-#             )
-
-#             return Response({
-#                 'clientSecret': payment_intent['client_secret']
-#             }, status=status.HTTP_201_CREATED)
-
-#         except Exception as e:
-#             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+# @api_view(['POST'])
 # def create_payment_intent(request):
-#     if request.method == 'POST':
-#         try:
-#             data = json.loads(request.body)
-#             amount = data.get('amount')
-           
+#     try:
+#         data = request.data
+#         amount = data.get('amount') # course.price, order_items.price
+#         if not amount:
+#             return JsonResponse({'error': 'Amount is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-#             if not amount:
-#                 return JsonResponse({'error': 'Amount is required'}, status=400)
+#         intent = stripe.PaymentIntent.create(
+#             amount=int(float(amount) * 100),  # Convert to cents
+#             currency='usd',
+#             payment_method_types=['card'],
+#         )
+#         return JsonResponse({'clientSecret': intent['client_secret']})
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-#             payment_intent = stripe.PaymentIntent.create(
-#                 amount=amount,
-#                 currency='usd',
-#                 payment_method_types=['card'],
-#             )
+ 
+# @login_required
+# def purchase(request):
+#     user = request.user
+#     shopping_order = ShoppingOrder.objects.get(siteuser=user, payment_status='P')
+#     order_items = ShoppingOrderItem.objects.filter(order=shopping_order)
 
-#             return JsonResponse({
-#                 'clientSecret': payment_intent['client_secret']
-#             })
+#     # Initialize Stripe with your API keys
+#     stripe.api_key = STRIPE_SECRET_KEY
+#     # Create a payment intent
+#     payment_intent = stripe.PaymentIntent.create(
+#         amount=1000,  # Amount in cents (e.g., $10.00) >> order_items.price
+#         currency='usd',
+#         description='Service Fees',
+#         metadata={'order_id': shopping_order.id},
+#     )
+#     print("Paymnet completed")
 
-#         except stripe.error.StripeError as e:
-#             # Handle Stripe-specific errors
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=400)
-#     else:
-#         return JsonResponse({'error': 'Method not allowed'}, status=405)
+#     return render(request, 'store/purchase.html', {'client_secret': payment_intent.client_secret})
 
-@api_view(['POST'])
-def create_payment_intent(request):
-    try:
-        data = request.data
-        amount = data.get('amount')
-        if not amount:
-            return JsonResponse({'error': 'Amount is required'}, status=status.HTTP_400_BAD_REQUEST)
+# def success(request): #Added
+#   return render(request, 'store/success.html')
 
-        intent = stripe.PaymentIntent.create(
-            amount=int(float(amount) * 100),  # Convert to cents
-            currency='usd',
-            payment_method_types=['card'],
-        )
-        return JsonResponse({'clientSecret': intent['client_secret']})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+# def cancel(request):  # Added
+#   return render(request, 'store/cancel.html')
 
 def home(request):
     return HttpResponse("Welcome to the home page!")
