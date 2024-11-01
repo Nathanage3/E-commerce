@@ -42,6 +42,6 @@ urlpatterns = [
     path('', include(section_router.urls)),
     path('', include(purchased_course_router.urls)),
     path('', include(purchased_section_router.urls)),
-    path('create-payment-intent/', views.create_payment_intent, name='create_payment_intent'),
+    #path('create-payment-intent/', views.create_payment_intent, name='create_payment_intent'),
     path('instructors/<int:instructor_pk>/earnings/', views.InstructorEarningsViewSet.as_view({'get': 'list'})),
 ]
