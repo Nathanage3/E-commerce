@@ -11,7 +11,6 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS, AllowAny
-import stripe
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
     Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section
 from .serializers import CourseSerializer, CourseDetailSerializer, CollectionSerializer, PromotionSerializer, \
