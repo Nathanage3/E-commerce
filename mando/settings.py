@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'verify_email.apps.VerifyEmailConfig',
     'debug_toolbar',
     'corsheaders',
     'djoser',
