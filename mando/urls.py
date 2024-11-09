@@ -7,6 +7,10 @@ import debug_toolbar
 from courses import views
 
 
+admin.site.site_header = 'Mando_Site Admin'
+admin.site.index_title = 'Admin'
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),

@@ -6,6 +6,7 @@ billiard==4.2.0
 celery==5.4.0
 certifi==2024.7.4
 cffi==1.17.0
+chardet==5.2.0
 charset-normalizer==3.3.2
 click==8.1.7
 click-didyoumean==0.3.1
@@ -14,7 +15,7 @@ click-repl==0.3.0
 cryptography==43.0.0
 decorator==4.4.2
 defusedxml==0.8.0rc2
-Django==4.2.15
+Django==4.2.16
 django-cors-headers==4.4.0
 django-debug-toolbar==4.4.6
 django-filter==24.3
@@ -46,13 +47,12 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python3-openid==3.2.0
 redis==5.0.8
+reportlab==4.2.5
 requests==2.32.3
 requests-oauthlib==2.0.0
-six==1.16.0
 social-auth-app-django==5.4.2
 social-auth-core==4.5.4
 sqlparse==0.5.1
-stripe==11.2.0
 tqdm==4.66.5
 typing_extensions==4.12.2
 tzdata==2024.1

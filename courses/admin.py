@@ -28,8 +28,8 @@ class CourseAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('title', 'slug', 'description', 'objectives', 'sections', 
-                       'duration', 'image', 'preview', 'courseFor', 'price', 'oldPrice', 
-                        'currency', 'ratingCount', 'syllabus', 'prerequisites', 'is_active', 
+                       'total_duration', 'image', 'preview', 'courseFor', 'price', 'oldPrice', 
+                        'currency', 'rating_count', 'syllabus', 'prerequisites', 'is_active', 
                        'level', 'collection', 'promotions')
         }),
         ('Instructor Information', {
@@ -136,3 +136,81 @@ class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = ['customer']
     inlines = [OrderItemInline]
     list_display = ['id', 'placed_at', 'customer']
+
+
+# @admin.register(models.Question)
+# class QuestionAdmin(admin.ModelAdmin):
+#     list_display = ('text', 'section')
+#     search_fields = ('text', 'section__title')
+
+
+# @admin.register(models.Option)
+# class OptionAdmin(admin.ModelAdmin):
+#     list_display = ('text', 'question', 'is_correct')
+#     search_fields = ('text', 'question__text')
+#     list_filter = ('is_correct',)
+
+
+# @admin.register(models.StudentAnswer)
+# class StudentAnswerAdmin(admin.ModelAdmin):
+#     list_display = ('student', 'question', 'selected_option')
+#     search_fields = ('student__username', 'question__text', 'selected_option__text')
+
+
+# @admin.register(models.StudentScore)
+# class StudentScoreAdmin(admin.ModelAdmin):
+#     list_display = ('student', 'section', 'score', 'completed')
+#     search_fields = ('student__username', 'section__title')
+#     list_filter = ('completed',)
+
+@admin.register(models.Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ('student', 'course', 'issue_date', 'certificate_file')
+    search_fields = ('student__username', 'student__first_name', 'student__last_name', 'course__title')
+    list_filter = ('issue_date', 'course')
+    def generate_certificate(self, obj):
+        return f"Generated on {obj.issue_date}"
+    
+    generate_certificate.short_description = 'Certificate Status'
+
+@admin.register(models.CompanyOverview)
+class CompanyOverviewAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+    search_fields = ('title',)
+
+
+@admin.register(models.Mission)
+class MissionAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+    search_fields = ('title',)
+
+
+@admin.register(models.Vission)
+class VissionAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+    search_fields = ('title',)
+
+
+@admin.register(models.CoreValue)
+class CoreValueAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+    search_fields = ('title',)
+
+
+@admin.register(models.StaffMember)
+class StaffMember(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'email', 'phone')
+    search_fields = ('first_name', 'email', 'phone')
+   
+
+
+@admin.register(models.Testimonial)
+class TestimonialAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'title')
+    search_fields = ('full_name', 'title')
+
+
+@admin.register(models.FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ('question', 'answer')
+    search_fields = ('question', 'answer')

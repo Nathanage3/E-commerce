@@ -11,7 +11,14 @@ from notifications.notifications import send_course_completion_notification
 import os
 from uuid import uuid4
 from moviepy.editor import VideoFileClip
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
@@ -39,10 +46,9 @@ class Promotion(models.Model):
    end_date = models.DateTimeField()
 
    def __str__(self):
-    return f"Promotion: {self.title} for {self.course.title}"
-
-
-    def __str__(self):
+       return f"Promotion: {self.title} for {self.course.title}"
+   
+   def __str__(self):
         return f'{self.description} - {self.discount}%'
 
 
@@ -85,8 +91,9 @@ class Course(models.Model):
     currency = models.CharField(
         max_length=10, choices=CURRENCY_CHOICES, default=CURRENCY_USD)
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses')
-    ratingCount = models.PositiveIntegerField(blank=True, default=0) # Number of students
-    rating = models.ManyToManyField('Rating', related_name='rated_courses')  # Average Rating
+    rating_count = models.PositiveIntegerField(blank=True, default=0) # Number of students
+    ratings = models.ManyToManyField('Rating', related_name='course_ratings')  # Average Rating
+    average_rating = models.FloatField(blank=True, default=0.0)
     syllabus = models.TextField(blank=True, null=True) #  store information about the content or topics covered in the course
     prerequisites = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -102,16 +109,22 @@ class Course(models.Model):
         unique_together = ['preview']
     
     def get_rating_count(self):
-        return self.course_ratings.count()
+        ratingCount = self.course_ratings.count()
+        logger.debug(f"Rating count for course {self.id}: {ratingCount}")
+        return ratingCount
     
-    def get_average_ratings(self):
+    def get_average_rating(self):
         average = self.course_ratings.aggregate(Avg('score'))['score__avg']
-        return round(average, 2) if average else 0.0
+        average_rating = round(average, 2) if average else 0.0
+        logger.debug(f"Average rating for course {self.id}: {average_rating}")
+        return average_rating
     
-    def update_rating_matrics(self):
-        self.ratingCount = self.get_rating_count()
-        self.save(update_fields=['ratingCount'])
-    
+    def update_rating_metrics(self): 
+        self.rating_count = self.get_rating_count()
+        self.average_rating = self.get_average_rating()
+        logger.debug(f"Updated rating metrics for course {self.id}: rating_count = {self.rating_count}, average_rating = {self.average_rating}")
+        self.save(update_fields=['rating_count', 'average_rating'])
+
     def duration_in_hours(self):
         hours = self.total_duration.total_seconds() / 3600
         return round(hours, 2)
@@ -146,6 +159,15 @@ class Rating(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_ratings')
     def __str__(self):
         return f'{self.user.username} rated {self.course.title}'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.course.update_rating_metrics() 
+        
+    def delete(self, *args, **kwargs):
+        course = self.course
+        super().delete(*args, **kwargs)
+        course.update_rating_metrics()
 
 
 class Lesson(models.Model):
@@ -211,6 +233,7 @@ class Section(models.Model):
     title = models.CharField(max_length=255, blank=True)
     number_of_lessons = models.PositiveIntegerField(default=0)
     total_duration = models.DurationField(default=timedelta, blank=True)
+    locked = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         # Save the section instance first to ensure it has a primary key
@@ -229,7 +252,55 @@ class Section(models.Model):
         self.total_duration = total_duration
         self.save(update_fields=["total_duration"])
         self.course.update_total_duration()
-   
+
+
+class Question(models.Model):
+    text = models.TextField()
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.text
+
+
+class Option(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.question.text} - {self.text}" 
+  
+
+class StudentAnswer(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(Option, on_delete=models.CASCADE)
+
+
+class StudentScore(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+    completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.student.username} - {self.section.title}: {self.score}%"
+    
+    def calculate_progress(self):
+        total_questions = self.section.question_set.count()
+        correct_answers = StudentAnswer.objects.filter(
+            student=self.student,
+            question__section=self.section,
+            selected_option__is_correct=True
+            ).count()
+        
+        if total_questions > 0:
+            self.score = (float(correct_answers) / float(total_questions)) * 100
+        else:
+            self.score = 0.0
+        # Check if the student passed the section
+        self.completed = self.score >= 70.0
+        self.save() 
 
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
@@ -265,6 +336,28 @@ class CourseProgress(models.Model):
         if self.pk:
             self.calculate_progress()
         super().save(*args, **kwargs)
+
+
+class Certificate(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    issue_date = models.DateField(auto_now_add=True)
+    certificate_file = models.FileField(upload_to='certificates', null=True,blank=True)
+
+    def __str__(self):
+        return f"Certificate for {self.student.first_name} {self.student.last_name}: {self.course.title}"
+
+    def generate_certificate_file(self):
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        p.drawString(100, 750, "Certificate of Completion")
+        p.drawString(100, 700, f"This certifies that {self.student.username}")
+        p.drawString(100, 650, f"has successfully completed the course {self.course.title}")
+        p.drawString(100, 600, f"Date of Issue: {self.issue_date}")
+        p.save()
+
+        buffer.seek(0)
+        return buffer
 
 
 class Review(models.Model):
@@ -397,3 +490,41 @@ class WishList(models.Model):
 class WishListItem(models.Model):
     wishlist = models.ForeignKey(WishList, on_delete=models.CASCADE, related_name='items')
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+
+class CompanyOverview(models.Model):
+    title = models.TextField()
+
+
+class Mission(models.Model):
+    title = models.TextField()
+
+
+class Vission(models.Model):
+    title = models.TextField()
+
+
+class CoreValue(models.Model):
+    title = models.TextField()
+
+
+class StaffMember(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    phone = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    fb = models.CharField(max_length=255, default='www.facebook.com/')
+    linkedin = models.CharField(max_length=255, default='www.linkedin.com/')
+    twitter = models.CharField(max_length=255, default='www.x.com/')
+    tiktok = models.CharField(max_length=255, blank=True, null=True)
+
+class Testimonial(models.Model):
+    full_name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    title = models.TextField()
+
+
+class FAQ(models.Model):
+    question = models.TextField()
+    answer = models.TextField()

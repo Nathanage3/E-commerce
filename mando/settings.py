@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'verify_email.apps.VerifyEmailConfig',
     'debug_toolbar',
     'corsheaders',
     'djoser',
@@ -101,6 +102,7 @@ DATABASES = {
         'PORT': 3306,  # Port number for MySQL
     }
 }
+
 
 # DATABASES = {
 #     'default': {
@@ -186,7 +188,6 @@ DJOSER = {
     'LOGIN_FIELD': 'email'
 }
 
-
 DJOSER = {
     'USER_ID_FIELD': 'username',  # This should be 'username' if you're using it for authentication
     'SERIALIZERS': {
@@ -214,3 +215,15 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'nathan3chat@gmail.com'
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'nathan3chat@gmail.com'
+
+
+EXPIRE_AFTER = "30m"
