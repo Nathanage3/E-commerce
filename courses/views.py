@@ -2,14 +2,13 @@ from django.db.utils import IntegrityError
 from django.db import transaction
 from django.db.models.aggregates import Count
 from django.conf import settings
-from django.core.mail import send_mail
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, JsonResponse, FileResponse
+from django.http import HttpResponse
 from rest_framework import viewsets, status, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS, AllowAny
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
     Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section, Question, \
@@ -27,11 +26,6 @@ from uuid import uuid4
 import logging
 import os
 import io
-
-from django.conf import settings
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.template.loader import render_to_string
 
 
 logger = logging.getLogger(__name__)

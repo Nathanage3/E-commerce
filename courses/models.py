@@ -35,7 +35,6 @@ class Collection(models.Model):
     class Meta:
         ordering = ['title']
 
-
 class Promotion(models.Model):
    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='promotions')
    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name="promotion_courses")
@@ -518,6 +517,8 @@ class StaffMember(models.Model):
     linkedin = models.CharField(max_length=255, default='www.linkedin.com/')
     twitter = models.CharField(max_length=255, default='www.x.com/')
     tiktok = models.CharField(max_length=255, blank=True, null=True)
+    telegram_channel = models.CharField(max_length=255, blank=True, null=True)
+
 
 class Testimonial(models.Model):
     full_name = models.CharField(max_length=255)
