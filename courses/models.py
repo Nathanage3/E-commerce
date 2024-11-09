@@ -12,7 +12,6 @@ import os
 from uuid import uuid4
 from moviepy.editor import VideoFileClip
 import io
-from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 import logging
@@ -347,16 +346,7 @@ class Certificate(models.Model):
         return f"Certificate for {self.student.first_name} {self.student.last_name}: {self.course.title}"
 
     def generate_certificate_file(self):
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        p.drawString(100, 750, "Certificate of Completion")
-        p.drawString(100, 700, f"This certifies that {self.student.username}")
-        p.drawString(100, 650, f"has successfully completed the course {self.course.title}")
-        p.drawString(100, 600, f"Date of Issue: {self.issue_date}")
-        p.save()
-
-        buffer.seek(0)
-        return buffer
+        pass
 
 
 class Review(models.Model):
