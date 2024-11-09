@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from django.conf import settings
 from django.db import transaction
-from .models import Collection, Promotion, Rating, Course, CourseProgress, \
+from .models import Collection, Promotion, Rating, Question, StudentAnswer, Option, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, Lesson, Order, OrderItem, \
-  Cart, CartItem, WishList, WishListItem, Section
+  Cart, CartItem, Certificate, CoreValue, WishList, WishListItem, Section, \
+  Mission, CompanyOverview, CoreValue, FAQ, Vission, StaffMember, Testimonial
 from courses.signals import order_created
 from core.models import User
 
@@ -27,49 +28,125 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'courses_count']
 
 
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['id', 'score']
+        read_only_fields = ['course', 'user']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        view = self.context.get('view')
+
+        if request and view and 'course_pk' in view.kwargs:
+            course_id = view.kwargs['course_pk']
+            try:
+                course = Course.objects.get(pk=course_id)
+                validated_data['user'] = request.user
+                validated_data['course'] = course
+            except Course.DoesNotExist:
+                raise serializers.ValidationError("Course not found.")
+        else:
+            raise serializers.ValidationError("Course ID or user not found.")
+        
+        return super().create(validated_data)
+
+
+# class CourseSerializer(serializers.ModelSerializer):
+    
+#     instructor = serializers.SerializerMethodField()
+#     promotions = PromotionSerializer(many=True, required=False)
+#     rating_count = serializers.IntegerField(source='get_rating_count', read_only=True)
+#     oldPrice = serializers.IntegerField(read_only=True)
+#     numberOfStudents = serializers.SerializerMethodField()
+#     duration_in_hours = serializers.SerializerMethodField(read_only=True)
+#     #averageRating = serializers.FloatField(source='get_average_ratings', read_only=True)
+#     rating = RatingSerializer(many=True, read_only=True)
+
+
+#     class Meta:
+#         model = Course
+#         fields = ['id', 'collection', 'title', 'rating', 'courseFor', 'objectives', 'description', 'rating_count', 'average_rating', 'oldPrice',
+#                   'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites',
+#                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
+#         ]
+    
+#     def get_instructor(self, course: Course):
+#         instructor = course.instructor
+#         return {'first_name': instructor.first_name,
+#                  'last_name': instructor.last_name
+#                  }
+    
+#     def get_numberOfStudents(self, obj):
+#         return OrderItem.objects.filter(course=obj).values('order__customer').distinct().count()
+    
+#     def get_duration_in_hours(self, obj):
+#         return obj.duration_in_hours()
+
+#     def create(self, validated_data):
+#         promotions_data = validated_data.pop('promotions', [])
+#         course = Course.objects.create(**validated_data)
+
+#         for promotion_data in promotions_data:
+#             Promotion.objects.create(course=course, instructor=course.instructor, **promotion_data)
+#         return course
+    
+#     def update(self, instance, validated_data):
+#         promotions_data = validated_data.pop('promotions', [])
+#         instance = super().update(instance, validated_data)
+
+#         for promotion_data in promotions_data:
+#             Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
+#         return instance
+    
+#     def get_average_rating(self, obj): 
+#         return obj.get_average_ratings()
+    
+#     def get_rating_count(self, obj):
+#         return obj.get_rating_count()
+
+
 class CourseSerializer(serializers.ModelSerializer):
     instructor = serializers.SerializerMethodField()
-    promotions = PromotionSerializer(many=True, required=False)
-    ratingCount = serializers.IntegerField(source='get_rating_count', read_only=True)
-    oldPrice = serializers.IntegerField(read_only=True)
     numberOfStudents = serializers.SerializerMethodField()
     duration_in_hours = serializers.SerializerMethodField()
-    averageRating = serializers.FloatField(source='get_average_ratings', read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = ['id', 'collection', 'title', 'courseFor', 'objectives', 'description', 'ratingCount', 'averageRating', 'oldPrice',
-                  'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites',
-                  'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
-        ]
-    
+        fields = ['id', 'collection', 'title', 'courseFor', 'objectives', 'description', 'rating_count', 'average_rating', 'oldPrice', 'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites', 'image', 'preview', 'numberOfStudents', 'promotions', 'last_update']
+
     def get_instructor(self, course: Course):
         instructor = course.instructor
-        return {'first_name': instructor.first_name,
-                 'last_name': instructor.last_name
-                 }
-    
+        return {'first_name': instructor.first_name, 'last_name': instructor.last_name}
+
     def get_numberOfStudents(self, obj):
         return OrderItem.objects.filter(course=obj).values('order__customer').distinct().count()
-    
+
     def get_duration_in_hours(self, obj):
         return obj.duration_in_hours()
 
     def create(self, validated_data):
         promotions_data = validated_data.pop('promotions', [])
         course = Course.objects.create(**validated_data)
-
         for promotion_data in promotions_data:
             Promotion.objects.create(course=course, instructor=course.instructor, **promotion_data)
         return course
-    
+
     def update(self, instance, validated_data):
         promotions_data = validated_data.pop('promotions', [])
         instance = super().update(instance, validated_data)
-
         for promotion_data in promotions_data:
             Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
         return instance
+
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
+
+    def get_rating_count(self, obj):
+        return obj.get_rating_count()
+
 
 
 class SimpleCourseSerializer(serializers.ModelSerializer):
@@ -111,14 +188,37 @@ class SectionSerializer(serializers.ModelSerializer):
         model = Section
         fields = ['id', 'course', 'title', 'number_of_lessons', 'total_duration', 'lessons']
 
+class OptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = '__all__'
+
+class QuestionSerializer(serializers.ModelSerializer):
+    Options = OptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+class StudentAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        Model = StudentAnswer
+        fields = '__all__'
+
+class CertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certificate
+        fields = '__all__'
+
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, read_only=True)
     instructor = serializers.SerializerMethodField()
+    rating = RatingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'instructor', 'description', 'price', 'currency', 'sections']
+        fields = ['id', 'title', 'instructor', 'description', 'rating', 'price', 'currency', 'sections']
 
     def get_instructor(self, course: Course):
         instructor = course.instructor
@@ -126,6 +226,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             'first_name': instructor.first_name,
             'last_name': instructor.last_name
         }
+
 
 class CourseProgressSerializer(serializers.ModelSerializer):
     completed_lessons = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -267,25 +368,41 @@ class WishListSerializer(serializers.ModelSerializer):
         fields = ['id', 'created_at', 'items']
 
 
-class RatingSerializer(serializers.ModelSerializer):
+class CompanyOverviewSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Rating
-        fields = ['id', 'score']
-        read_only_fields = ['course', 'user']
+        model = CompanyOverview
+        fields = '__all__'
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        view = self.context.get('view')
 
-        if request and view and 'course_pk' in view.kwargs:
-            course_id = view.kwargs['course_pk']
-            try:
-                course = Course.objects.get(pk=course_id)
-                validated_data['user'] = request.user
-                validated_data['course'] = course
-            except Course.DoesNotExist:
-                raise serializers.ValidationError("Course not found.")
-        else:
-            raise serializers.ValidationError("Course ID or user not found.")
-        
-        return super().create(validated_data)
+class MissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mission
+        fields = '__all__'
+
+class VissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vission
+        fields = '__all__'
+
+
+class CoreValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoreValue
+        fields = '__all__'
+
+class StaffMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffMember
+        fields = '__all__'
+
+
+class TestimonialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Testimonial
+        fields = '__all__'
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = '__all__'

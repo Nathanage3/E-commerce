@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.conf import settings
 from django.dispatch import receiver
 from courses.models import Lesson, Course, CourseProgress, Rating, Customer, OrderItem, Order, InstructorEarnings
@@ -46,20 +46,8 @@ def update_instructor_earnings(sender, instance, created, **kwargs):
         instructor = instance.course.instructor
         earnings, created = InstructorEarnings.objects.get_or_create(instructor=instructor)
 
-# @receiver(post_save, sender=Rating)
-# def update_course_rating_count(sender, instance, **kwargs):
-#     # Use the course from the Rating instance (passed in the viewset)
-#     course = instance.course  # Ensure you access course correctly
-#     course.count_rating(course.id)
 
 @receiver(post_save, sender=Rating)
+@receiver(post_delete, sender=Rating)
 def update_course_rating_count(sender, instance, created, **kwargs):
-    if created:
-        # Now access the course via the ForeignKey
-        course_id = instance.course.id  # Get the course ID from the ForeignKey relationship
-
-        try:
-            course = Course.objects.get(id=course_id)
-            course.count_rating(course_id)  # Call your method to update rating count
-        except Course.DoesNotExist:
-            pass 
+  instance.course.update_rating_metrics()

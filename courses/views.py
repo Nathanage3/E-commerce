@@ -2,27 +2,36 @@ from django.db.utils import IntegrityError
 from django.db import transaction
 from django.db.models.aggregates import Count
 from django.conf import settings
-from django.views import View
-from django.http import HttpResponse, JsonResponse, FileResponse
+from django.core.mail import send_mail
+from django.urls import reverse
 from django.shortcuts import get_object_or_404
-import json
+from django.http import HttpResponse, JsonResponse, FileResponse
 from rest_framework import viewsets, status, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS, AllowAny
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
-    Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section
+    Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section, Question, \
+    CompanyOverview, Mission, Vission, Testimonial, FAQ
 from .serializers import CourseSerializer, CourseDetailSerializer, CollectionSerializer, PromotionSerializer, \
     InstructorEarningsSerializer, RatingSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, \
     InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
-    WishListItemSerializer, WishListItemSerializer, WishListSerializer, SectionSerializer
+    WishListItemSerializer, WishListItemSerializer, WishListSerializer, SectionSerializer, \
+    QuestionSerializer, OptionSerializer, CoreValue, StudentAnswerSerializer, CompanyOverviewSerializer, \
+    MissionSerializer, VissionSerializer, CoreValueSerializer, StaffMember, TestimonialSerializer, FAQSerializer, StaffMemberSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
     IsStudentOrInstructor, IsInstructorOwner, IsInstructorOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin, IsStudentAndPurchasedCourse
 from .pagination import DefaultPagination
 from uuid import uuid4
 import logging
 import os
+import io
+
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
 
 
 logger = logging.getLogger(__name__)
@@ -118,7 +127,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         # Custom action to retrieve the ratingCount and numberOfStudent for specific course
         course = self.get_object()
         data = {
-            "ratingCount": course.ratingCount,
+            "rating_count": course.rating_count,
             "numberOfStudents": course.numberOfStudents,
             
         }
@@ -140,7 +149,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class FullCourseViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = CourseDetailSerializer
+    serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -150,6 +159,14 @@ class FullCourseViewSet(viewsets.ReadOnlyModelViewSet):
             order__payment_status='C'
         ).values_list('course_id', flat=True)
         return Course.objects.filter(id__in=purchased_course_ids).distinct()
+
+    @action(detail=True, methods=['get'], url_path='rating')
+    def get_rating(self, request, pk=None):
+        course = self.get_object()
+        return Response({
+            'average_rating': course.get_average_ratings(),
+            'rating_count': course.get_rating_count()
+        })
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
@@ -196,68 +213,42 @@ class SectionViewSet(viewsets.ModelViewSet):
 
         logger.warning(f"User {user.id} does not have permission to access course {course_id} (No Match)")
         raise PermissionDenied("You do not have permission to access this course's sections.")
+    
+    def complete_section(self, request, pk=None):
+        section = self.get_object()
+        student = request.user
+
+        # Check if all sections in the course are completed
+        total_sections = section.course.section_set.count()
+        completed_sections = StudentScore.objects.filter(
+            student=student,
+            section__course=section.course,
+            completed=True
+        ).count()
+        
+        created = False
+        if completed_sections == total_sections:
+            # All sections are completed, issue certificate
+            certificate, created = Certificate.objects.get_or_create(
+               student=student,
+               course=section.course
+            )
+            if created:
+                # Generate certificate file (placeholder logic)
+                buffer = certificate.generate_certificate_file()
+                certificate.certificate_file.save(f"{student.username}_{section.course.title}.pdf", ContentFile(buffer.getvalue()))    
+                certificate.save()
+        
+        return Response({'status': 'Section completed', 'certificate_issued': created})
+    
+    def generate_certificate_file(self, student, course):
+        # Placeholder function to generate certificate file
+        return None
 
     def perform_create(self, serializer):
         course_id = self.kwargs['course_pk']
         course = get_object_or_404(Course, id=course_id)
         serializer.save(course=course)
-
-
-class PromotionViewSet(viewsets.ModelViewSet):
-    serializer_class = PromotionSerializer
-    permission_classes = [IsInstructorOrReadOnly]
-
-    def get_queryset(self):
-        course_id = self.kwargs['course_pk']
-        user = self.request.user
-
-        if not Course.objects.filter(id=course_id, instructor=user).exists():
-            raise PermissionDenied("You do not have permission to access this course's promotions.")
-        return Promotion.objects.filter(course_id=course_id)
-
-    def perform_create(self, serializer):
-        course_id = self.kwargs['course_pk']
-        course = Course.objects.get(id=course_id)
-        if course.instructor != self.request.user:
-            raise PermissionDenied("You do not have permissions to create a promotion for this course.")
-        serializer.save(instructor=self.request.user, course=course)
-
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    def get_serializer_context(self):
-        return {'course_id': self.kwargs['course_pk']}
-
-    def get_queryset(self):
-        return Review.objects.filter(course_id=self.kwargs['course_pk'])
-
-
-class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = CourseProgressSerializer
-    permission_classes = [IsStudentOrInstructor]
-
-    def get_queryset(self):
-        queryset = CourseProgress.objects.prefetch_related('student').select_related('course')
-        if self.request.user.is_staff:
-            logger.info(f"Admin user accessing CourseProgress")
-            return queryset.all()
-
-        # Get the customer instance linked to the current user
-        customer = Customer.objects.get(user=self.request.user)
-
-        # Check if the user has completed the payment for the course
-        purchased_courses = OrderItem.objects.filter(
-            order__customer=customer,
-            order__payment_status='C'
-        ).values_list('course_id', flat=True)
-
-        logger.info(f"Purchased courses: {purchased_courses}")
-        
-        #filtered_queryset = queryset.filter(student=self.request.user, course_id__in=purchased_courses)
-        filtered_queryset = queryset.filter(course_id__in=purchased_courses).filter(student_id=self.request.user.id)
-
-        logger.info(f"Filtered CourseProgress: {filtered_queryset}")
-        return filtered_queryset
 
 
 class BaseLessonViewSet(viewsets.ModelViewSet):
@@ -382,6 +373,109 @@ class LessonViewSet(BaseLessonViewSet):
         return Response(LessonSerializer(lesson, context={'request': request}).data)
 
 
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    @action(detail=True, methods=['post'], url_path='answer')
+    def answer_question(self, request, pk=None):
+        question = self.get_object()
+        option_id = request.data.get('option_id')
+        student = request.user
+
+        try:
+            option = Option.objects.get(id=option_id, question=question)
+        except Option.DoesNotExist:
+            return Response({'error': 'Invalid option'}, status=status.HTTP_400_BAD_REQUEST)  
+        # Save student answer
+        student_answer = StudentAnswer.objects.create(
+            student=student,
+            question=question,
+            selected_option=option
+        )
+        # Update the Student Score
+        student_score, created = StudentScore.objects.get_or_create(
+            student=student,
+            section=question.section
+        )
+        student_score.calculate_progress()
+        passed = float(student_score.score) >= 70.0
+
+
+        if passed:
+            # Unlock the next section
+            next_section = Section.objects.filter(
+                course=question.section.course
+            ).first()
+            if next_section:
+                next_section.locked = False
+                next_section.save()
+        
+        return Response({
+            'student_answer': StudentAnswerSerializer(student_answer).data,
+            'passed': passed,
+            'score': student_score.score
+        })
+    
+
+class PromotionViewSet(viewsets.ModelViewSet):
+    serializer_class = PromotionSerializer
+    permission_classes = [IsInstructorOrReadOnly]
+
+    def get_queryset(self):
+        course_id = self.kwargs['course_pk']
+        user = self.request.user
+
+        if not Course.objects.filter(id=course_id, instructor=user).exists():
+            raise PermissionDenied("You do not have permission to access this course's promotions.")
+        return Promotion.objects.filter(course_id=course_id)
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs['course_pk']
+        course = Course.objects.get(id=course_id)
+        if course.instructor != self.request.user:
+            raise PermissionDenied("You do not have permissions to create a promotion for this course.")
+        serializer.save(instructor=self.request.user, course=course)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    def get_serializer_context(self):
+        return {'course_id': self.kwargs['course_pk']}
+
+    def get_queryset(self):
+        return Review.objects.filter(course_id=self.kwargs['course_pk'])
+
+
+class CourseProgressViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CourseProgressSerializer
+    permission_classes = [IsStudentOrInstructor]
+
+    def get_queryset(self):
+        queryset = CourseProgress.objects.prefetch_related('student').select_related('course')
+        if self.request.user.is_staff:
+            logger.info(f"Admin user accessing CourseProgress")
+            return queryset.all()
+
+        # Get the customer instance linked to the current user
+        customer = Customer.objects.get(user=self.request.user)
+
+        # Check if the user has completed the payment for the course
+        purchased_courses = OrderItem.objects.filter(
+            order__customer=customer,
+            order__payment_status='C'
+        ).values_list('course_id', flat=True)
+
+        logger.info(f"Purchased courses: {purchased_courses}")
+        
+        #filtered_queryset = queryset.filter(student=self.request.user, course_id__in=purchased_courses)
+        filtered_queryset = queryset.filter(course_id__in=purchased_courses).filter(student_id=self.request.user.id)
+
+        logger.info(f"Filtered CourseProgress: {filtered_queryset}")
+        return filtered_queryset
+
+
 class InstructorEarningsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = InstructorEarningsSerializer
     permission_classes = [IsInstructor]
@@ -442,38 +536,35 @@ class OrderViewSet(viewsets.ModelViewSet):
         if not cart.items.exists():
             logger.error('Cart is empty')
             return Response({'detail': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
-        # Check if the customer already purchased any course in the cart
+        
         purchased_courses = OrderItem.objects.filter(order__customer=customer).values_list('course_id', flat=True)
         cart_courses = cart.items.values_list('course_id', flat=True)
-        duplicate_courses = set(cart_courses).intersection(set(purchased_courses))  # Corrected from using 'and' to 'intersection'
+        duplicate_courses = set(cart_courses).intersection(set(purchased_courses))
+        
         if duplicate_courses:
             logger.info(f"Customer {customer.id} has already purchased course: {duplicate_courses}")
             return Response({'detail': f"You have already purchased course: {list(duplicate_courses)}"}, status=status.HTTP_400_BAD_REQUEST)
-
 
         logger.info(f"Creating order for customer: {customer.id}")
         order = Order.objects.create(customer=customer, payment_status='C')
         logger.info(f"Order created: {order.id}")
 
         for item in cart.items.all():
-            try:
-                order_item = OrderItem.objects.create(
-                    order=order,
-                    course=item.course,
-                    price=item.course.price,
-                    customer=customer,
-                    instructor=item.course.instructor
-                )
-                logger.info(f"OrderItem created: {order_item.id} for course: {item.course.id}")
+            order_item = OrderItem.objects.create(
+                order=order,
+                course=item.course,
+                price=item.course.price,
+                customer=customer,
+                instructor=item.course.instructor
+            )
+            logger.info(f"OrderItem created: {order_item.id} for course: {item.course.id}")
 
-                progress, created = CourseProgress.objects.get_or_create(student=request.user, course=item.course)
-                if created:
-                    logger.info(f"CourseProgress created: {progress}")
-                else:
-                    logger.info(f"CourseProgress already exists for student: {request.user}, course: {item.course}")
-            except IntegrityError as e:
-                logger.error(f"CourseProgress entry error for student: {request.user}, course: {item.course} - {str(e)}")
-
+            progress, created = CourseProgress.objects.get_or_create(student=request.user, course=item.course)
+            if created:
+                logger.info(f"CourseProgress created: {progress}")
+            else:
+                logger.info(f"CourseProgress already exists for student: {request.user}, course: {item.course}")
+            
             item.course.update_student_count()
             logger.info(f"Updated number of students for course: {item.course.id}")
 
@@ -491,6 +582,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
+    permission_classes = [IsStudentOrAdmin]
 
     def get_queryset(self):
         customer = self.request.user.customer_profile
@@ -633,22 +725,20 @@ class RatingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         course_id = self.kwargs['course_pk']
+        logger.debug(f"Fetching ratings for course {course_id}")
         return Rating.objects.filter(course_id=course_id)
 
     def create(self, request, course_pk=None):
         course = get_object_or_404(Course, pk=course_pk)
-        
-        # Check if user purchased the course
-        purchased = OrderItem.objects.filter(
-            order__customer=request.user.customer_profile,
-            course=course,
-            order__payment_status='C'
-        ).exists()
+        logger.debug(f"Creating rating for course {course_pk}")
+
+        purchased = OrderItem.objects.filter(order__customer=request.user.customer_profile, course=course, order__payment_status='C').exists()
         if not purchased:
+            logger.debug(f"User {request.user.id} has not purchased course {course_pk}")
             return Response({'detail': 'You can only rate courses you have purchased.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if user already rated the course
         if Rating.objects.filter(user=request.user, course=course).exists():
+            logger.debug(f"User {request.user.id} has already rated course {course_pk}")
             return Response({'detail': 'You have already rated this course.'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = request.data.copy()
@@ -657,74 +747,78 @@ class RatingViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            # Update course rating metrics
+            rating = serializer.save()
+            logger.debug(f"Rating created for course {course_pk} by user {request.user.id}")
             course.update_rating_metrics()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.debug(f"Failed to create rating for course {course_pk}: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, course_pk=None, pk=None):
         course = get_object_or_404(Course, pk=course_pk)
         rating = get_object_or_404(self.get_queryset(), pk=pk, user=request.user)
 
+        logger.debug(f"Updating rating {pk} for course {course_pk}")
         serializer = self.get_serializer(rating, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            rating = serializer.save()
+            logger.debug(f"Rating {pk} updated for course {course_pk}")
             course.update_rating_metrics()
             return Response(serializer.data)
+        logger.debug(f"Failed to update rating {pk} for course {course_pk}: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, course_pk=None, pk=None):
         course = get_object_or_404(Course, pk=course_pk)
         rating = get_object_or_404(self.get_queryset(), pk=pk, user=request.user)
-        
+
+        logger.debug(f"Deleting rating {pk} for course {course_pk}")
         rating.delete()
         course.update_rating_metrics()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# @api_view(['POST'])
-# def create_payment_intent(request):
-#     try:
-#         data = request.data
-#         amount = data.get('amount') # course.price, order_items.price
-#         if not amount:
-#             return JsonResponse({'error': 'Amount is required'}, status=status.HTTP_400_BAD_REQUEST)
+class CompanyOverviewViewSet(viewsets.ModelViewSet):
+    queryset = CompanyOverview.objects.all()
+    serializer_class = CompanyOverviewSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
-#         intent = stripe.PaymentIntent.create(
-#             amount=int(float(amount) * 100),  # Convert to cents
-#             currency='usd',
-#             payment_method_types=['card'],
-#         )
-#         return JsonResponse({'clientSecret': intent['client_secret']})
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
- 
-# @login_required
-# def purchase(request):
-#     user = request.user
-#     shopping_order = ShoppingOrder.objects.get(siteuser=user, payment_status='P')
-#     order_items = ShoppingOrderItem.objects.filter(order=shopping_order)
+class MissionViewSet(viewsets.ModelViewSet):
+    queryset = Mission.objects.all()
+    serializer_class = MissionSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
-#     # Initialize Stripe with your API keys
-#     stripe.api_key = STRIPE_SECRET_KEY
-#     # Create a payment intent
-#     payment_intent = stripe.PaymentIntent.create(
-#         amount=1000,  # Amount in cents (e.g., $10.00) >> order_items.price
-#         currency='usd',
-#         description='Service Fees',
-#         metadata={'order_id': shopping_order.id},
-#     )
-#     print("Paymnet completed")
 
-#     return render(request, 'store/purchase.html', {'client_secret': payment_intent.client_secret})
+class VisionViewSet(viewsets.ModelViewSet):
+    queryset = Vission.objects.all()
+    serializer_class = VissionSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
-# def success(request): #Added
-#   return render(request, 'store/success.html')
 
-# def cancel(request):  # Added
-#   return render(request, 'store/cancel.html')
+class CoreValueViewSet(viewsets.ModelViewSet):
+    queryset = CoreValue.objects.all()
+    serializer_class = CoreValueSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class StaffMemberViewSet(viewsets.ModelViewSet):
+    queryset = StaffMember.objects.all()
+    serializer_class = StaffMemberSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class TestimonialViewSet(viewsets.ModelViewSet):
+    queryset = Testimonial.objects.all()
+    serializer_class = TestimonialSerializer
+    permission_classes = [IsStudentAndPurchasedCourse]
+
+
+class FAQViewSet(viewsets.ModelViewSet):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
 
 def home(request):
     return HttpResponse("Welcome to the home page!")
