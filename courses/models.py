@@ -12,7 +12,6 @@ import os
 from uuid import uuid4
 from moviepy.editor import VideoFileClip
 import io
-from reportlab.pdfgen import canvas
 
 import logging
 
