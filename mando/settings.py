@@ -3,9 +3,6 @@ import os
 from datetime import timedelta
 
 
-STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y')
-STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51QGOCTK6jzJISPxITx1YwyOSyIStTe1Lp3ee3auuuM0PqNt17x8zrUnduWzJLEi2X3ceGVdxkMrvwmImRmJopEM800CJP7UjWy')
-
 
 APPEND_SLASH=True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
