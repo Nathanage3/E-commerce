@@ -258,6 +258,11 @@ class Question(models.Model):
     def __str__(self):
         return self.text
 
+    def formatted(self):
+        options = self.options.all()
+        formatted_options = " ".join([f"option_{i + 1}: {option.text} is_correct" for i, option in enumerate(options)])
+        return f"{self.id} {self.text} {formatted_options}"
+
 
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
