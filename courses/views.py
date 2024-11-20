@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS, AllowAny
 from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
-    Order, OrderItem, Cart, CartItem, Rating, WishList, WishListItem, Section, Question, \
+    Order, OrderItem, Option, StudentAnswer, StudentScore, Cart, CartItem, Rating, WishList, WishListItem, Section, Question, \
     CompanyOverview, Mission, Vission, Testimonial, FAQ
 from .serializers import CourseSerializer, CourseDetailSerializer, CollectionSerializer, PromotionSerializer, \
     InstructorEarningsSerializer, RatingSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, \
@@ -29,8 +29,6 @@ import io
 
 
 logger = logging.getLogger(__name__)
-# stripe.api_key = settings.STRIPE_SECRET_KEY
-# #stripe.api_key = 'sk_test_51QGOCTK6jzJISPxI3OtiknDh9SctXeTtvnLgfrRr0XphhfHiqukLq4USSG6lX6jYNmpTfKvr5BoJlLop3EFM3VpI00P5G2RP3y'
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
@@ -370,10 +368,10 @@ class LessonViewSet(BaseLessonViewSet):
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsInstructorOrReadOnly]
 
-    @action(detail=True, methods=['post'], url_path='answer')
-    def answer_question(self, request, pk=None):
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
+    def answer_question(self, request, course_pk=None, pk=None):
         question = self.get_object()
         option_id = request.data.get('option_id')
         student = request.user
@@ -381,37 +379,36 @@ class QuestionViewSet(viewsets.ModelViewSet):
         try:
             option = Option.objects.get(id=option_id, question=question)
         except Option.DoesNotExist:
-            return Response({'error': 'Invalid option'}, status=status.HTTP_400_BAD_REQUEST)  
+            return Response({'error': 'Invalid option'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Save student answer
         student_answer = StudentAnswer.objects.create(
             student=student,
             question=question,
             selected_option=option
         )
+
         # Update the Student Score
         student_score, created = StudentScore.objects.get_or_create(
             student=student,
             section=question.section
         )
         student_score.calculate_progress()
-        passed = float(student_score.score) >= 70.0
-
+        passed = student_score.score >= 70.0
 
         if passed:
             # Unlock the next section
-            next_section = Section.objects.filter(
-                course=question.section.course
-            ).first()
+            next_section = Section.objects.filter(course=question.section.course).first()
             if next_section:
                 next_section.locked = False
                 next_section.save()
-        
+
         return Response({
             'student_answer': StudentAnswerSerializer(student_answer).data,
             'passed': passed,
             'score': student_score.score
         })
-    
+
 
 class PromotionViewSet(viewsets.ModelViewSet):
     serializer_class = PromotionSerializer
@@ -696,6 +693,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
             logger.error(f"Cart item id {pk} not found in cart")
             return Response({'detail': 'Item not found in cart'}, status=status.HTTP_404_NOT_FOUND)
 
+
 class WishListViewSet(viewsets.ModelViewSet):
     serializer_class = WishListSerializer
     permission_classes = [IsStudentOrAdmin]
@@ -715,12 +713,13 @@ class WishListItemViewSet(viewsets.ModelViewSet):
 
 class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStudentAndPurchasedCourse]
 
     def get_queryset(self):
+        user = self.request.user
         course_id = self.kwargs['course_pk']
         logger.debug(f"Fetching ratings for course {course_id}")
-        return Rating.objects.filter(course_id=course_id)
+        return Rating.objects.filter(course_id=course_id, user=user)
 
     def create(self, request, course_pk=None):
         course = get_object_or_404(Course, pk=course_pk)
@@ -805,7 +804,7 @@ class StaffMemberViewSet(viewsets.ModelViewSet):
 class TestimonialViewSet(viewsets.ModelViewSet):
     queryset = Testimonial.objects.all()
     serializer_class = TestimonialSerializer
-    permission_classes = [IsStudentAndPurchasedCourse]
+    permission_classes = [IsAuthenticated]
 
 
 class FAQViewSet(viewsets.ModelViewSet):

@@ -188,21 +188,79 @@ class SectionSerializer(serializers.ModelSerializer):
         model = Section
         fields = ['id', 'course', 'title', 'number_of_lessons', 'total_duration', 'lessons']
 
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = '__all__'
+        fields = ['id', 'text', 'is_correct']
+
 
 class QuestionSerializer(serializers.ModelSerializer):
-    Options = OptionSerializer(many=True, read_only=True)
+    options = OptionSerializer(many=True)
 
     class Meta:
         model = Question
-        fields = '__all__'
+        fields = ['id', 'text', 'options', 'section']
+
+    def create(self, validated_data):
+        options_data = validated_data.pop('options', [])
+        question = Question.objects.create(**validated_data)
+        for option_data in options_data:
+            Option.objects.create(question=question, **option_data)
+        return question
+
+    def update(self, instance, validated_data):
+        options_data = validated_data.pop('options', [])
+        logger.debug(f'Options data received in update: {options_data}')
+        
+        # Validate that each option contains an 'id'
+        for option_data in options_data:
+            if 'id' not in option_data:
+                raise serializers.ValidationError("Each option must have an 'id' field.")
+
+        instance.text = validated_data.get('text', instance.text)
+        instance.section = validated_data.get('section', instance.section)
+        instance.save()
+
+        # Create a dictionary of existing options with their IDs
+        existing_options = {option.id: option for option in instance.options.all()}
+        logger.debug(f'Existing options: {existing_options}')
+
+        # IDs of options sent in the request
+        new_option_ids = [option['id'] for option in options_data]
+
+        # Update existing options and create new ones if necessary
+        for option_data in options_data:
+            option_id = option_data.get('id')
+            logger.debug(f'Handling option_id: {option_id}')
+            if option_id in existing_options:
+                option = existing_options[option_id]
+                option.text = option_data.get('text', option.text)
+                option.is_correct = option_data.get('is_correct', option.is_correct)
+                option.save()
+                logger.debug(f'Updated existing option: {option}')
+                del existing_options[option_id]  # Remove updated options from the dict
+            else:
+                new_option = Option.objects.create(question=instance, **option_data)
+                logger.debug(f'Created new option: {new_option}')
+
+        # Delete any options that were not included in the update
+        for option_id, option in existing_options.items():
+            if option_id not in new_option_ids:
+                logger.debug(f'Deleting unused option: {option}')
+                option.delete()
+
+        return instance
+
+
 
 class StudentAnswerSerializer(serializers.ModelSerializer):
     class Meta:
-        Model = StudentAnswer
+        model = StudentAnswer
         fields = '__all__'
 
 class CertificateSerializer(serializers.ModelSerializer):
@@ -287,9 +345,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items  = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
+
+    # I removed the payment_status intentinally 
     class Meta:
         model = Order
-        fields = ['id', 'placed_at', 'payment_status', 'items', 'total_price']
+        fields = ['id', 'placed_at', 'items', 'total_price']
 
     def get_total_price(self, cart: Cart):
         return sum([item.course.price for item in cart.items.all()])
