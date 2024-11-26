@@ -366,9 +366,12 @@ class LessonViewSet(BaseLessonViewSet):
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [IsInstructorOrReadOnly]
+
+    def get_queryset(self):
+        section_id = self.kwargs.get('section_pk')
+        return Question.objects.filter(section_id=section_id)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
     def answer_question(self, request, course_pk=None, pk=None):
