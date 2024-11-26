@@ -216,11 +216,11 @@ class QuestionSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         options_data = validated_data.pop('options', [])
         logger.debug(f'Options data received in update: {options_data}')
-        
+    
         # Validate that each option contains an 'id'
-        for option_data in options_data:
-            if 'id' not in option_data:
-                raise serializers.ValidationError("Each option must have an 'id' field.")
+        missing_id_options = [option for option in options_data if 'id' not in option]
+        if missing_id_options:
+            raise serializers.ValidationError(f"Each option must have an 'id' field. Missing in: {missing_id_options}")
 
         instance.text = validated_data.get('text', instance.text)
         instance.section = validated_data.get('section', instance.section)
@@ -255,8 +255,6 @@ class QuestionSerializer(serializers.ModelSerializer):
                 option.delete()
 
         return instance
-
-
 
 class StudentAnswerSerializer(serializers.ModelSerializer):
     class Meta:
