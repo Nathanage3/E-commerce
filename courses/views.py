@@ -374,7 +374,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return Question.objects.filter(section_id=section_id)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
-    def answer_question(self, request, course_pk=None, pk=None):
+    def answer_question(self, request, course_pk=None, section_pk=None, pk=None):
         question = self.get_object()
         option_id = request.data.get('option_id')
         student = request.user
