@@ -270,11 +270,13 @@ SIMPLE_JWT = {
 DJOSER = {
     'USER_ID_FIELD': 'id',
     'LOGIN_FIELD': 'email',
-    'PASSWORD_RESET_CONFIRM_URL': 'http://localhost:5173/reset-password/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'http://localhost:5173/reset-password/{uid}/{token}', 
+    # Update this to your actual frontend URL if hosted online 
     'SEND_ACTIVATION_EMAIL': True,
-    'ACTIVATION_URL': 'auth/users/activation/{uid}/{token}',
-    'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
-    'PASSWORD_RESET_COMPLETE_URL': 'auth/users/reset_password_complete/',
+    'ACTIVATION_URL': 'http://localhost:5173/activate/{uid}/{token}',
+    # Update this to your actual frontend URL if hosted online
+    'EMAIL_RESET_CONFIRM_URL': 'http://localhost:5173/reset-email/{uid}/{token}',
+    'PASSWORD_RESET_COMPLETE_URL': 'http://localhost:5173/reset-password-complete/',
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'user': 'core.serializers.UserSerializer',
