@@ -505,9 +505,9 @@ class StaffMember(models.Model):
     image = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     phone = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    fb = models.CharField(max_length=255, default='www.facebook.com/')
-    linkedin = models.CharField(max_length=255, default='www.linkedin.com/')
-    twitter = models.CharField(max_length=255, default='www.x.com/')
+    fb = models.CharField(max_length=255, default='https://www.facebook.com/')
+    linkedin = models.CharField(max_length=255, default='https://www.linkedin.com/')
+    twitter = models.CharField(max_length=255, default='https://www.x.com/')
     tiktok = models.CharField(max_length=255, blank=True, null=True)
     telegram_channel = models.CharField(max_length=255, blank=True, null=True)
 
