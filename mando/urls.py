@@ -40,6 +40,7 @@ from django.conf.urls.static import static
 from courses.views import log_request
 import debug_toolbar
 from courses import views
+from core import views as core_auth
 
 admin.site.site_header = 'Mando_Site Admin'
 admin.site.index_title = 'Admin'
@@ -55,6 +56,8 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('auth/users/activation/<uid>/<token>/', log_request),
     
+    path('auth/users/set_password/', core_auth.CustomUserViewSet.as_view({'post': 'set_password'}), name='set_password'),
+
     path('auth/users/reset_password_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('auth/users/reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]

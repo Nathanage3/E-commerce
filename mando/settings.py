@@ -239,10 +239,38 @@ SIMPLE_JWT = {
 # }
 
 
+# DJOSER = {
+#     'USER_ID_FIELD': 'id',
+#     'LOGIN_FIELD': 'email',
+#     'PASSWORD_RESET_CONFIRM_URL': 'auth/users/reset_password_confirm/{uid}/{token}',
+#     'SEND_ACTIVATION_EMAIL': True,
+#     'ACTIVATION_URL': 'auth/users/activation/{uid}/{token}',
+#     'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
+#     'PASSWORD_RESET_COMPLETE_URL': 'auth/users/reset_password_complete/',
+#     'SERIALIZERS': {
+#         'user_create': 'core.serializers.UserCreateSerializer',
+#         'user': 'core.serializers.UserSerializer',
+#         'current_user': 'core.serializers.UserSerializer',
+#         'set_password': 'core.serializers.SetPasswordSerializer',
+#         'set_email': 'core.serializers.SetEmailSerializer',
+#     },
+#     'EMAIL': {
+#         'activation': 'djoser.email.ActivationEmail',
+#     },
+#     'PERMISSIONS': {
+#         'activation': ['rest_framework.permissions.AllowAny'],
+#         'password_reset': ['rest_framework.permissions.AllowAny'],
+#         'password_reset_confirm': ['rest_framework.permissions.AllowAny'],
+#         'set_password': ['rest_framework.permissions.AllowAny'],
+#         'username_reset_confirm': ['rest_framework.permissions.AllowAny'],
+#         'set_email': ['rest_framework.permissions.IsAuthenticated'],
+#     }
+# }
+
 DJOSER = {
     'USER_ID_FIELD': 'id',
     'LOGIN_FIELD': 'email',
-    'PASSWORD_RESET_CONFIRM_URL': 'auth/users/reset_password_confirm/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'http://localhost:5173/reset-password/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'ACTIVATION_URL': 'auth/users/activation/{uid}/{token}',
     'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
