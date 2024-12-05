@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.conf import settings
 from django.db import transaction
-from .models import Collection, Promotion, Rating, Question, StudentAnswer, Option, Course, CourseProgress, \
+from .models import Collection, Promotion,  PaymentStatus, Description, Rating, Question, StudentAnswer, Option, Course, CourseProgress, \
   Review, Customer, InstructorEarnings, Lesson, Order, OrderItem, \
   Cart, CartItem, Certificate, CoreValue, WishList, WishListItem, Section, \
   Mission, CompanyOverview, CoreValue, FAQ, Vission, StaffMember, Testimonial
@@ -50,60 +50,6 @@ class RatingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Course ID or user not found.")
         
         return super().create(validated_data)
-
-
-# class CourseSerializer(serializers.ModelSerializer):
-    
-#     instructor = serializers.SerializerMethodField()
-#     promotions = PromotionSerializer(many=True, required=False)
-#     rating_count = serializers.IntegerField(source='get_rating_count', read_only=True)
-#     oldPrice = serializers.IntegerField(read_only=True)
-#     numberOfStudents = serializers.SerializerMethodField()
-#     duration_in_hours = serializers.SerializerMethodField(read_only=True)
-#     #averageRating = serializers.FloatField(source='get_average_ratings', read_only=True)
-#     rating = RatingSerializer(many=True, read_only=True)
-
-
-#     class Meta:
-#         model = Course
-#         fields = ['id', 'collection', 'title', 'rating', 'courseFor', 'objectives', 'description', 'rating_count', 'average_rating', 'oldPrice',
-#                   'duration_in_hours', 'price', 'currency', 'instructor', 'level', 'syllabus', 'prerequisites',
-#                   'image', 'preview', 'numberOfStudents', 'promotions', 'last_update'
-#         ]
-    
-#     def get_instructor(self, course: Course):
-#         instructor = course.instructor
-#         return {'first_name': instructor.first_name,
-#                  'last_name': instructor.last_name
-#                  }
-    
-#     def get_numberOfStudents(self, obj):
-#         return OrderItem.objects.filter(course=obj).values('order__customer').distinct().count()
-    
-#     def get_duration_in_hours(self, obj):
-#         return obj.duration_in_hours()
-
-#     def create(self, validated_data):
-#         promotions_data = validated_data.pop('promotions', [])
-#         course = Course.objects.create(**validated_data)
-
-#         for promotion_data in promotions_data:
-#             Promotion.objects.create(course=course, instructor=course.instructor, **promotion_data)
-#         return course
-    
-#     def update(self, instance, validated_data):
-#         promotions_data = validated_data.pop('promotions', [])
-#         instance = super().update(instance, validated_data)
-
-#         for promotion_data in promotions_data:
-#             Promotion.objects.create(course=instance, instructor=instance.instructor, **promotion_data)
-#         return instance
-    
-#     def get_average_rating(self, obj): 
-#         return obj.get_average_ratings()
-    
-#     def get_rating_count(self, obj):
-#         return obj.get_rating_count()
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -194,6 +140,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class OptionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
     class Meta:
         model = Option
         fields = ['id', 'text', 'is_correct']
@@ -215,13 +162,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         options_data = validated_data.pop('options', [])
-        logger.debug(f'Options data received in update: {options_data}')
-    
-        # Validate that each option contains an 'id'
-        missing_id_options = [option for option in options_data if 'id' not in option]
-        if missing_id_options:
-            raise serializers.ValidationError(f"Each option must have an 'id' field. Missing in: {missing_id_options}")
-
         instance.text = validated_data.get('text', instance.text)
         instance.section = validated_data.get('section', instance.section)
         instance.save()
@@ -230,13 +170,9 @@ class QuestionSerializer(serializers.ModelSerializer):
         existing_options = {option.id: option for option in instance.options.all()}
         logger.debug(f'Existing options: {existing_options}')
 
-        # IDs of options sent in the request
-        new_option_ids = [option['id'] for option in options_data]
-
         # Update existing options and create new ones if necessary
         for option_data in options_data:
             option_id = option_data.get('id')
-            logger.debug(f'Handling option_id: {option_id}')
             if option_id in existing_options:
                 option = existing_options[option_id]
                 option.text = option_data.get('text', option.text)
@@ -245,16 +181,15 @@ class QuestionSerializer(serializers.ModelSerializer):
                 logger.debug(f'Updated existing option: {option}')
                 del existing_options[option_id]  # Remove updated options from the dict
             else:
-                new_option = Option.objects.create(question=instance, **option_data)
-                logger.debug(f'Created new option: {new_option}')
+                Option.objects.create(question=instance, **option_data)
+                logger.debug(f'Created new option: {option}')
 
         # Delete any options that were not included in the update
         for option_id, option in existing_options.items():
-            if option_id not in new_option_ids:
-                logger.debug(f'Deleting unused option: {option}')
-                option.delete()
+            option.delete()
 
         return instance
+
 
 class StudentAnswerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -463,4 +398,14 @@ class TestimonialSerializer(serializers.ModelSerializer):
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
+        fields = '__all__'
+
+class DescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Description
+        fields = '__all__'
+
+class PaymentStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentStatus
         fields = '__all__'

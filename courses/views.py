@@ -9,18 +9,19 @@ from rest_framework import viewsets, status, serializers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, SAFE_METHODS, AllowAny
-from .models import Course, Collection, Promotion, Customer, Review, CourseProgress, Lesson, \
+from .models import Course, Collection, Promotion, PaymentStatus, Customer, Description, Review, CourseProgress, Lesson, \
     Order, OrderItem, Option, StudentAnswer, StudentScore, Cart, CartItem, Rating, WishList, WishListItem, Section, Question, \
     CompanyOverview, Mission, Vission, Testimonial, FAQ
 from .serializers import CourseSerializer, CourseDetailSerializer, CollectionSerializer, PromotionSerializer, \
-    InstructorEarningsSerializer, RatingSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, \
+    InstructorEarningsSerializer, RatingSerializer, DescriptionSerializer, ReviewSerializer, CourseProgressSerializer,CustomerSerializer, \
     InstructorEarnings, LessonSerializer, OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer, \
-    WishListItemSerializer, WishListItemSerializer, WishListSerializer, SectionSerializer, \
+    WishListItemSerializer, WishListItemSerializer,  PaymentStatusSerializer, WishListSerializer, SectionSerializer, \
     QuestionSerializer, OptionSerializer, CoreValue, StudentAnswerSerializer, CompanyOverviewSerializer, \
     MissionSerializer, VissionSerializer, CoreValueSerializer, StaffMember, TestimonialSerializer, FAQSerializer, StaffMemberSerializer
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission, IsInstructor, \
-    IsStudentOrInstructor, IsInstructorOwner, IsInstructorOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin, IsStudentAndPurchasedCourse
+    IsStudentOrInstructor, IsInstructorOwner, IsInstructorOrReadOnly, IsStudentOrAdmin, IsInstructorOrAdmin, IsStudentAndPurchasedCourse, IsPreviousSectionCompleted
 from .pagination import DefaultPagination
 from uuid import uuid4
 import logging
@@ -172,7 +173,7 @@ class SectionViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
+            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner, IsPreviousSectionCompleted]
         elif self.action in ['create', 'update', 'destroy']:
             self.permission_classes = [IsAuthenticated, IsInstructorOwner]
         else:
@@ -218,24 +219,10 @@ class SectionViewSet(viewsets.ModelViewSet):
             completed=True
         ).count()
         
-        created = False
         if completed_sections == total_sections:
             # All sections are completed, issue certificate
-            certificate, created = Certificate.objects.get_or_create(
-               student=student,
-               course=section.course
-            )
-            if created:
-                # Generate certificate file (placeholder logic)
-                buffer = certificate.generate_certificate_file()
-                certificate.certificate_file.save(f"{student.username}_{section.course.title}.pdf", ContentFile(buffer.getvalue()))    
-                certificate.save()
-        
-        return Response({'status': 'Section completed', 'certificate_issued': created})
+            return Response({'status': 'Section completed'})
     
-    def generate_certificate_file(self, student, course):
-        # Placeholder function to generate certificate file
-        return None
 
     def perform_create(self, serializer):
         course_id = self.kwargs['course_pk']
@@ -798,10 +785,36 @@ class CoreValueViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
 
+
 class StaffMemberViewSet(viewsets.ModelViewSet):
     queryset = StaffMember.objects.all()
     serializer_class = StaffMemberSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+    @action(detail=True, methods=['get'], url_path='fb')
+    def get_fb(self, request, pk=None):
+        staff_member = self.get_object()
+        return Response({'fb': staff_member.fb})
+
+    @action(detail=True, methods=['get'], url_path='linkedin')
+    def get_linkedin(self, request, pk=None):
+        staff_member = self.get_object()
+        return Response({'linkedin': staff_member.linkedin})
+
+    @action(detail=True, methods=['get'], url_path='twitter')
+    def get_twitter(self, request, pk=None):
+        staff_member = self.get_object()
+        return Response({'twitter': staff_member.twitter})
+
+    @action(detail=True, methods=['get'], url_path='tiktok')
+    def get_tiktok(self, request, pk=None):
+        staff_member = self.get_object()
+        return Response({'tiktok': staff_member.tiktok})
+
+    @action(detail=True, methods=['get'], url_path='telegram_channel')
+    def get_telegram_channel(self, request, pk=None):
+        staff_member = self.get_object()
+        return Response({'telegram_channel': staff_member.telegram_channel})
 
 
 class TestimonialViewSet(viewsets.ModelViewSet):
@@ -814,6 +827,39 @@ class FAQViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.all()
     serializer_class = FAQSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+
+class DescriptionViewSet(viewsets.ModelViewSet):
+    queryset = Description.objects.all()
+    serializer_class = DescriptionSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class PaymentStatusViewSet(viewsets.ModelViewSet):
+    queryset = PaymentStatus.objects.all()
+    serializer_class = PaymentStatusSerializer
+    permission_class = [IsAdminUser]
+
+from rest_framework.views import APIView
+logger = logging.getLogger(__name__)
+
+class SetEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        logger.info(f"Request headers: {request.headers}")
+        logger.info(f"Request data: {request.data}")
+        # Your existing logic
+
+import logging
+from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
+
+def log_request(request, *args, **kwargs):
+    logger.info(f"Activation URL received: {request.path}")
+    return HttpResponse("Request logged")
+
 
 
 def home(request):

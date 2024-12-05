@@ -22,6 +22,8 @@ router.register('staff_members', views.StaffMemberViewSet)
 router.register('testimonials', views.TestimonialViewSet)
 router.register('faqs', views.FAQViewSet)
 router.register('purchased_course', views.FullCourseViewSet, basename='purchased-courses')
+router.register('payment_description', views.DescriptionViewSet)
+router.register('payment_snapshot', views.PaymentStatusViewSet)
 
 
 # Nested routers for Course-related models
