@@ -56,20 +56,23 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'mando.urls'
 
-INTERNAL_IPS = ["127.0.0.1"]
+INTERNAL_IPS = ['127.0.0.1',
+                ]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,6 +84,9 @@ TEMPLATES = [
         },
     },
 ]
+
+print(os.path.join(BASE_DIR, 'templates'))
+
 
 WSGI_APPLICATION = 'mando.wsgi.application'
 
@@ -159,6 +165,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTHENTICATION_BACKENDS = [
+    'core.backends.EmailBackend',  # Replace 'your_app' with the actual app name
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 AUTH_USER_MODEL = 'core.User'
 
 REST_FRAMEWORK = {
@@ -171,27 +182,89 @@ REST_FRAMEWORK = {
     ),
 }
 
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
+#     'AUTH_HEADER_TYPES': ('JWT',),
+# }
+
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=5),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
     'AUTH_HEADER_TYPES': ('JWT',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
 }
 
-DJOSER = {
-    'SERIALIZERS': {
-        'user_create': 'core.serializers.UserCreateSerializer',
-        'current_user': 'core.serializers.UserSerializer',
-    },
-    'LOGIN_FIELD': 'email'
-}
+
+# DJOSER = {
+#     'USER_ID_FIELD': 'id',
+#     'LOGIN_FIELD': 'email',
+#     'PASSWORD_RESET_CONFIRM_URL': 'auth/users/reset_password_confirm/{uid}/{token}',
+#     'SEND_ACTIVATION_EMAIL': True,
+#     'ACTIVATION_URL': 'auth/activate/{uid}/{token}',
+#     #'USERNAME_RESET_CONFIRM_URL': 'auth/users/reset_username_confirm/{uid}/{token}',
+#     'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
+#     'PASSWORD_RESET_COMPLETE_URL': 'auth/users/reset_password_complete/',
+#     'SERIALIZERS': {
+#         'user_create': 'core.serializers.UserCreateSerializer',
+#         'user': 'core.serializers.UserSerializer',
+#         'current_user': 'core.serializers.UserSerializer',
+#         #'set_username': 'core.serializers.SetUsernameSerializer',
+#         'set_password': 'core.serializers.SetPasswordSerializer',
+#         'set_email': 'core.serializers.SetEmailSerializer',
+#     },
+
+#     'EMAIL': { 'activation': 'djoser.email.ActivationEmail',
+#     },
+    
+    
+#     'PERMISSIONS': {
+#         'activation': ['rest_framework.permissions.AllowAny'],
+#         'password_reset': ['rest_framework.permissions.AllowAny'],
+#         'password_reset_confirm': ['rest_framework.permissions.AllowAny'],
+#         'set_password': ['rest_framework.permissions.AllowAny'],
+#         #'username_reset': ['rest_framework.permissions.AllowAny'],
+#         'username_reset_confirm': ['rest_framework.permissions.AllowAny'],
+#         'set_email': ['rest_framework.permissions.IsAuthenticated'],  # Ensure correct permissions
+#     }
+# }
+
 
 DJOSER = {
-    'USER_ID_FIELD': 'username',  # This should be 'username' if you're using it for authentication
+    'USER_ID_FIELD': 'id',
+    'LOGIN_FIELD': 'email',
+    'PASSWORD_RESET_CONFIRM_URL': 'auth/users/reset_password_confirm/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'ACTIVATION_URL': 'auth/users/activation/{uid}/{token}',
+    'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
+    'PASSWORD_RESET_COMPLETE_URL': 'auth/users/reset_password_complete/',
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'user': 'core.serializers.UserSerializer',
         'current_user': 'core.serializers.UserSerializer',
-        'set_username': 'core.serializers.SetUsernameSerializer',  # Make sure it's set
+        'set_password': 'core.serializers.SetPasswordSerializer',
+        'set_email': 'core.serializers.SetEmailSerializer',
     },
+    'EMAIL': {
+        'activation': 'djoser.email.ActivationEmail',
+    },
+    'PERMISSIONS': {
+        'activation': ['rest_framework.permissions.AllowAny'],
+        'password_reset': ['rest_framework.permissions.AllowAny'],
+        'password_reset_confirm': ['rest_framework.permissions.AllowAny'],
+        'set_password': ['rest_framework.permissions.AllowAny'],
+        'username_reset_confirm': ['rest_framework.permissions.AllowAny'],
+        'set_email': ['rest_framework.permissions.IsAuthenticated'],
+    }
 }
 
 
@@ -218,8 +291,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nathan3chat@gmail.com'
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = 'lria sktz ltvv htdx'
 DEFAULT_FROM_EMAIL = 'nathan3chat@gmail.com'
-
 
 EXPIRE_AFTER = "30m"

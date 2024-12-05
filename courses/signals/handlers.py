@@ -51,3 +51,14 @@ def update_instructor_earnings(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=Rating)
 def update_course_rating_count(sender, instance, created, **kwargs):
   instance.course.update_rating_metrics()
+
+
+@receiver(post_save, sender=Lesson)
+def update_section_duration_on_save(sender, instance, **kwargs):
+    section = instance.section
+    section.update_total_duration()
+
+@receiver(post_delete, sender=Lesson)
+def update_section_duration_on_delete(sender, instance, **kwargs):
+    section = instance.section
+    section.update_total_duration()

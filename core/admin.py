@@ -7,10 +7,12 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+  ordering = ['email'] # Use 'email' for ordering
+  
   add_fieldsets = (
     (None, {
     'classes': ('wide',),
-    'fields': ('username', 'password1', 'password2', 'email', 'first_name', 'last_name', 'role'),
+    'fields': ('email', 'password1', 'password2', 'first_name', 'last_name', 'role'),
   }),
   )
 

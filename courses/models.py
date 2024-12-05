@@ -231,15 +231,13 @@ class Section(models.Model):
     number_of_lessons = models.PositiveIntegerField(default=0)
     total_duration = models.DurationField(default=timedelta, blank=True)
     locked = models.BooleanField(default=True)
+    default = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # Save the section instance first to ensure it has a primary key
-        is_new_instance = self.pk is None
+        if self.default:
+            Section.objects.filter(course=self.course, default=True).update(default=False)
         super().save(*args, **kwargs)
-
-        # After saving, update total_duration if it's a new instance
-        if is_new_instance:
-            self.update_total_duration()
 
     def update_total_duration(self):
         total_duration = timedelta()
@@ -523,3 +521,11 @@ class Testimonial(models.Model):
 class FAQ(models.Model):
     question = models.TextField()
     answer = models.TextField()
+
+class Description(models.Model):
+    description = models.TextField()
+
+
+class PaymentStatus(models.Model):
+    image = models.ImageField(upload_to='course/images',
+                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
