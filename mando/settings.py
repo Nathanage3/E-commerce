@@ -267,16 +267,16 @@ SIMPLE_JWT = {
 #     }
 # }
 
+FRONTEND_URL = 'http://localhost:5173'  # Change this to your actual frontend URL when hosted online
+
 DJOSER = {
     'USER_ID_FIELD': 'id',
     'LOGIN_FIELD': 'email',
-    'PASSWORD_RESET_CONFIRM_URL': 'http://localhost:5173/reset-password/{uid}/{token}', 
-    # Update this to your actual frontend URL if hosted online 
+    'PASSWORD_RESET_CONFIRM_URL': f'{FRONTEND_URL}/reset-password/{{uid}}/{{token}}',
     'SEND_ACTIVATION_EMAIL': True,
-    'ACTIVATION_URL': 'http://localhost:5173/activate/{uid}/{token}',
-    # Update this to your actual frontend URL if hosted online
-    'EMAIL_RESET_CONFIRM_URL': 'http://localhost:5173/reset-email/{uid}/{token}',
-    'PASSWORD_RESET_COMPLETE_URL': 'http://localhost:5173/reset-password-complete/',
+    'ACTIVATION_URL': f'{FRONTEND_URL}/activate/{{uid}}/{{token}}',
+    'EMAIL_RESET_CONFIRM_URL': f'{FRONTEND_URL}/reset-email/{{uid}}/{{token}}',
+    'PASSWORD_RESET_COMPLETE_URL': f'{FRONTEND_URL}/reset-password-complete/',
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'user': 'core.serializers.UserSerializer',
