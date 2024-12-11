@@ -21,6 +21,7 @@ django-debug-toolbar==4.4.6
 django-filter==24.3
 django-redis==5.4.0
 django-templated-mail==1.1.1
+Django-Verify-Email==3.0.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 djoser==2.2.3
@@ -50,9 +51,11 @@ redis==5.0.8
 reportlab==4.2.5
 requests==2.32.3
 requests-oauthlib==2.0.0
+six==1.16.0
 social-auth-app-django==5.4.2
 social-auth-core==4.5.4
 sqlparse==0.5.1
+stripe==11.2.0
 tqdm==4.66.5
 typing_extensions==4.12.2
 tzdata==2024.1
