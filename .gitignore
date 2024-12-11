@@ -12,7 +12,7 @@ __pycache__/
 .vscode/
 
 # Ignore templates folder if you don't want to track any HTML files
-/templates/
+
 
 # Ignore media files (images and videos)
 /media/course
