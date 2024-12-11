@@ -29,6 +29,7 @@ import os
 import io
 
 
+
 logger = logging.getLogger(__name__)
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -851,16 +852,23 @@ class SetEmailView(APIView):
         logger.info(f"Request data: {request.data}")
         # Your existing logic
 
-import logging
-from django.http import HttpResponse
+# def register_user(request):
+#     if request.method == 'POST':
+#         # Create a new user
+#         user = User.objects.create_user(
+#             email=request.POST['email'],
+#             password=request.POST['password']
+#         )
+        
+#         # Generate a token
+#         token = generate_token_for_user(user)
 
-logger = logging.getLogger(__name__)
+#         # Send activation email
+#         send_activation_email(user, token)
 
-def log_request(request, *args, **kwargs):
-    logger.info(f"Activation URL received: {request.path}")
-    return HttpResponse("Request logged")
-
+#         return JsonResponse({'message': 'User registered. Activation email sent.'})
 
 
 def home(request):
     return HttpResponse("Welcome to the home page!")
+

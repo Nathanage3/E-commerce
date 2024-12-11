@@ -37,7 +37,6 @@ from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from courses.views import log_request
 import debug_toolbar
 from courses import views
 from core import views as core_auth
@@ -54,7 +53,6 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('auth/users/activation/<uid>/<token>/', log_request),
     
     path('auth/users/set_password/', core_auth.CustomUserViewSet.as_view({'post': 'set_password'}), name='set_password'),
 

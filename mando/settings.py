@@ -187,6 +187,14 @@ REST_FRAMEWORK = {
 #     'AUTH_HEADER_TYPES': ('JWT',),
 # }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'nathan3chat@gmail.com'
+EMAIL_HOST_PASSWORD = 'lria sktz ltvv htdx'  # Ensure this is the correct password
+DEFAULT_FROM_EMAIL = 'nathan3chat@gmail.com'
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
@@ -204,79 +212,16 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
 }
 
-
-# DJOSER = {
-#     'USER_ID_FIELD': 'id',
-#     'LOGIN_FIELD': 'email',
-#     'PASSWORD_RESET_CONFIRM_URL': 'auth/users/reset_password_confirm/{uid}/{token}',
-#     'SEND_ACTIVATION_EMAIL': True,
-#     'ACTIVATION_URL': 'auth/activate/{uid}/{token}',
-#     #'USERNAME_RESET_CONFIRM_URL': 'auth/users/reset_username_confirm/{uid}/{token}',
-#     'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
-#     'PASSWORD_RESET_COMPLETE_URL': 'auth/users/reset_password_complete/',
-#     'SERIALIZERS': {
-#         'user_create': 'core.serializers.UserCreateSerializer',
-#         'user': 'core.serializers.UserSerializer',
-#         'current_user': 'core.serializers.UserSerializer',
-#         #'set_username': 'core.serializers.SetUsernameSerializer',
-#         'set_password': 'core.serializers.SetPasswordSerializer',
-#         'set_email': 'core.serializers.SetEmailSerializer',
-#     },
-
-#     'EMAIL': { 'activation': 'djoser.email.ActivationEmail',
-#     },
-    
-    
-#     'PERMISSIONS': {
-#         'activation': ['rest_framework.permissions.AllowAny'],
-#         'password_reset': ['rest_framework.permissions.AllowAny'],
-#         'password_reset_confirm': ['rest_framework.permissions.AllowAny'],
-#         'set_password': ['rest_framework.permissions.AllowAny'],
-#         #'username_reset': ['rest_framework.permissions.AllowAny'],
-#         'username_reset_confirm': ['rest_framework.permissions.AllowAny'],
-#         'set_email': ['rest_framework.permissions.IsAuthenticated'],  # Ensure correct permissions
-#     }
-# }
-
-
-# DJOSER = {
-#     'USER_ID_FIELD': 'id',
-#     'LOGIN_FIELD': 'email',
-#     'PASSWORD_RESET_CONFIRM_URL': 'auth/users/reset_password_confirm/{uid}/{token}',
-#     'SEND_ACTIVATION_EMAIL': True,
-#     'ACTIVATION_URL': 'auth/users/activation/{uid}/{token}',
-#     'EMAIL_RESET_CONFIRM_URL': 'auth/users/reset_email_confirm/{uid}/{token}',
-#     'PASSWORD_RESET_COMPLETE_URL': 'auth/users/reset_password_complete/',
-#     'SERIALIZERS': {
-#         'user_create': 'core.serializers.UserCreateSerializer',
-#         'user': 'core.serializers.UserSerializer',
-#         'current_user': 'core.serializers.UserSerializer',
-#         'set_password': 'core.serializers.SetPasswordSerializer',
-#         'set_email': 'core.serializers.SetEmailSerializer',
-#     },
-#     'EMAIL': {
-#         'activation': 'djoser.email.ActivationEmail',
-#     },
-#     'PERMISSIONS': {
-#         'activation': ['rest_framework.permissions.AllowAny'],
-#         'password_reset': ['rest_framework.permissions.AllowAny'],
-#         'password_reset_confirm': ['rest_framework.permissions.AllowAny'],
-#         'set_password': ['rest_framework.permissions.AllowAny'],
-#         'username_reset_confirm': ['rest_framework.permissions.AllowAny'],
-#         'set_email': ['rest_framework.permissions.IsAuthenticated'],
-#     }
-# }
-
-FRONTEND_URL = 'http://localhost:5173'  # Change this to your actual frontend URL when hosted online
+FRONTEND_URL = 'http://localhost:5173'
 
 DJOSER = {
     'USER_ID_FIELD': 'id',
     'LOGIN_FIELD': 'email',
-    'PASSWORD_RESET_CONFIRM_URL': f'{FRONTEND_URL}/reset-password/{{uid}}/{{token}}',
-    'SEND_ACTIVATION_EMAIL': True,
-    'ACTIVATION_URL': f'{FRONTEND_URL}/activate/{{uid}}/{{token}}',
-    'EMAIL_RESET_CONFIRM_URL': f'{FRONTEND_URL}/reset-email/{{uid}}/{{token}}',
-    'PASSWORD_RESET_COMPLETE_URL': f'{FRONTEND_URL}/reset-password-complete/',
+    'PASSWORD_RESET_CONFIRM_URL': 'reset-password/{{uid}}/{{token}}',
+    'SEND_ACTIVATION_EMAIL': False,
+    'ACTIVATION_URL': 'activate/{{uid}}/{{token}}',
+    'EMAIL_RESET_CONFIRM_URL': 'reset-email/{{uid}}/{{token}}',
+    'PASSWORD_RESET_COMPLETE_URL': 'reset-password-complete/',
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'user': 'core.serializers.UserSerializer',
@@ -284,9 +229,7 @@ DJOSER = {
         'set_password': 'core.serializers.SetPasswordSerializer',
         'set_email': 'core.serializers.SetEmailSerializer',
     },
-    'EMAIL': {
-        'activation': 'djoser.email.ActivationEmail',
-    },
+    
     'PERMISSIONS': {
         'activation': ['rest_framework.permissions.AllowAny'],
         'password_reset': ['rest_framework.permissions.AllowAny'],
@@ -300,7 +243,6 @@ DJOSER = {
 
 # Remove the limit on data upload size
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -313,15 +255,7 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'DEBUG',
     },
-}
+}c
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'nathan3chat@gmail.com'
-EMAIL_HOST_PASSWORD = 'lria sktz ltvv htdx'
-DEFAULT_FROM_EMAIL = 'nathan3chat@gmail.com'
 
 EXPIRE_AFTER = "30m"
