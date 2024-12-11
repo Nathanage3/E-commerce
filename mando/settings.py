@@ -255,7 +255,7 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'DEBUG',
     },
-}c
+}
 
 
 EXPIRE_AFTER = "30m"
