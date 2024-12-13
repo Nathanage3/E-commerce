@@ -76,7 +76,8 @@ class Course(models.Model):
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'png'])])
     preview = models.FileField(
         upload_to='course/lessons/videos',
-        validators=[FileExtensionValidator(allowed_extensions=['mp4'])]
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'wmv', 'mkv', 'flv', 'mpeg', 
+            'doc', 'docx', 'pdf', 'txt', 'rtf', 'odt', 'html', 'htm'])]
     )
     slug = models.SlugField(default='-')
     courseFor = models.CharField(max_length=255, blank=True, null=True)
@@ -280,27 +281,39 @@ class StudentAnswer(models.Model):
 class StudentScore(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-    score = models.IntegerField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+    score = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
     completed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.student.username} - {self.section.title}: {self.score}%"
+
+    def reset_score(self):
+        # Reset the score and remove all previous answers for this section
+        StudentAnswer.objects.filter(
+            student=self.student,
+            question__section=self.section
+        ).delete()
+        self.score = 0.0
+        self.completed = False
+        self.save()
     
     def calculate_progress(self):
+        # Calculate progress after resetting the score
         total_questions = self.section.question_set.count()
         correct_answers = StudentAnswer.objects.filter(
             student=self.student,
             question__section=self.section,
             selected_option__is_correct=True
-            ).count()
-        
+        ).count()
+
         if total_questions > 0:
             self.score = (float(correct_answers) / float(total_questions)) * 100
         else:
             self.score = 0.0
-        # Check if the student passed the section
+
         self.completed = self.score >= 70.0
-        self.save() 
+        self.save()
+
 
 class CourseProgress(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
