@@ -37,7 +37,7 @@ course_router.register('sections', views.SectionViewSet, basename='sections')
 # Nested router for lessons under sections
 section_router = routers.NestedDefaultRouter(course_router, r'sections', lookup='section')
 section_router.register(r'lessons', views.LessonViewSet, basename='lessons')
-section_router.register(r'questions', views.QuestionViewSet, basename='question')
+section_router.register(r'questions', views.QuestionViewSet, basename='questions')
 
 
 # Separate nested routers for purchased courses for students
