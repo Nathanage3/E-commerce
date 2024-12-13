@@ -25,7 +25,6 @@ router.register('purchased_course', views.FullCourseViewSet, basename='purchased
 router.register('payment_description', views.DescriptionViewSet)
 router.register('payment_snapshot', views.PaymentStatusViewSet)
 
-
 # Nested routers for Course-related models
 course_router = routers.NestedDefaultRouter(router, r'courses', lookup='course')
 course_router.register('reviews', views.ReviewViewSet, basename='course-reviews')
@@ -37,7 +36,7 @@ course_router.register('sections', views.SectionViewSet, basename='sections')
 # Nested router for lessons under sections
 section_router = routers.NestedDefaultRouter(course_router, r'sections', lookup='section')
 section_router.register(r'lessons', views.LessonViewSet, basename='lessons')
-section_router.register(r'questions', views.QuestionViewSet, basename='questions')
+section_router.register(r'questions', views.QuestionViewSet, basename='question')
 
 
 # Separate nested routers for purchased courses for students
@@ -49,8 +48,7 @@ purchased_course_router.register(r'ratings', views.RatingViewSet, basename="rati
 # Nested router for lessons under purchased sections
 purchased_section_router = routers.NestedDefaultRouter(purchased_course_router, 'sections', lookup='section')
 purchased_section_router.register('lessons', views.LessonViewSet, basename='purchased-lessons')
-#purchased_course_router.register('question_section', views.QuestionViewSet)
-
+purchased_course_router.register('question_section', views.QuestionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -5,18 +5,15 @@ __pycache__/
 
 
 # Ignore environment files
-.env
+/.env
 /.env
 
 # Ignore VSCode workspace settings
 .vscode/
 
-# Ignore templates folder if you don't want to track any HTML files
-
-
-# Ignore media files (images and videos)
-/media/course
-
+#
 /.venv
-E-commerce-34sOm8Ye
 /E-commerce-34sOm8Ye
+/E-commerce-34sOm8Ye
+
+# Hello 
