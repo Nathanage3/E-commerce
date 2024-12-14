@@ -14,9 +14,9 @@ class User(AbstractUser):
     username = None  # Remove the default username field
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [] # Remove username from required fields
+    REQUIRED_FIELDS = ['first_name', 'last_name'] # Remove username from required fields
 
     objects = CustomUserManager()
     
     def __str__(self):
-        return self.email
+        return f'Hello, {self.first_name } {self.last_name}'
