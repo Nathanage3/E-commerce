@@ -664,7 +664,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response({'detail': f"You have already purchased course: {list(duplicate_courses)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         logger.info(f"Creating order for customer: {customer.id}")
-        order = Order.objects.create(customer=customer, payment_status='P')
+        order = Order.objects.create(customer=customer, payment_status='C')
         logger.info(f"Order created: {order.id}")
 
         for item in cart.items.all():
