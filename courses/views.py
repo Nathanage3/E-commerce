@@ -353,6 +353,98 @@ class LessonViewSet(BaseLessonViewSet):
         self.update_course_progress(request, lesson)
         return Response(LessonSerializer(lesson, context={'request': request}).data)
 
+# from django.urls import reverse
+# from django.http import HttpResponseRedirect
+
+# class QuestionViewSet(viewsets.ModelViewSet):
+#     serializer_class = QuestionSerializer
+
+#     def get_permissions(self):
+#         if self.action in ['list', 'retrieve']:
+#             self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
+#         elif self.action in ['create', 'update', 'destroy']:
+#             self.permission_classes = [IsAuthenticated, IsInstructorOwner]
+#         else:
+#             self.permission_classes = [IsAuthenticated]
+#         return super().get_permissions()
+
+#     def get_queryset(self):
+#          section_id = self.kwargs.get('section_pk')
+#          if not section_id:
+#              raise PermissionDenied("Section ID is missing in the request.")
+
+#          user = self.request.user
+
+#          # Instructor access
+#          if Section.objects.filter(id=section_id, course__instructor=user).exists():
+#              return Question.objects.filter(section_id=section_id)
+
+#          # Student access
+#          if OrderItem.objects.filter(
+#              course_id=Section.objects.get(id=section_id).course_id,
+#              order__customer=user.customer_profile,
+#              order__payment_status='C'
+#             ).exists():
+#              return Question.objects.filter(section_id=section_id)
+
+#          # No access
+#          raise PermissionDenied("You do not have permission to access this section's questions.")
+
+#     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
+#     def question_answer(self, request, course_pk=None, section_pk=None, pk=None):
+#          question = self.get_object()
+#          option_id = request.data.get('option_id')
+#          student = request.user
+
+#          if not option_id:
+#              return Response({'error': 'Option ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#          try:
+#              option = Option.objects.get(id=option_id, question=question)
+#          except Option.DoesNotExist:
+#              return Response({'error': 'Invalid option'}, status=status.HTTP_400_BAD_REQUEST)
+
+#          # Save student answer
+#          student_answer = StudentAnswer.objects.create(
+#              student=student,
+#              question=question,
+#              selected_option=option
+#          )
+
+#          # Update the Student Score
+#          student_score, created = StudentScore.objects.get_or_create(
+#              student=student,
+#              section=question.section
+#          )
+#          student_score.calculate_progress()
+#          passed = student_score.score >= 70.0
+
+#          return Response({
+#              'student_answer': StudentAnswerSerializer(student_answer).data,
+#              'passed': passed,
+#              'score': student_score.score
+#          })
+
+#     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], url_path='retake')
+#     def retake_exam(self, request, course_pk=None, section_pk=None, pk=None):
+#          logger.debug("Retake exam triggered for question ID: %s", pk)
+#          question = self.get_object()
+#          student = request.user
+#          section = question.section
+
+#          try:
+#              student_score = StudentScore.objects.get(student=student, section=section)
+#              student_score.reset_score()
+#              logger.debug("Score reset for student ID: %s, section ID: %s", student.id, section.id)
+#          except StudentScore.DoesNotExist:
+#              logger.warning("StudentScore not found for student ID: %s, section ID: %s", student.id, section.id)
+#              return Response({'error': 'No score exists to reset for this section'}, status=status.HTTP_404_NOT_FOUND)
+
+#          # Redirect to the list of questions for the section
+#          questions_url = reverse('questions-list', kwargs={'course_pk': course_pk, 'section_pk': section_pk})
+#          return HttpResponseRedirect(questions_url)
+
+
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
@@ -443,7 +535,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
          # Redirect to the list of questions for the section
          questions_url = reverse('questions-list', kwargs={'course_pk': course_pk, 'section_pk': section_pk})
          return HttpResponseRedirect(questions_url)
-
 
     
 class PromotionViewSet(viewsets.ModelViewSet):
@@ -573,7 +664,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response({'detail': f"You have already purchased course: {list(duplicate_courses)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         logger.info(f"Creating order for customer: {customer.id}")
-        order = Order.objects.create(customer=customer, payment_status='C')
+        order = Order.objects.create(customer=customer, payment_status='P')
         logger.info(f"Order created: {order.id}")
 
         for item in cart.items.all():
