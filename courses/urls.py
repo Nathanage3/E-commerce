@@ -31,12 +31,12 @@ course_router.register('reviews', views.ReviewViewSet, basename='course-reviews'
 course_router.register('progress', views.CourseProgressViewSet, basename='course-progress')
 course_router.register('promotions', views.PromotionViewSet, basename='promotions')
 course_router.register('sections', views.SectionViewSet, basename='sections')
-#course_router.register(r'questions', views.QuestionViewSet, basename='course-questions')
+course_router.register(r'questions', views.QuestionViewSet, basename='course-questions')
 
 # Nested router for lessons under sections
 section_router = routers.NestedDefaultRouter(course_router, r'sections', lookup='section')
 section_router.register(r'lessons', views.LessonViewSet, basename='lessons')
-section_router.register(r'questions', views.QuestionViewSet, basename='question')
+section_router.register(r'questions', views.QuestionViewSet, basename='questions')
 
 
 # Separate nested routers for purchased courses for students
@@ -44,11 +44,10 @@ purchased_course_router = routers.NestedDefaultRouter(router, 'purchased_course'
 purchased_course_router.register(r'sections', views.SectionViewSet, basename='purchased-sections')
 purchased_course_router.register(r'ratings', views.RatingViewSet, basename="ratings")
 
-
 # Nested router for lessons under purchased sections
 purchased_section_router = routers.NestedDefaultRouter(purchased_course_router, 'sections', lookup='section')
 purchased_section_router.register('lessons', views.LessonViewSet, basename='purchased-lessons')
-purchased_course_router.register('question_section', views.QuestionViewSet)
+purchased_course_router.register('questions', views.QuestionViewSet, basename='questions')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -58,4 +57,5 @@ urlpatterns = [
     path('', include(purchased_course_router.urls)),
     path('', include(purchased_section_router.urls)),
     path('instructors/<int:instructor_pk>/earnings/', views.InstructorEarningsViewSet.as_view({'get': 'list'})),
+    path('courses/<int:course_pk>/sections/<int:section_pk>/questions/<int:pk>/answer/', views.QuestionViewSet.as_view({'post': 'question_answer'}), name='question-answer'),
 ]
