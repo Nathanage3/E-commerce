@@ -353,158 +353,96 @@ class LessonViewSet(BaseLessonViewSet):
         self.update_course_progress(request, lesson)
         return Response(LessonSerializer(lesson, context={'request': request}).data)
 
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
-# class QuestionViewSet(viewsets.ModelViewSet):
-#     serializer_class = QuestionSerializer
-#     permission_classes = [IsInstructorOrReadOnly]
+class QuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = QuestionSerializer
 
-#     def get_queryset(self):
-#         section_id = self.kwargs.get('section_pk')
-#         return Question.objects.filter(section_id=section_id)
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
+        elif self.action in ['create', 'update', 'destroy']:
+            self.permission_classes = [IsAuthenticated, IsInstructorOwner]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
 
-#     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
-#     def answer_question(self, request, course_pk=None, section_pk=None, pk=None):
-#         question = self.get_object()
-#         option_id = request.data.get('option_id')
-#         student = request.user
+    def get_queryset(self):
+         section_id = self.kwargs.get('section_pk')
+         if not section_id:
+             raise PermissionDenied("Section ID is missing in the request.")
 
-#         try:
-#             option = Option.objects.get(id=option_id, question=question)
-#         except Option.DoesNotExist:
-#             return Response({'error': 'Invalid option'}, status=status.HTTP_400_BAD_REQUEST)
+         user = self.request.user
 
-#         # Save student answer
-#         student_answer = StudentAnswer.objects.create(
-#             student=student,
-#             question=question,
-#             selected_option=option
-#         )
+         # Instructor access
+         if Section.objects.filter(id=section_id, course__instructor=user).exists():
+             return Question.objects.filter(section_id=section_id)
 
-#         # Update the Student Score
-#         student_score, created = StudentScore.objects.get_or_create(
-#             student=student,
-#             section=question.section
-#         )
-#         student_score.score = 0.0
-#         student_score.calculate_progress()
-        
-#         passed = student_score.score >= 70.0
+         # Student access
+         if OrderItem.objects.filter(
+             course_id=Section.objects.get(id=section_id).course_id,
+             order__customer=user.customer_profile,
+             order__payment_status='C'
+            ).exists():
+             return Question.objects.filter(section_id=section_id)
 
-#         if passed:
-#             # Unlock the next section
-#             next_section = Section.objects.filter(course=question.section.course).first()
-#             if next_section:
-#                 next_section.locked = False
-#                 next_section.save()
+         # No access
+         raise PermissionDenied("You do not have permission to access this section's questions.")
 
-#         return Response({
-#             'student_answer': StudentAnswerSerializer(student_answer).data,
-#             'passed': passed,
-#             'score': student_score.score
-#         })
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
+    def question_answer(self, request, course_pk=None, section_pk=None, pk=None):
+         question = self.get_object()
+         option_id = request.data.get('option_id')
+         student = request.user
 
+         if not option_id:
+             return Response({'error': 'Option ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+         try:
+             option = Option.objects.get(id=option_id, question=question)
+         except Option.DoesNotExist:
+             return Response({'error': 'Invalid option'}, status=status.HTTP_400_BAD_REQUEST)
 
+         # Save student answer
+         student_answer = StudentAnswer.objects.create(
+             student=student,
+             question=question,
+             selected_option=option
+         )
 
+         # Update the Student Score
+         student_score, created = StudentScore.objects.get_or_create(
+             student=student,
+             section=question.section
+         )
+         student_score.calculate_progress()
+         passed = student_score.score >= 70.0
 
+         return Response({
+             'student_answer': StudentAnswerSerializer(student_answer).data,
+             'passed': passed,
+             'score': student_score.score
+         })
 
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], url_path='retake')
+    def retake_exam(self, request, course_pk=None, section_pk=None, pk=None):
+         logger.debug("Retake exam triggered for question ID: %s", pk)
+         question = self.get_object()
+         student = request.user
+         section = question.section
 
+         try:
+             student_score = StudentScore.objects.get(student=student, section=section)
+             student_score.reset_score()
+             logger.debug("Score reset for student ID: %s, section ID: %s", student.id, section.id)
+         except StudentScore.DoesNotExist:
+             logger.warning("StudentScore not found for student ID: %s, section ID: %s", student.id, section.id)
+             return Response({'error': 'No score exists to reset for this section'}, status=status.HTTP_404_NOT_FOUND)
 
-
-
-
-# class QuestionViewSet(viewsets.ModelViewSet):
-#     pass
-    # serializer_class = QuestionSerializer
-
-    # def get_permissions(self):
-    #     if self.action in ['list', 'retrieve']:
-    #         self.permission_classes = [IsAuthenticated, IsStudentAndPurchasedCourse | IsInstructorOwner]
-    #     elif self.action in ['create', 'update', 'destroy']:
-    #         self.permission_classes = [IsAuthenticated, IsInstructorOwner]
-    #     else:
-    #         self.permission_classes = [IsAuthenticated]
-    #     return super().get_permissions()
-
-    # def get_queryset(self):
-    #     section_id = self.kwargs.get('section_pk')
-    #     if not section_id:
-    #         raise PermissionDenied("Section ID is missing in the request.")
-
-    #     user = self.request.user
-
-    #     # Instructor access
-    #     if Section.objects.filter(id=section_id, course__instructor=user).exists():
-    #         return Question.objects.filter(section_id=section_id)
-
-    #     # Student access
-    #     if OrderItem.objects.filter(
-    #         course_id=Section.objects.get(id=section_id).course_id,
-    #         order__customer=user.customer_profile,
-    #         order__payment_status='C'
-    #     ).exists():
-    #         return Question.objects.filter(section_id=section_id)
-
-    #     # No access
-    #     raise PermissionDenied("You do not have permission to access this section's questions.")
-
-    # @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], url_path='answer')
-    # def question_answer(self, request):
-    #     question_id = request.data.get('question_id')
-    #     answer = request.data.get('answer')
-    #     student = request.user
-
-    #     if not question_id or not answer:
-    #         return Response({'error': 'Question ID and answer are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     try:
-    #         question = Question.objects.get(id=question_id)
-    #         section = question.section
-
-    #         # Validate student's access to the section
-    #         if not OrderItem.objects.filter(
-    #             course_id=section.course_id,
-    #             order__customer=student.customer_profile,
-    #             order__payment_status='C'
-    #         ).exists():
-    #             raise PermissionDenied("You do not have permission to answer questions in this section.")
-
-    #         # Save or update the student's answer
-    #         student_answer, created = StudentAnswer.objects.update_or_create(
-    #             student=student,
-    #             question=question,
-    #             defaults={'answer': answer}
-    #         )
-
-    #         return Response({
-    #             'message': 'Answer submitted successfully.',
-    #             'created': created
-    #         })
-    #     except Question.DoesNotExist:
-    #         return Response({'error': 'Invalid question ID.'}, status=status.HTTP_404_NOT_FOUND)
-    #     except Exception as e:
-    #         logger.error(f"Error submitting answer for student {student.id}: {str(e)}")
-    #         return Response({'error': 'Unexpected error occurred.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
-    # @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='retake')
-    # def retake_exam(self, request, pk=None):
-    #     logger.debug("Retake exam triggered for question ID: %s", pk)
-    #     question = self.get_object()
-    #     student = request.user
-
-    #     try:
-    #         # Reset student's score or attempt
-    #         student_score = StudentScore.objects.get(student=student, question=question)
-    #         student_score.reset_score()
-    #         logger.debug("Score reset for student ID: %s, question ID: %s", student.id, question.id)
-    #     except StudentScore.DoesNotExist:
-    #         logger.warning("StudentScore not found for student ID: %s, question ID: %s", student.id, question.id)
-    #         return Response({'error': 'No score exists to reset for this question'}, status=status.HTTP_404_NOT_FOUND)
-
-    #     return Response({'message': 'Score reset and ready for retake.'})
-   
-
+         # Redirect to the list of questions for the section
+         questions_url = reverse('questions-list', kwargs={'course_pk': course_pk, 'section_pk': section_pk})
+         return HttpResponseRedirect(questions_url)
 
 
     
