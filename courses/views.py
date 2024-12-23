@@ -447,6 +447,17 @@ class LessonViewSet(BaseLessonViewSet):
 
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.core.exceptions import PermissionDenied
+from .models import Question, Option, StudentAnswer, StudentScore, Section, OrderItem
+from .serializers import QuestionSerializer, StudentAnswerSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
@@ -517,24 +528,25 @@ class QuestionViewSet(viewsets.ModelViewSet):
              'score': student_score.score
          })
 
-    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], url_path='retake')
-    def retake_exam(self, request, course_pk=None, section_pk=None, pk=None):
-         logger.debug("Retake exam triggered for question ID: %s", pk)
-         question = self.get_object()
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='retake')
+    def retake_exam(self, request, course_pk=None, section_pk=None):
+         logger.debug("Retake exam triggered for section ID: %s", section_pk)
+         section = get_object_or_404(Section, pk=section_pk)
          student = request.user
-         section = question.section
 
          try:
-             student_score = StudentScore.objects.get(student=student, section=section)
-             student_score.reset_score()
-             logger.debug("Score reset for student ID: %s, section ID: %s", student.id, section.id)
+             student_scores = StudentScore.objects.filter(student=student, section=section)
+             for student_score in student_scores:
+                 student_score.reset_score()
+             logger.debug("Scores reset for student ID: %s, section ID: %s", student.id, section.id)
          except StudentScore.DoesNotExist:
-             logger.warning("StudentScore not found for student ID: %s, section ID: %s", student.id, section.id)
-             return Response({'error': 'No score exists to reset for this section'}, status=status.HTTP_404_NOT_FOUND)
+             logger.warning("StudentScores not found for student ID: %s, section ID: %s", student.id, section.id)
+             return Response({'error': 'No scores exist to reset for this section'}, status=status.HTTP_404_NOT_FOUND)
 
          # Redirect to the list of questions for the section
          questions_url = reverse('questions-list', kwargs={'course_pk': course_pk, 'section_pk': section_pk})
          return HttpResponseRedirect(questions_url)
+
 
     
 class PromotionViewSet(viewsets.ModelViewSet):

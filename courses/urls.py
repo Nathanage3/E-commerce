@@ -49,6 +49,7 @@ purchased_section_router = routers.NestedDefaultRouter(purchased_course_router, 
 purchased_section_router.register('lessons', views.LessonViewSet, basename='purchased-lessons')
 purchased_course_router.register('questions', views.QuestionViewSet, basename='questions')
 
+
 urlpatterns = [
     path('', include(router.urls)),
     path('', views.home, name='home'),
