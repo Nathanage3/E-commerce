@@ -3,7 +3,7 @@
 __pycache__/
 */__pycache__/
 media/
-/venv
+/venv/
 # Ignore environment files
 /.env
 /.env
@@ -15,5 +15,5 @@ venv/
 /.venv
 /E-commerce-34sOm8Ye
 /E-commerce-34sOm8Ye
-.venv
+/.venv/
 # Hello 
