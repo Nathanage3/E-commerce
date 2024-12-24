@@ -2,12 +2,12 @@
 *.pyc
 __pycache__/
 */__pycache__/
-
-
+media/
+/venv
 # Ignore environment files
 /.env
 /.env
-
+venv/
 # Ignore VSCode workspace settings
 .vscode/
 
@@ -15,5 +15,5 @@ __pycache__/
 /.venv
 /E-commerce-34sOm8Ye
 /E-commerce-34sOm8Ye
-
+.venv
 # Hello 

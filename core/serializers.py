@@ -1,7 +1,8 @@
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer,\
                                UserSerializer as BaseUserSerializer, \
-                               SetUsernameSerializer as BaseSetUsernameSerializer, SetPasswordSerializer as BaseSetPasswordSerializer
-
+                               SetPasswordSerializer as BaseSetPasswordSerializer
+from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import User
 
@@ -30,9 +31,6 @@ class SetPasswordSerializer(BaseSetPasswordSerializer):
         model = User  # Ensure this points to your custom User model
         fields = ['current_password', 'new_password', 're_new_password']
 
-from rest_framework import serializers
-from django.contrib.auth.password_validation import validate_password
-from .models import User
 
 class SetPasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True)
@@ -54,18 +52,3 @@ class SetPasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("The current password is incorrect.")
         return value
-
-
-
-# class SetEmailSerializer(serializers.Serializer):
-#     new_email = serializers.EmailField(write_only=True)
-#     re_new_email = serializers.EmailField(write_only=True)
-
-#     class Meta:
-#         model = User  # Ensure this points to your custom User model
-#         fields = ['current_password', 'new_email', 're_new_email']
-
-#     def validate(self, attrs):
-#         if attrs['new_email'] != attrs['re_new_email']:
-#             raise serializers.ValidationError({"email": "Emails do not match"})
-#         return attrs
