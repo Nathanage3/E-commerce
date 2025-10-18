@@ -90,28 +90,6 @@ print(os.path.join(BASE_DIR, 'templates'))
 
 WSGI_APPLICATION = 'mando.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'mando_db',
-#         'USER': 'root',
-#         'PASSWORD': 'Password',
-#         'HOST': 'localhost',
-#         'PORT': 3306,
-#         'OPTIONS': {
-#             'ssl': {'disabled': True},
-#             },
-#         }
-# }
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -197,8 +175,9 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nathan3chat@gmail.com'
-EMAIL_HOST_PASSWORD = 'lria sktz ltvv htdx'  # Ensure this is the correct password
+EMAIL_HOST_PASSWORD = 'lria sktz ltvv htdx'  
 DEFAULT_FROM_EMAIL = 'nathan3chat@gmail.com'
+
 
 
 SIMPLE_JWT = {
