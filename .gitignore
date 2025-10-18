@@ -17,3 +17,6 @@ venv/
 /E-commerce-34sOm8Ye
 /.venv/
 # Hello 
+*.mp4
+*.mov
+*.avi
